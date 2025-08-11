@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naruto Uzumaki - Full Stack Developer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            background: #0a192f;
+            padding: 20px 15px;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 4px 15px rgba(10, 25, 47, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-email {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: #64ffda;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-email:hover {
+            color: #ffffff;
+        }
+
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .social-links a {
+            color: #8892b0;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            padding: 8px;
+        }
+
+        .social-links a:hover {
+            color: #64ffda;
+            transform: translateY(-3px);
+        }
+
+        /* Top Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            box-shadow: 0 2px 20px rgba(10, 25, 47, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .logo {
+            color: #64ffda;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #8892b0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #64ffda;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #64ffda;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            color: #64ffda;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 0;
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            min-height: 100vh;
+            padding: 80px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(10, 25, 47, 0.1);
+            border: 1px solid #e6f1ff;
+            padding: 40px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(10, 25, 47, 0.15);
+        }
+
+        /* Hero Section */
+        .hero-content {
+            text-align: center;
+            width: 100%;
+        }
+
+        .hero-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #64ffda;
+            margin: 0 auto 30px;
+            display: block;
+            object-fit: cover;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            color: #0a192f;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #64ffda;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: #8892b0;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #0a192f;
+            color: #ffffff;
+            padding: 15px 30px;
+            border: 2px solid #0a192f;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: transparent;
+            color: #0a192f;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: #0a192f;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .about-text {
+            font-size: 1.1rem;
+            color: #8892b0;
+            line-height: 1.8;
+        }
+
+        .about-text p {
+            margin-bottom: 20px;
+        }
+
+        .about-image {
+            width: 100%;
+            border-radius: 10px;
+            border: 3px solid #64ffda;
+        }
+
+        /* Experience Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #64ffda;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding-left: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -37px;
+            top: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #64ffda;
+            border: 3px solid #ffffff;
+        }
+
+        .timeline-date {
+            color: #64ffda;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .timeline-company {
+            color: #0a192f;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .timeline-role {
+            color: #8892b0;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .timeline-description {
+            color: #8892b0;
+            line-height: 1.6;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(10, 25, 47, 0.1);
+            border: 1px solid #e6f1ff;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(10, 25, 47, 0.15);
+        }
+
+        .project-header {
+            background: #0a192f;
+            color: #ffffff;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .project-links a {
+            color: #64ffda;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .project-links a:hover {
+            color: #ffffff;
+        }
+
+        .project-body {
+            padding: 20px;
+        }
+
+        .project-description {
+            color: #8892b0;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            background: #e6f1ff;
+            color: #0a192f;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Blog Section */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .blog-card {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(10, 25, 47, 0.1);
+            border: 1px solid #e6f1ff;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(10, 25, 47, 0.15);
+        }
+
+        .blog-title {
+            color: #0a192f;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .blog-title:hover {
+            color: #64ffda;
+        }
+
+        .blog-excerpt {
+            color: #8892b0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .blog-date {
+            color: #64ffda;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Contact Section */
+        .contact-content {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-text {
+            font-size: 1.2rem;
+            color: #8892b0;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .contact-links a {
+            color: #0a192f;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .contact-links a:hover {
+            color: #64ffda;
+            transform: translateY(-3px);
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #0a192f;
+                flex-direction: column;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .card {
+                padding: 30px 20px;
+            }
+
+            .contact-links {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .timeline {
+                padding-left: 20px;
+            }
+
+            .timeline-item {
+                padding-left: 20px;
+            }
+
+            .timeline-item::before {
+                left: -27px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-content">
+            <a href="mailto:naruto.uzumaki@dev.com" class="sidebar-email">naruto.uzumaki@dev.com</a>
+            <div class="social-links">
+                <a href="#" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="#" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo">Naruto Uzumaki</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#experience" class="nav-link">Experience</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+                <li><a href="#blog" class="nav-link">Blog</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="section">
+            <div class="container">
+                <div class="card">
+                    <div class="hero-content fade-in">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face&auto=format" alt="Naruto Uzumaki" class="hero-image">
+                        <h1 class="hero-title">Naruto Uzumaki</h1>
+                        <p class="hero-subtitle">Full Stack Developer</p>
+                        <p class="hero-description">
+                            I'm a passionate full-stack developer who believes in the power of clean code, 
+                            innovative solutions, and never giving up - just like my ninja way! I build 
+                            scalable web applications that make a difference.
+                        </p>
+                        <a href="#projects" class="cta-button">View My Work</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="container">
+                <div class="card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">About Me</h2>
+                        <p class="section-subtitle">Get to know me better</p>
+                    </div>
+                    <div class="about-content">
+                        <div class="about-text">
+                            <p>
+                                Hello! I'm Naruto, a full-stack developer with a passion for creating 
+                                digital experiences that bring people together. My journey in web development 
+                                started during my academy days, and I've been hooked ever since.
+                            </p>
+                            <p>
+                                I specialize in modern JavaScript frameworks, server-side technologies, 
+                                and cloud architecture. My mission is to build applications that are not 
+                                only functional but also intuitive and accessible to everyone.
+                            </p>
+                            <p>
+                                When I'm not coding, you can find me training, eating ramen, or working 
+                                on open-source projects that help the developer community grow stronger together.
+                            </p>
+                        </div>
+                        <div>
+                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop&auto=format" alt="Coding workspace" class="about-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="section">
+            <div class="container">
+                <div class="card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Experience</h2>
+                        <p class="section-subtitle">My professional journey</p>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-date">2023 - Present</div>
+                            <h3 class="timeline-company">Hidden Leaf Technologies</h3>
+                            <p class="timeline-role">Senior Full Stack Developer</p>
+                            <p class="timeline-description">
+                                Leading development of enterprise-scale applications using React, Node.js, and AWS. 
+                                Mentoring junior developers and implementing CI/CD pipelines that improved deployment 
+                                efficiency by 60%.
+                            </p>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-date">2021 - 2023</div>
+                            <h3 class="timeline-company">Cloud Village Solutions</h3>
+                            <p class="timeline-role">Full Stack Developer</p>
+                            <p class="timeline-description">
+                                Developed and maintained multiple client projects using Vue.js, Laravel, and PostgreSQL. 
+                                Collaborated with design teams to create responsive, user-friendly interfaces that 
+                                increased user engagement by 40%.
+                            </p>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-date">2020 - 2021</div>
+                            <h3 class="timeline-company">Ramen Digital Agency</h3>
+                            <p class="timeline-role">Frontend Developer</p>
+                            <p class="timeline-description">
+                                Specialized in creating interactive web experiences using modern JavaScript frameworks. 
+                                Built custom WordPress themes and implemented SEO best practices that improved 
+                                client search rankings by an average of 45%.
+                            </p>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-date">2019 - 2020</div>
+                            <h3 class="timeline-company">Ninja Code Academy</h3>
+                            <p class="timeline-role">Junior Web Developer</p>
+                            <p class="timeline-description">
+                                Started my professional journey working on small business websites and learning 
+                                the fundamentals of web development. Gained experience with HTML, CSS, JavaScript, 
+                                and PHP while building my foundation in software engineering principles.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="section">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <h2 class="section-title">Projects</h2>
+                    <p class="section-subtitle">Some things I've built</p>
+                </div>
+                <div class="projects-grid">
+                    <div class="project-card fade-in">
+                        <div class="project-header">
+                            <h3 class="project-title">Village Management System</h3>
+                            <div class="project-links">
+                                <a href="#" title="View Project"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <div class="project-body">
+                            <p class="project-description">
+                                A comprehensive management platform for ninja villages, featuring mission tracking, 
+                                ninja profiles, and resource management. Built with React, Node.js, and MongoDB.
+                            </p>
+                            <div class="project-tags">
+                                <span class="tag">React</span>
+                                <span class="tag">Node.js</span>
+                                <span class="tag">MongoDB</span>
+                                <span class="tag">Express</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card fade-in">
+                        <div class="project-header">
+                            <h3 class="project-title">Ramen Recipe Finder</h3>
+                            <div class="project-links">
+                                <a href="#" title="View Project"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <div class="project-body">
+                            <p class="project-description">
+                                A mobile-first web application that helps users discover and save ramen recipes. 
+                                Features ingredient search, cooking timers, and social sharing capabilities.
+                            </p>
+                            <div class="project-tags">
+                                <span class="tag">Vue.js</span>
+                                <span class="tag">Firebase</span>
+                                <span class="tag">PWA</span>
+                                <span class="tag">Tailwind CSS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card fade-in">
+                        <div class="project-header">
+                            <h3 class="project-title">E-commerce Platform</h3>
+                            <div class="project-links">
+                                <a href="#" title="View Project"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <div class="project-body">
+                            <p class="project-description">
+                                Full-featured e-commerce solution with inventory management, payment processing, 
+                                and analytics dashboard. Handles 10k+ products with real-time updates.
+                            </p>
+                            <div class="project-tags">
+                                <span class="tag">Laravel</span>
+                                <span class="tag">React</span>
+                                <span class="tag">MySQL</span>
+                                <span class="tag">Redis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card fade-in">
+                        <div class="project-header">
+                            <h3 class="project-title">Open Source UI Library</h3>
+                            <div class="project-links">
+                                <a href="#" title="View Project"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <div class="project-body">
+                            <p class="project-description">
+                                A lightweight, accessible React component library with customizable themes. 
+                                Used by 500+ developers and has 2k+ GitHub stars.
+                            </p>
+                            <div class="project-tags">
+                                <span class="tag">React</span>
+                                <span class="tag">TypeScript</span>
+                                <span class="tag">Storybook</span>
+                                <span class="tag">NPM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blog" class="section">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <h2 class="section-title">Latest Blog Posts</h2>
+                    <p class="section-subtitle">Sharing knowledge and experiences</p>
+                </div>
+                <div class="blog-grid">
+                    <article class="blog-card fade-in">
+                        <a href="#" class="blog-title">
+                            The Art of Clean Code: Lessons from the Ninja Way
+                        </a>
+                        <p class="blog-excerpt">
+                            Exploring how ninja principles can be applied to writing maintainable, 
+                            elegant code that stands the test of time and scales with your team.
+                        </p>
+                        <span class="blog-date">March 15, 2024</span>
+                    </article>
+
+                    <article class="blog-card fade-in">
+                        <a href="#" class="blog-title">
+                            Building Resilient React Applications
+                        </a>
+                        <p class="blog-excerpt">
+                            A deep dive into error boundaries, loading states, and defensive programming 
+                            techniques that make your React apps bulletproof.
+                        </p>
+                        <span class="blog-date">February 28, 2024</span>
+                    </article>
+
+                    <article class="blog-card fade-in">
+                        <a href="#" class="blog-title">
+                            From Junior to Senior: My Development Journey
+                        </a>
+                        <p class="blog-excerpt">
+                            Reflections on five years in the industry, the mistakes I made, 
+                            the lessons I learned, and advice for aspiring developers.
+                        </p>
+                        <span class="blog-date">January 10, 2024</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section">
+            <div class="container">
+                <div class="card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Get In Touch</h2>
+                        <p class="section-subtitle">Let's build something amazing together</p>
+                    </div>
+                    <div class="contact-content">
+                        <p class="contact-text">
+                            I'm always excited to work on new projects and collaborate with amazing people. 
+                            Whether you have a project in mind, want to chat about development, 
+                            or just want to say hello, I'd love to hear from you!
+                        </p>
+                        <div class="contact-links">
+                            <a href="mailto:naruto.uzumaki@dev.com" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="#" target="_blank" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" target="_blank" title="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" target="_blank" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        </div>
+                        <a href="mailto:naruto.uzumaki@dev.com" class="cta-button">Say Hello</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Active navigation highlighting
+        const sections = document.querySelectorAll('.section');
+        const navLinksArray = document.querySelectorAll('.nav-link');
+
+        function updateActiveNavLink() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinksArray.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNavLink);
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.offsetTop - 80;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    navLinks.classList.remove('active');
+                    const icon = mobileMenuToggle.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        });
+
+        // Initialize active nav link on page load
+        updateActiveNavLink();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naruto Uzumaki - Full Stack Developer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #ff6b35;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #ff6b35;
+            transition: 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ffffff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .character {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .character::before {
+            content: '🦊';
+            font-size: 8rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cube {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            border-radius: 8px;
+            animation: rotate 20s linear infinite;
+        }
+
+        .cube1 { top: 20%; left: 10%; animation-delay: 0s; }
+        .cube2 { top: 70%; right: 10%; animation-delay: -5s; }
+        .cube3 { top: 40%; left: 20%; animation-delay: -10s; }
+
+        /* Social Links */
+        .social-links {
+            position: fixed;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .social-links a {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b35;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: #ff6b35;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Off-canvas Menu */
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .off-canvas-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(26, 26, 26, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 2rem;
+            transition: right 0.3s ease;
+            border-left: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .off-canvas-menu.active {
+            right: 0;
+        }
+
+        .off-canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            color: #ff6b35;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-menu:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .off-canvas-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .off-canvas-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .off-canvas-links a:hover {
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            transform: translateX(5px);
+        }
+
+        .mobile-social {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .mobile-social h4 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+
+        .mobile-social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .mobile-social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b35;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-social-links a:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
+        /* Sections */
+        section {
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #ffffff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Tech Stack */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .skill-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff6b35, transparent);
+            transition: left 0.6s ease;
+        }
+
+        .skill-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.1);
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .skill-item:hover::before {
+            left: 100%;
+        }
+
+        .skill-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .skill-item h3 {
+            color: #ff6b35;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .skill-level {
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #ff6b35, #ff8c42);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            width: 45%;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: auto;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background: #ff6b35;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid #1a1a1a;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.1);
+        }
+
+        .project-image {
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .project-info {
+            padding: 2rem;
+        }
+
+        .project-info h3 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        /* Articles */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .article-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-date {
+            color: #ff6b35;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-card h3 {
+            margin-bottom: 1rem;
+        }
+
+        /* Contact */
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .contact-item h3 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .social-links {
+                display: none;
+            }
+
+            .hero {
+                height: 100vh;
+                padding-top: 80px;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .character {
+                width: 200px;
+                height: 200px;
+            }
+
+            .character::before {
+                font-size: 5rem;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 60px;
+            }
+
+            .timeline-item:nth-child(even) .timeline-content {
+                margin-left: 60px;
+            }
+
+            .timeline-dot {
+                left: 20px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .skill-item {
+                padding: 1rem;
+            }
+
+            .skill-icon {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .projects-grid,
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">NarutoUzumaki</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#articles">Articles</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Off-canvas Menu Overlay -->
+    <div class="nav-overlay" onclick="closeMenu()"></div>
+    
+    <!-- Off-canvas Menu -->
+    <div class="off-canvas-menu">
+        <div class="off-canvas-header">
+            <div class="logo">NarutoUzumaki</div>
+            <button class="close-menu" onclick="closeMenu()">&times;</button>
+        </div>
+        <ul class="off-canvas-links">
+            <li><a href="#home" onclick="closeMenu()">Home</a></li>
+            <li><a href="#about" onclick="closeMenu()">About</a></li>
+            <li><a href="#experience" onclick="closeMenu()">Experience</a></li>
+            <li><a href="#projects" onclick="closeMenu()">Projects</a></li>
+            <li><a href="#articles" onclick="closeMenu()">Articles</a></li>
+            <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+        </ul>
+        <div class="mobile-social">
+            <h4>Connect with me</h4>
+            <div class="mobile-social-links">
+                <a href="https://github.com/naruto" target="_blank">📧</a>
+                <a href="https://twitter.com/naruto" target="_blank">🐦</a>
+                <a href="https://instagram.com/naruto" target="_blank">📷</a>
+                <a href="https://youtube.com/naruto" target="_blank">📺</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="social-links">
+        <a href="https://github.com/naruto" target="_blank">📧</a>
+        <a href="https://twitter.com/naruto" target="_blank">🐦</a>
+        <a href="https://instagram.com/naruto" target="_blank">📷</a>
+        <a href="https://youtube.com/naruto" target="_blank">📺</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>I'm Naruto Uzumaki</h1>
+                    <p>A passionate full stack developer who believes in the power of code to change the world. Ready to take on any challenge, dattebayo!</p>
+                    <a href="#contact" class="cta-button">Let's Connect</a>
+                </div>
+                <div class="hero-visual">
+                    <div class="character"></div>
+                    <div class="floating-elements">
+                        <div class="cube cube1"></div>
+                        <div class="cube cube2"></div>
+                        <div class="cube cube3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="about">
+        <div class="container">
+            <h2 class="section-title">My Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-item">
+                    <span class="skill-icon">🐘</span>
+                    <h3>PHP</h3>
+                    <p class="skill-level">Advanced</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">🎯</span>
+                    <h3>Laravel</h3>
+                    <p class="skill-level">Expert</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">⚡</span>
+                    <h3>JavaScript</h3>
+                    <p class="skill-level">Advanced</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">📘</span>
+                    <h3>TypeScript</h3>
+                    <p class="skill-level">Intermediate</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">🟢</span>
+                    <h3>Node.js</h3>
+                    <p class="skill-level">Advanced</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">⚛️</span>
+                    <h3>React.js</h3>
+                    <p class="skill-level">Expert</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Timeline -->
+    <section id="experience">
+        <div class="container">
+            <h2 class="section-title">My Journey</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Senior Full Stack Developer</h3>
+                        <h4>Konoha Tech Solutions</h4>
+                        <p><strong>2023 - Present</strong></p>
+                        <p>Leading development of large-scale web applications using React.js and Laravel. Mentoring junior developers and implementing best practices for code quality and performance.</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Full Stack Developer</h3>
+                        <h4>Hidden Leaf Digital</h4>
+                        <p><strong>2021 - 2023</strong></p>
+                        <p>Developed and maintained multiple client projects using PHP, Laravel, and React.js. Improved application performance by 40% through code optimization and database tuning.</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Junior Developer</h3>
+                        <h4>Ramen Code Academy</h4>
+                        <p><strong>2019 - 2021</strong></p>
+                        <p>Started my journey as a developer, working with JavaScript, Node.js, and learning the fundamentals of web development. Built my first full-stack applications.</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Ninja Academy Graduate</h3>
+                        <h4>Self-Taught Journey</h4>
+                        <p><strong>2018 - 2019</strong></p>
+                        <p>Completed intensive self-study in programming fundamentals, data structures, and algorithms. Built several personal projects to master the basics.</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">🌪️</div>
+                    <div class="project-info">
+                        <h3>Rasengan CMS</h3>
+                        <p>A powerful content management system built with Laravel and React.js. Features real-time editing, user management, and responsive design.</p>
+                        <div class="project-tags">
+                            <span class="tag">Laravel</span>
+                            <span class="tag">React.js</span>
+                            <span class="tag">TypeScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image">🦊</div>
+                    <div class="project-info">
+                        <h3>Nine-Tails Analytics</h3>
+                        <p>Advanced analytics dashboard for tracking user behavior and performance metrics. Built with Node.js backend and React frontend.</p>
+                        <div class="project-tags">
+                            <span class="tag">Node.js</span>
+                            <span class="tag">React.js</span>
+                            <span class="tag">JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image">⚡</div>
+                    <div class="project-info">
+                        <h3>Lightning E-Commerce</h3>
+                        <p>High-performance e-commerce platform with real-time inventory management, payment integration, and mobile-responsive design.</p>
+                        <div class="project-tags">
+                            <span class="tag">PHP</span>
+                            <span class="tag">Laravel</span>
+                            <span class="tag">JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section id="articles">
+        <div class="container">
+            <h2 class="section-title">Recent Articles</h2>
+            <div class="articles-grid">
+                <div class="article-card">
+                    <div class="article-date">March 15, 2024</div>
+                    <h3>Mastering Laravel Performance Optimization</h3>
+                    <p>Deep dive into Laravel optimization techniques including query optimization, caching strategies, and performance monitoring best practices.</p>
+                </div>
+                <div class="article-card">
+                    <div class="article-date">February 28, 2024</div>
+                    <h3>React.js State Management in 2024</h3>
+                    <p>Comprehensive guide to modern React state management solutions, comparing Context API, Redux Toolkit, and Zustand for different use cases.</p>
+                </div>
+                <div class="article-card">
+                    <div class="article-date">February 10, 2024</div>
+                    <h3>Building Scalable APIs with Node.js</h3>
+                    <p>Best practices for designing and implementing scalable REST APIs using Node.js, including authentication, rate limiting, and documentation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2 class="section-title">Let's Connect</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h3>📧 Email</h3>
+                    <p>naruto.uzumaki@konoha.dev</p>
+                    <p>Ready to discuss your next project</p>
+                </div>
+                <div class="contact-item">
+                    <h3>📱 Phone</h3>
+                    <p>+1 (555) 123-NINJA</p>
+                    <p>Available for calls and meetings</p>
+                </div>
+                <div class="contact-item">
+                    <h3>📍 Location</h3>
+                    <p>Hidden Leaf Village</p>
+                    <p>Remote work friendly</p>
+                </div>
+                <div class="contact-item">
+                    <h3>💼 LinkedIn</h3>
+                    <p>linkedin.com/in/naruto-uzumaki</p>
+                    <p>Let's connect professionally</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMenu() {
+            const offCanvasMenu = document.querySelector('.off-canvas-menu');
+            const navOverlay = document.querySelector('.nav-overlay');
+            offCanvasMenu.classList.add('active');
+            navOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            const offCanvasMenu = document.querySelector('.off-canvas-menu');
+            const navOverlay = document.querySelector('.nav-overlay');
+            offCanvasMenu.classList.remove('active');
+            navOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(26, 26, 26, 0.98)';
+            } else {
+                header.style.background = 'rgba(26, 26, 26, 0.95)';
+            }
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards and timeline items
+        document.querySelectorAll('.skill-item, .project-card, .article-card, .contact-item, .timeline-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Add dynamic background elements
+        function createFloatingElement() {
+            const element = document.createElement('div');
+            element.style.position = 'fixed';
+            element.style.width = Math.random() * 10 + 5 + 'px';
+            element.style.height = element.style.width;
+            element.style.background = 'rgba(255, 107, 53, 0.1)';
+            element.style.borderRadius = '50%';
+            element.style.left = Math.random() * 100 + '%';
+            element.style.top = '100%';
+            element.style.pointerEvents = 'none';
+            element.style.zIndex = '1';
+            
+            document.body.appendChild(element);
+            
+            const duration = Math.random() * 10000 + 15000;
+            element.animate([
+                { transform: 'translateY(0)', opacity: 0 },
+                { transform: 'translateY(-50px)', opacity: 1 },
+                { transform: 'translateY(-100vh)', opacity: 0 }
+            ], {
+                duration: duration,
+                easing: 'linear'
+            }).onfinish = () => element.remove();
+        }
+
+        // Create floating elements periodically
+        setInterval(createFloatingElement, 3000);
+    </script>
+</body>
+</html>
