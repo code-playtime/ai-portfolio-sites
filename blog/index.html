@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBlog - Full Stack Developer</title>
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --secondary-color: #6b6b6b;
+            --accent-color: #0066cc;
+            --success-color: #1a8917;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b6b6b;
+            --text-light: #9b9b9b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f4;
+            --border-color: #e8eaed;
+            --hover-bg: #f8f9fa;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-hover: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+
+        /* Enhanced Loader Styles */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: all 0.5s ease;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .loader::before,
+        .loader::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid transparent;
+            border-top: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader::after {
+            width: 45px;
+            height: 45px;
+            top: 7.5px;
+            left: 7.5px;
+            border-top: 3px solid white;
+            animation: spin 1s linear infinite reverse;
+        }
+
+        .loader-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            animation: pulse 2s infinite;
+        }
+
+        .loader-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: 400;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loader-container.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-color);
+            background-color: var(--hover-bg);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .mobile-menu-btn span {
+            width: 24px;
+            height: 2px;
+            background-color: var(--text-primary);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .mobile-menu.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+            padding: 16px 0;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a.active {
+            background-color: var(--hover-bg);
+            color: var(--accent-color);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 24px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 64px;
+        }
+
+        /* Articles Section */
+        .articles-section {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            position: relative;
+            padding-bottom: 16px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .article {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .article:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .article-cover {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(102, 126, 234, 0.8) 0%, 
+                rgba(118, 75, 162, 0.8) 100%);
+        }
+
+        .article-cover-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 64px;
+            opacity: 0.3;
+        }
+
+        .article-content {
+            padding: 24px;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .article-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .article-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .article-excerpt {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .article-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .read-time {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .read-more {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .read-more:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+        }
+
+        .sidebar-section {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .sidebar-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 1px;
+        }
+
+        .project-item {
+            margin-bottom: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+
+        .project-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .project-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-color);
+        }
+
+        .project-cover {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(102, 126, 234, 0.7) 0%, 
+                rgba(118, 75, 162, 0.7) 100%);
+        }
+
+        .project-cover-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            opacity: 0.4;
+        }
+
+        .project-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .project-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tech-tag {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
+
+        .about-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 48px;
+                padding: 32px 20px;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 16px 20px;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .article-title {
+                font-size: 20px;
+            }
+
+            .article-cover {
+                height: 200px;
+            }
+
+            .sidebar-section {
+                padding: 20px;
+            }
+
+            .project-cover {
+                height: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 24px;
+            }
+
+            .article-title {
+                font-size: 18px;
+            }
+
+            .article-content {
+                padding: 20px;
+            }
+
+            .sidebar-section {
+                padding: 16px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Loader -->
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <div class="loader-text">DEVBLOG</div>
+        <div class="loader-subtitle">Loading amazing content...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">DevBlog</a>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Articles</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="mobile-menu" id="mobileMenu">
+                <ul>
+                    <li><a href="#" class="active">Articles</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Articles Section -->
+        <main class="articles-section">
+            <h1 class="section-title">Recent Articles</h1>
+
+            <article class="article">
+                <div class="article-cover">
+                    <div class="article-cover-icon">⚛️</div>
+                </div>
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="article-date">Jan 15, 2025</span>
+                        <span>•</span>
+                        <span class="article-tag">React</span>
+                    </div>
+                    <h2 class="article-title">Building Responsive React Applications with Modern CSS</h2>
+                    <p class="article-excerpt">
+                        Learn how to create beautiful, responsive React applications using CSS Grid, Flexbox, and modern CSS techniques. This comprehensive guide covers best practices, performance optimization, and real-world examples that you can implement in your next project.
+                    </p>
+                    <div class="article-footer">
+                        <span class="read-time">5 min read</span>
+                        <a href="#" class="read-more">Read Article</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article">
+                <div class="article-cover">
+                    <div class="article-cover-icon">🚀</div>
+                </div>
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="article-date">Jan 10, 2025</span>
+                        <span>•</span>
+                        <span class="article-tag">Node.js</span>
+                    </div>
+                    <h2 class="article-title">Optimizing Node.js Performance for Production Environments</h2>
+                    <p class="article-excerpt">
+                        Discover essential techniques for optimizing Node.js applications in production environments. From memory management to database optimization strategies, this guide will help you build scalable and efficient backend systems.
+                    </p>
+                    <div class="article-footer">
+                        <span class="read-time">8 min read</span>
+                        <a href="#" class="read-more">Read Article</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article">
+                <div class="article-cover">
+                    <div class="article-cover-icon">🐳</div>
+                </div>
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="article-date">Jan 5, 2025</span>
+                        <span>•</span>
+                        <span class="article-tag">DevOps</span>
+                    </div>
+                    <h2 class="article-title">Docker and Kubernetes: A Developer's Complete Guide</h2>
+                    <p class="article-excerpt">
+                        A comprehensive guide to containerizing applications with Docker and orchestrating them with Kubernetes. Perfect for developers getting started with DevOps practices and wanting to understand modern deployment strategies.
+                    </p>
+                    <div class="article-footer">
+                        <span class="read-time">12 min read</span>
+                        <a href="#" class="read-more">Read Article</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="article">
+                <div class="article-cover">
+                    <div class="article-cover-icon">📱</div>
+                </div>
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="article-date">Dec 28, 2024</span>
+                        <span>•</span>
+                        <span class="article-tag">JavaScript</span>
+                    </div>
+                    <h2 class="article-title">Advanced JavaScript Patterns and Best Practices</h2>
+                    <p class="article-excerpt">
+                        Explore advanced JavaScript patterns including closures, prototypes, async/await patterns, and functional programming concepts. Learn how to write cleaner, more maintainable code that follows industry standards.
+                    </p>
+                    <div class="article-footer">
+                        <span class="read-time">10 min read</span>
+                        <a href="#" class="read-more">Read Article</a>
+                    </div>
+                </div>
+            </article>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Projects Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Featured Projects</h3>
+                
+                <div class="project-item">
+                    <div class="project-cover">
+                        <div class="project-cover-icon">🛒</div>
+                    </div>
+                    <h4 class="project-title">E-Commerce Platform</h4>
+                    <p class="project-description">Full-stack marketplace with modern payment integration and real-time inventory management</p>
+                    <div class="project-tech">
+                        <span class="tech-tag">React</span>
+                        <span class="tech-tag">Node.js</span>
+                        <span class="tech-tag">MongoDB</span>
+                        <span class="tech-tag">Stripe</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-cover">
+                        <div class="project-cover-icon">✅</div>
+                    </div>
+                    <h4 class="project-title">Task Management System</h4>
+                    <p class="project-description">Real-time collaboration tool with team workspace and project tracking capabilities</p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Vue.js</span>
+                        <span class="tech-tag">Socket.io</span>
+                        <span class="tech-tag">Express</span>
+                        <span class="tech-tag">Redis</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-cover">
+                        <div class="project-cover-icon">📊</div>
+                    </div>
+                    <h4 class="project-title">Analytics Dashboard</h4>
+                    <p class="project-description">Business intelligence dashboard with interactive data visualization and reporting</p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Next.js</span>
+                        <span class="tech-tag">D3.js</span>
+                        <span class="tech-tag">PostgreSQL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">About</h3>
+                <p class="about-text">
+                    Full-stack developer with 5+ years of experience building scalable web applications. Passionate about clean code, modern technologies, and sharing knowledge with the developer community.
+                </p>
+                <div class="skills">
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">TypeScript</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Docker</span>
+                    <span class="skill-tag">AWS</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Enhanced Loader functionality
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.classList.add('hidden');
+                
+                // Remove loader from DOM after animation
+                setTimeout(() => {
+                    loader.remove();
+                }, 500);
+            }, 2000); // Show loader for 2 seconds to appreciate the design
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenuBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Close mobile menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 968) {
+                mobileMenuBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                if (targetId) {
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        // Close mobile menu after navigation
+                        mobileMenuBtn.classList.remove('active');
+                        mobileMenu.classList.remove('active');
+                    }
+                }
+            });
+        });
+
+        // Article click functionality
+        document.querySelectorAll('.article').forEach(article => {
+            article.addEventListener('click', function(e) {
+                // Don't navigate if clicking on read more link
+                if (e.target.classList.contains('read-more')) {
+                    return;
+                }
+                
+                const readMoreLink = this.querySelector('.read-more');
+                if (readMoreLink) {
+                    const articleTitle = this.querySelector('.article-title').textContent;
+                    console.log('Navigate to article:', articleTitle);
+                    // Add subtle click animation
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-4px)';
+                    }, 100);
+                }
+            });
+        });
+
+        // Project item interactions
+        document.querySelectorAll('.project-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const projectTitle = this.querySelector('.project-title').textContent;
+                console.log('View project:', projectTitle);
+                // Add click animation
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-2px)';
+                }, 100);
+            });
+        });
+
+        // Navigation active state management
+        const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu a');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Also update mobile menu counterpart
+                const linkText = this.textContent;
+                navLinks.forEach(l => {
+                    if (l.textContent === linkText) {
+                        l.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const elementsToAnimate = document.querySelectorAll('.article, .project-item');
+            elementsToAnimate.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                observer.observe(el);
+            });
+        });
+
+        // Add parallax effect to cover images
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const covers = document.querySelectorAll('.article-cover, .project-cover');
+            
+            covers.forEach(cover => {
+                const rate = scrolled * -0.3;
+                cover.style.transform = `translateY(${rate}px)`;
+            });
+        });
+
+        // Enhanced hover effects for articles
+        document.querySelectorAll('.article').forEach(article => {
+            article.addEventListener('mouseenter', function() {
+                const cover = this.querySelector('.article-cover');
+                if (cover) {
+                    cover.style.transform = 'scale(1.05)';
+                }
+            });
+            
+            article.addEventListener('mouseleave', function() {
+                const cover = this.querySelector('.article-cover');
+                if (cover) {
+                    cover.style.transform = 'scale(1)';
+                }
+            });
+        });
+
+        // Search functionality (basic implementation)
+        function addSearchFunctionality() {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'search-container';
+            searchContainer.innerHTML = `
+                <input type="text" placeholder="Search articles..." class="search-input" id="searchInput">
+            `;
+            
+            const articlesSection = document.querySelector('.articles-section');
+            articlesSection.insertBefore(searchContainer, articlesSection.querySelector('h1').nextElementSibling);
+            
+            // Add search styles
+            const searchStyles = `
+                .search-container {
+                    margin-bottom: 32px;
+                }
+                .search-input {
+                    width: 100%;
+                    padding: 16px 20px;
+                    border: 2px solid var(--border-color);
+                    border-radius: 25px;
+                    font-size: 16px;
+                    transition: all 0.3s ease;
+                    background: var(--bg-primary);
+                }
+                .search-input:focus {
+                    outline: none;
+                    border-color: var(--accent-color);
+                    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+                }
+            `;
+            
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = searchStyles;
+            document.head.appendChild(styleSheet);
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const articles = document.querySelectorAll('.article');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                articles.forEach(article => {
+                    const title = article.querySelector('.article-title').textContent.toLowerCase();
+                    const excerpt = article.querySelector('.article-excerpt').textContent.toLowerCase();
+                    const tag = article.querySelector('.article-tag').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || excerpt.includes(searchTerm) || tag.includes(searchTerm)) {
+                        article.style.display = 'block';
+                    } else {
+                        article.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Initialize search after DOM is loaded
+        document.addEventListener('DOMContentLoaded', addSearchFunctionality);
+    </script>
+</body>
+</html>

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBlog - Full Stack Developer</title>
+    <style>
+        :root {
+            --text-primary: #242424;
+            --text-secondary: #6b6b6b;
+            --text-light: #8b8b8b;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7f7f7;
+            --border-color: #e6e6e6;
+            --hover-bg: #f9f9f9;
+            --accent-green: #1a8917;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+
+        /* Simple Loader */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top: 2px solid var(--text-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-container.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1192px;
+            margin: 0 auto;
+            padding: 25px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-family: Georgia, serif;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+        }
+
+        .write-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .write-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--text-primary);
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+            padding: 12px 0;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .mobile-menu a:hover,
+        .mobile-menu a.active {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1192px;
+            margin: 0 auto;
+            padding: 48px 24px;
+            display: grid;
+            grid-template-columns: 1fr 368px;
+            gap: 64px;
+        }
+
+        /* Articles Section */
+        .articles-section {
+            max-width: 680px;
+        }
+
+        .section-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 32px;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            padding: 16px 0;
+            margin-right: 32px;
+            color: var(--text-light);
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--text-primary);
+        }
+
+        .article {
+            display: flex;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .article:hover {
+            background: var(--hover-bg);
+            margin: 0 -20px;
+            padding: 24px 20px;
+            border-radius: 4px;
+        }
+
+        .article-content {
+            flex: 1;
+            margin-right: 32px;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .author-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--text-light);
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .author-name {
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 400;
+            margin-right: 8px;
+        }
+
+        .article-date {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .article-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .article-excerpt {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .article-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .article-tags {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .article-tag {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .read-time {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .article-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: var(--hover-bg);
+            color: var(--text-secondary);
+        }
+
+        .article-image {
+            width: 112px;
+            height: 112px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--text-light);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .project-item {
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .project-title {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .project-title:hover {
+            text-decoration: underline;
+        }
+
+        .project-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .project-author {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-right: 8px;
+        }
+
+        .project-date {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .tech-tag {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1068px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 728px;
+                gap: 48px;
+            }
+
+            .sidebar {
+                position: static;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 16px 20px;
+            }
+
+            .nav-links,
+            .write-btn {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .container {
+                padding: 32px 20px;
+            }
+
+            .article {
+                flex-direction: column-reverse;
+                gap: 16px;
+            }
+
+            .article-content {
+                margin-right: 0;
+            }
+
+            .article-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            .article-title {
+                font-size: 20px;
+            }
+
+            .section-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                flex-shrink: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .article-title {
+                font-size: 18px;
+            }
+
+            .article-excerpt {
+                font-size: 15px;
+            }
+        }
+
+        /* Simple animations */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Simple Loader -->
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">Medium</a>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Write</a></li>
+                <li><a href="#">Sign In</a></li>
+            </ul>
+            <button class="write-btn">
+                ✍️ Write
+            </button>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="mobile-menu" id="mobileMenu">
+                <ul>
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#">Write</a></li>
+                    <li><a href="#">Sign In</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Articles Section -->
+        <main class="articles-section">
+            <div class="section-tabs">
+                <button class="tab active">For you</button>
+                <button class="tab">Following</button>
+            </div>
+
+            <article class="article fade-in">
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="author-avatar">JS</div>
+                        <span class="author-name">John Smith</span>
+                        <span class="article-date">Jan 15 · 5 min read</span>
+                    </div>
+                    <h2 class="article-title">Building Responsive React Applications with Modern CSS</h2>
+                    <p class="article-excerpt">Learn how to create beautiful, responsive React applications using CSS Grid, Flexbox, and modern CSS techniques. This comprehensive guide covers best practices...</p>
+                    <div class="article-footer">
+                        <div class="article-tags">
+                            <span class="article-tag">React</span>
+                            <span class="article-tag">CSS</span>
+                            <span class="read-time">5 min read</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="action-btn">👏</button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">🔖</button>
+                            <button class="action-btn">⋯</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="article-image">⚛️</div>
+            </article>
+
+            <article class="article fade-in">
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="author-avatar">AM</div>
+                        <span class="author-name">Alex Morgan</span>
+                        <span class="article-date">Jan 12 · 8 min read</span>
+                    </div>
+                    <h2 class="article-title">Optimizing Node.js Performance for Production</h2>
+                    <p class="article-excerpt">Discover essential techniques for optimizing Node.js applications in production environments. From memory management to database optimization strategies...</p>
+                    <div class="article-footer">
+                        <div class="article-tags">
+                            <span class="article-tag">Node.js</span>
+                            <span class="article-tag">Performance</span>
+                            <span class="read-time">8 min read</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="action-btn">👏</button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">🔖</button>
+                            <button class="action-btn">⋯</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="article-image">🚀</div>
+            </article>
+
+            <article class="article fade-in">
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="author-avatar">SK</div>
+                        <span class="author-name">Sarah Kim</span>
+                        <span class="article-date">Jan 10 · 6 min read</span>
+                    </div>
+                    <h2 class="article-title">Docker and Kubernetes: A Developer's Guide</h2>
+                    <p class="article-excerpt">A comprehensive guide to containerizing applications with Docker and orchestrating them with Kubernetes. Perfect for developers getting started...</p>
+                    <div class="article-footer">
+                        <div class="article-tags">
+                            <span class="article-tag">Docker</span>
+                            <span class="article-tag">Kubernetes</span>
+                            <span class="read-time">6 min read</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="action-btn">👏</button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">🔖</button>
+                            <button class="action-btn">⋯</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="article-image">🐳</div>
+            </article>
+
+            <article class="article fade-in">
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="author-avatar">MJ</div>
+                        <span class="author-name">Mike Johnson</span>
+                        <span class="article-date">Jan 8 · 10 min read</span>
+                    </div>
+                    <h2 class="article-title">Advanced JavaScript Patterns and Best Practices</h2>
+                    <p class="article-excerpt">Explore advanced JavaScript patterns including closures, prototypes, async/await patterns, and functional programming concepts...</p>
+                    <div class="article-footer">
+                        <div class="article-tags">
+                            <span class="article-tag">JavaScript</span>
+                            <span class="article-tag">Programming</span>
+                            <span class="read-time">10 min read</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="action-btn">👏</button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">🔖</button>
+                            <button class="action-btn">⋯</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="article-image">📱</div>
+            </article>
+
+            <article class="article fade-in">
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="author-avatar">LC</div>
+                        <span class="author-name">Lisa Chen</span>
+                        <span class="article-date">Jan 5 · 7 min read</span>
+                    </div>
+                    <h2 class="article-title">Database Design Principles for Scalable Applications</h2>
+                    <p class="article-excerpt">Understanding database design principles is crucial for building scalable applications. This article covers normalization, indexing strategies...</p>
+                    <div class="article-footer">
+                        <div class="article-tags">
+                            <span class="article-tag">Database</span>
+                            <span class="article-tag">Architecture</span>
+                            <span class="read-time">7 min read</span>
+                        </div>
+                        <div class="article-actions">
+                            <button class="action-btn">👏</button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">🔖</button>
+                            <button class="action-btn">⋯</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="article-image">🗄️</div>
+            </article>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Staff Picks</h3>
+                
+                <div class="project-item">
+                    <h4 class="project-title">Building a Real-Time Chat Application</h4>
+                    <div class="project-meta">
+                        <span class="project-author">David Wilson</span>
+                        <span class="project-date">Jan 12</span>
+                    </div>
+                    <div class="project-tech">
+                        <span class="tech-tag">React</span>
+                        <span class="tech-tag">Socket.io</span>
+                        <span class="tech-tag">Node.js</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <h4 class="project-title">Machine Learning with Python: A Beginner's Guide</h4>
+                    <div class="project-meta">
+                        <span class="project-author">Emma Davis</span>
+                        <span class="project-date">Jan 10</span>
+                    </div>
+                    <div class="project-tech">
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">ML</span>
+                        <span class="tech-tag">TensorFlow</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <h4 class="project-title">Modern Web Development with TypeScript</h4>
+                    <div class="project-meta">
+                        <span class="project-author">James Brown</span>
+                        <span class="project-date">Jan 8</span>
+                    </div>
+                    <div class="project-tech">
+                        <span class="tech-tag">TypeScript</span>
+                        <span class="tech-tag">React</span>
+                        <span class="tech-tag">Next.js</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <h4 class="project-title">Cloud Architecture Best Practices</h4>
+                    <div class="project-meta">
+                        <span class="project-author">Rachel Green</span>
+                        <span class="project-date">Jan 6</span>
+                    </div>
+                    <div class="project-tech">
+                        <span class="tech-tag">AWS</span>
+                        <span class="tech-tag">DevOps</span>
+                        <span class="tech-tag">Docker</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Recommended topics</h3>
+                <div class="project-tech">
+                    <span class="tech-tag">Programming</span>
+                    <span class="tech-tag">Data Science</span>
+                    <span class="tech-tag">Technology</span>
+                    <span class="tech-tag">Self Improvement</span>
+                    <span class="tech-tag">Writing</span>
+                    <span class="tech-tag">Relationships</span>
+                    <span class="tech-tag">Politics</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Simple loader
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 300);
+            }, 800);
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('active');
+            
+            // Animate hamburger
+            const spans = this.querySelectorAll('span');
+            if (mobileMenu.classList.contains('active')) {
+                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+
+        // Close mobile menu on outside click
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+                const spans = mobileMenuBtn.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Article interactions
+        document.querySelectorAll('.article').forEach(article => {
+            article.addEventListener('click', function(e) {
+                if (!e.target.closest('.action-btn')) {
+                    console.log('Navigate to article:', this.querySelector('.article-title').textContent);
+                }
+            });
+        });
+
+        // Action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('Action:', this.textContent);
+            });
+        });
+
+        // Project item clicks
+        document.querySelectorAll('.project-item').forEach(item => {
+            item.addEventListener('click', function() {
+                console.log('Navigate to project:', this.querySelector('.project-title').textContent);
+            });
+        });
+
+        // Stagger fade-in animations
+        const articles = document.querySelectorAll('.article');
+        articles.forEach((article, index) => {
+            article.style.animationDelay = `${index * 0.1}s`;
+        });
+    </script>
+</body>
+</html>
