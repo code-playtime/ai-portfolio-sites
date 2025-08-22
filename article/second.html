@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced CSS Grid Layouts - The Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #333;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            z-index: 1001;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 5rem 2rem 2rem;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .mobile-menu li {
+            margin-bottom: 2rem;
+        }
+
+        .mobile-menu a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Banner */
+        .banner {
+            height: 500px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500"><rect width="1200" height="500" fill="%23667eea"/><circle cx="200" cy="100" r="60" fill="%23764ba2" opacity="0.3"/><circle cx="800" cy="150" r="80" fill="%23f093fb" opacity="0.2"/><circle cx="1000" cy="300" r="100" fill="%234facfe" opacity="0.15"/><circle cx="300" cy="350" r="40" fill="%2300f2fe" opacity="0.25"/><polygon points="600,50 650,150 550,150" fill="%23764ba2" opacity="0.2"/><polygon points="100,200 200,250 50,300 0,200" fill="%23f5576c" opacity="0.15"/></svg>');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+        }
+
+        .banner-content {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            padding: 0 2rem;
+            z-index: 2;
+            position: relative;
+        }
+
+        .banner h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .banner-meta {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 2rem;
+            width: 100%;
+            align-items: start;
+        }
+
+        /* Mobile Tabs */
+        .mobile-tabs {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Table of Contents */
+        .toc-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .toc-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            display: block;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .toc-list a:hover,
+        .toc-list a.active {
+            color: #667eea;
+            padding-left: 1rem;
+        }
+
+        .toc-list .sub-item {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Article Content */
+        .article-content {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            min-width: 0; /* Prevent flex item from overflowing */
+            overflow-wrap: break-word;
+        }
+
+        .article-content * {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .article-content pre {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .article-content h2 {
+            font-size: 2rem;
+            margin: 2rem 0 1rem 0;
+            color: #333;
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+        }
+
+        .article-content h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+            color: #444;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .article-content ul, .article-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Article Engagement */
+        .article-engagement {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .engagement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .engagement-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .engagement-item.liked {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .engagement-item.shared {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .engagement-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Sidebar (Suggested Articles) */
+        .sidebar-content {
+            position: sticky;
+            top: 120px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        /* Suggested Articles */
+        .suggested-articles {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .suggested-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .suggested-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .suggested-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e9ecef;
+        }
+
+        .suggested-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .suggested-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .suggested-card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .suggested-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .read-time {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        /* Code Blocks */
+        .code-container {
+            margin: 2rem 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .code-header {
+            background: #2d3748;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #667eea;
+        }
+
+        pre {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace !important;
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Image Styles */
+        .article-image {
+            width: 100%;
+            border-radius: 10px;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Navigation */
+        .article-nav {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: white;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .nav-item.next {
+            text-align: right;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .banner h1 {
+                font-size: 2rem;
+            }
+
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 0;
+                padding: 2rem 1rem;
+            }
+
+            .mobile-tabs {
+                display: flex;
+            }
+
+            .toc-container {
+                display: none;
+                position: static;
+                margin-bottom: 2rem;
+            }
+
+            .toc-container.active {
+                display: block;
+            }
+
+            .article-content {
+                padding: 2rem;
+            }
+
+            .article-content.active {
+                display: block;
+            }
+
+            .article-content:not(.active) {
+                display: none;
+            }
+
+            .article-nav {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-item.next {
+                text-align: left;
+            }
+
+        .nav-links {
+            display: none;
+        }
+
+        .menu-toggle {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        }
+
+        /* Smooth scroll for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Additional mobile styles */
+        .mobile-suggestions {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            /* Hide desktop sidebar and show mobile version */
+            .sidebar-content > .suggested-articles:first-child {
+                display: none !important;
+            }
+            
+            .mobile-suggestions {
+                display: block !important;
+                position: static;
+                order: 3;
+            }
+            
+            .main-container {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .article-content {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">B</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#search">Search</a></li>
+            </ul>
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div class="menu-overlay" onclick="toggleMenu()"></div>
+        <div class="mobile-menu">
+            <ul>
+                <li><a href="#home" onclick="toggleMenu()">Home</a></li>
+                <li><a href="#blog" onclick="toggleMenu()">Blog</a></li>
+                <li><a href="#projects" onclick="toggleMenu()">Projects</a></li>
+                <li><a href="#about" onclick="toggleMenu()">About</a></li>
+                <li><a href="#contact" onclick="toggleMenu()">Contact</a></li>
+                <li><a href="#search" onclick="toggleMenu()">Search</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="banner">
+        <div class="banner-content">
+            <h1>Advanced CSS Grid Layouts</h1>
+            <div class="banner-meta">March 15, 2025 • 8 min read • Web Design</div>
+        </div>
+    </section>
+
+    <div class="main-container">
+        <!-- Mobile Tabs -->
+        <div class="mobile-tabs">
+            <button class="tab-button active" onclick="showTab('toc')">Table of Contents</button>
+            <button class="tab-button" onclick="showTab('content')">Article</button>
+        </div>
+
+        <!-- Table of Contents -->
+        <aside class="toc-container active" id="toc">
+            <h3 class="toc-title">Table of Contents</h3>
+            <ul class="toc-list">
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#basics">2. CSS Grid Basics</a></li>
+                <li class="sub-item"><a href="#grid-container">2.1 Grid Container</a></li>
+                <li class="sub-item"><a href="#grid-items">2.2 Grid Items</a></li>
+                <li><a href="#advanced-techniques">3. Advanced Techniques</a></li>
+                <li class="sub-item"><a href="#grid-areas">3.1 Grid Areas</a></li>
+                <li class="sub-item"><a href="#responsive-grids">3.2 Responsive Grids</a></li>
+                <li><a href="#real-world-examples">4. Real-World Examples</a></li>
+                <li><a href="#best-practices">5. Best Practices</a></li>
+                <li><a href="#conclusion">6. Conclusion</a></li>
+            </ul>
+        </aside>
+
+        <!-- Article Content -->
+        <article class="article-content active" id="content">
+            <section id="introduction">
+                <h2>Introduction</h2>
+                <p>CSS Grid Layout is one of the most powerful layout systems available in CSS today. It's a two-dimensional system, meaning it can handle both columns and rows, unlike flexbox which is largely a one-dimensional system.</p>
+                
+                <p>In this comprehensive guide, we'll explore advanced CSS Grid techniques that will transform how you approach web layouts. From basic concepts to complex real-world applications, you'll learn everything you need to create stunning, responsive designs.</p>
+
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='300' viewBox='0 0 800 300'><rect width='800' height='300' fill='%23f0f0f0'/><rect x='50' y='50' width='150' height='80' fill='%23667eea' rx='10'/><rect x='220' y='50' width='150' height='80' fill='%23f093fb' rx='10'/><rect x='390' y='50' width='150' height='80' fill='%234facfe' rx='10'/><rect x='560' y='50' width='150' height='80' fill='%2300f2fe' rx='10'/><rect x='50' y='150' width='320' height='100' fill='%23764ba2' rx='10'/><rect x='390' y='150' width='320' height='100' fill='%23f5576c' rx='10'/><text x='400' y='280' text-anchor='middle' fill='%23666' font-family='Arial' font-size='14'>CSS Grid Layout Example</text></svg>" alt="CSS Grid Layout Example" class="article-image">
+            </section>
+
+            <section id="basics">
+                <h2>CSS Grid Basics</h2>
+                <p>Before diving into advanced techniques, let's establish a solid foundation with CSS Grid basics. Understanding these fundamentals is crucial for mastering more complex layouts.</p>
+
+                <h3 id="grid-container">Grid Container</h3>
+                <p>The grid container is the parent element that establishes a new grid formatting context. Here's how to create your first grid:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="css">.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Alternative syntax for more complex layouts */
+.complex-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 150px;
+  grid-template-rows: 60px 1fr 40px;
+  grid-template-areas: 
+    "header header header"
+    "sidebar main aside"
+    "footer footer footer";
+}</code></pre>
+                </div>
+
+                <p>Key properties for grid containers include:</p>
+                <ul>
+                    <li><strong>display: grid</strong> - Establishes the grid context</li>
+                    <li><strong>grid-template-columns/rows</strong> - Defines the size and number of tracks</li>
+                    <li><strong>gap</strong> - Sets spacing between grid items</li>
+                    <li><strong>grid-template-areas</strong> - Creates named grid areas for easier positioning</li>
+                </ul>
+
+                <h3 id="grid-items">Grid Items</h3>
+                <p>Grid items are the direct children of a grid container. They automatically participate in the grid layout, but you can also explicitly position them:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="css">.grid-item {
+  /* Positioning with line numbers */
+  grid-column: 1 / 3;
+  grid-row: 2 / 4;
+}
+
+.grid-item-alt {
+  /* Positioning with named areas */
+  grid-area: header;
+}
+
+.grid-item-span {
+  /* Spanning multiple columns/rows */
+  grid-column: span 2;
+  grid-row: span 1;
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="advanced-techniques">
+                <h2>Advanced Techniques</h2>
+                <p>Now that we've covered the basics, let's explore some advanced CSS Grid techniques that will elevate your layouts to the next level.</p>
+
+                <h3 id="grid-areas">Grid Areas and Template Areas</h3>
+                <p>Grid template areas provide a visual way to define your layout directly in CSS. This technique is particularly powerful for creating semantic, maintainable layouts:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>HTML + CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="html">&lt;div class="page-layout"&gt;
+  &lt;header class="header"&gt;Header&lt;/header&gt;
+  &lt;nav class="sidebar"&gt;Sidebar&lt;/nav&gt;
+  &lt;main class="content"&gt;Main Content&lt;/main&gt;
+  &lt;aside class="aside"&gt;Aside&lt;/aside&gt;
+  &lt;footer class="footer"&gt;Footer&lt;/footer&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="css">.page-layout {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 200px 1fr 200px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: 
+    "header header header"
+    "sidebar content aside"
+    "footer footer footer";
+  gap: 1rem;
+}
+
+.header { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.content { grid-area: content; }
+.aside { grid-area: aside; }
+.footer { grid-area: footer; }</code></pre>
+                </div>
+
+                <h3 id="responsive-grids">Responsive Grids</h3>
+                <p>Creating responsive layouts with CSS Grid is incredibly flexible. Here are some techniques for adaptive grids:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="css">/* Auto-fit and minmax for responsive cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* Media queries for different layouts */
+.responsive-layout {
+  display: grid;
+  gap: 1rem;
+  
+  /* Mobile first approach */
+  grid-template-columns: 1fr;
+  grid-template-areas: 
+    "header"
+    "content"
+    "sidebar"
+    "footer";
+}
+
+@media (min-width: 768px) {
+  .responsive-layout {
+    grid-template-columns: 200px 1fr;
+    grid-template-areas: 
+      "header header"
+      "sidebar content"
+      "footer footer";
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-layout {
+    grid-template-columns: 200px 1fr 200px;
+    grid-template-areas: 
+      "header header header"
+      "sidebar content aside"
+      "footer footer footer";
+  }
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="real-world-examples">
+                <h2>Real-World Examples</h2>
+                <p>Let's look at some practical examples of CSS Grid in action. These examples demonstrate how Grid can solve common layout challenges elegantly.</p>
+
+                <p><strong>Example 1: Magazine Layout</strong></p>
+                <p>A complex magazine-style layout with varying content sizes:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>CSS</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="css">.magazine-layout {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 200px);
+  gap: 1rem;
+}
+
+.featured-article {
+  grid-column: 1 / 4;
+  grid-row: 1 / 3;
+}
+
+.secondary-article {
+  grid-column: 4 / 7;
+  grid-row: 1 / 2;
+}
+
+.news-brief {
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
+}
+
+.advertisement {
+  grid-column: 5 / 7;
+  grid-row: 2 / 4;
+}</code></pre>
+                </div>
+
+                <p><strong>Example 2: Dashboard Layout</strong></p>
+                <p>A flexible dashboard that adapts to different content sizes:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>JavaScript</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code class="javascript">// Dynamic grid adjustment based on content
+function adjustGridLayout() {
+  const container = document.querySelector('.dashboard-grid');
+  const items = container.querySelectorAll('.dashboard-item');
+  
+  // Calculate optimal columns based on container width
+  const containerWidth = container.offsetWidth;
+  const minItemWidth = 300;
+  const optimalColumns = Math.floor(containerWidth / minItemWidth);
+  
+  container.style.gridTemplateColumns = `repeat(${optimalColumns}, 1fr)`;
+}
+
+// Responsive grid adjustment
+window.addEventListener('resize', adjustGridLayout);
+document.addEventListener('DOMContentLoaded', adjustGridLayout);</code></pre>
+                </div>
+            </section>
+
+            <section id="best-practices">
+                <h2>Best Practices</h2>
+                <p>To make the most of CSS Grid, follow these best practices:</p>
+
+                <ol>
+                    <li><strong>Use semantic HTML</strong> - Grid works best when your HTML structure is logical and semantic</li>
+                    <li><strong>Start with mobile</strong> - Design your grid layout mobile-first, then enhance for larger screens</li>
+                    <li><strong>Use named grid lines</strong> - Name your grid lines for better maintainability</li>
+                    <li><strong>Combine with Flexbox</strong> - Use Grid for 2D layouts and Flexbox for 1D component layouts</li>
+                    <li><strong>Test across browsers</strong> - While Grid support is excellent, always test your layouts</li>
+                </ol>
+
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400' viewBox='0 0 800 400'><rect width='800' height='400' fill='%23f8f9fa'/><rect x='50' y='50' width='120' height='80' fill='%23667eea' rx='8'/><rect x='190' y='50' width='120' height='80' fill='%23f093fb' rx='8'/><rect x='330' y='50' width='120' height='80' fill='%234facfe' rx='8'/><rect x='470' y='50' width='120' height='80' fill='%2300f2fe' rx='8'/><rect x='610' y='50' width='120' height='80' fill='%23764ba2' rx='8'/><rect x='50' y='150' width='250' height='120' fill='%23f5576c' rx='8'/><rect x='320' y='150' width='200' height='120' fill='%2343e97b' rx='8'/><rect x='540' y='150' width='190' height='120' fill='%2338f9d7' rx='8'/><rect x='50' y='290' width='680' height='60' fill='%23ffecd2' rx='8'/><text x='400' y='380' text-anchor='middle' fill='%23666' font-family='Arial' font-size='16'>Complex Grid Layout Example</text></svg>" alt="Complex Grid Layout" class="article-image">
+            </section>
+
+            <section id="conclusion">
+                <h2>Conclusion</h2>
+                <p>CSS Grid is a revolutionary tool that has fundamentally changed how we approach web layouts. With its powerful two-dimensional system, you can create complex, responsive designs with clean, maintainable code.</p>
+
+                <p>The techniques we've covered in this article are just the beginning. CSS Grid's flexibility allows for endless creative possibilities, and as you practice these concepts, you'll discover new ways to solve layout challenges.</p>
+
+                <p>Remember to always consider your users and ensure your layouts work well across different devices and browsers. With CSS Grid as part of your toolkit, you're well-equipped to create beautiful, functional web experiences.</p>
+            </section>
+
+            <!-- Mobile Suggested Articles (shown only on mobile after main content) -->
+            <div class="mobile-suggestions">
+                <div class="suggested-articles">
+                    <h3 class="suggested-title">You might also like</h3>
+                    <div class="suggested-grid">
+                        <div class="suggested-card">
+                            <h4>Flexbox vs Grid: When to Use Which</h4>
+                            <p>Understanding the differences between Flexbox and CSS Grid, and knowing when to use each layout method for optimal results.</p>
+                            <div class="suggested-meta">
+                                <span>March 12, 2025</span>
+                                <span class="read-time">6 min read</span>
+                            </div>
+                        </div>
+                        <div class="suggested-card">
+                            <h4>Creating Responsive Layouts Without Media Queries</h4>
+                            <p>Learn modern CSS techniques like clamp(), minmax(), and container queries to build truly responsive designs.</p>
+                            <div class="suggested-meta">
+                                <span>March 10, 2025</span>
+                                <span class="read-time">8 min read</span>
+                            </div>
+                        </div>
+                        <div class="suggested-card">
+                            <h4>CSS Container Queries: The Future of Responsive Design</h4>
+                            <p>Explore how container queries are changing responsive web design by allowing components to adapt based on their container size.</p>
+                            <div class="suggested-meta">
+                                <span>March 8, 2025</span>
+                                <span class="read-time">7 min read</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Engagement -->
+            <div class="article-engagement">
+                <button class="engagement-item" id="likeBtn">
+                    <span class="engagement-icon">❤️</span>
+                    <span id="likeCount">142</span>
+                    <span>Likes</span>
+                </button>
+                <button class="engagement-item" id="commentBtn">
+                    <span class="engagement-icon">💬</span>
+                    <span>23</span>
+                    <span>Comments</span>
+                </button>
+                <button class="engagement-item" id="shareBtn">
+                    <span class="engagement-icon">🔗</span>
+                    <span id="shareCount">18</span>
+                    <span>Shares</span>
+                </button>
+                <button class="engagement-item" id="bookmarkBtn">
+                    <span class="engagement-icon">🔖</span>
+                    <span>Save</span>
+                </button>
+            </div>
+
+            <!-- Article Navigation -->
+            <nav class="article-nav">
+                <a href="#" class="nav-item prev">
+                    <div class="nav-label">← Previous Article</div>
+                    <div class="nav-title">Typography in Modern Web Design</div>
+                </a>
+                <a href="#" class="nav-item next">
+                    <div class="nav-label">Next Article →</div>
+                    <div class="nav-title">Color Psychology in Interface Design</div>
+                </a>
+            </nav>
+        </article>
+
+        <!-- Sidebar - Suggested Articles -->
+        <aside class="sidebar-content">
+            <div class="suggested-articles">
+                <h3 class="suggested-title">Related Articles</h3>
+                <div class="suggested-grid">
+                    <div class="suggested-card">
+                        <h4>Flexbox vs Grid: When to Use Which</h4>
+                        <p>Understanding the differences between Flexbox and CSS Grid, and knowing when to use each layout method for optimal results.</p>
+                        <div class="suggested-meta">
+                            <span>Mar 12</span>
+                            <span class="read-time">6 min</span>
+                        </div>
+                    </div>
+                    <div class="suggested-card">
+                        <h4>Responsive Layouts Without Media Queries</h4>
+                        <p>Learn modern CSS techniques like clamp(), minmax(), and container queries to build truly responsive designs.</p>
+                        <div class="suggested-meta">
+                            <span>Mar 10</span>
+                            <span class="read-time">8 min</span>
+                        </div>
+                    </div>
+                    <div class="suggested-card">
+                        <h4>CSS Container Queries</h4>
+                        <p>Explore how container queries are changing responsive web design by allowing components to adapt based on their container size.</p>
+                        <div class="suggested-meta">
+                            <span>Mar 8</span>
+                            <span class="read-time">7 min</span>
+                        </div>
+                    </div>
+                    <div class="suggested-card">
+                        <h4>Modern CSS Architecture</h4>
+                        <p>Best practices for organizing and structuring CSS in large-scale applications.</p>
+                        <div class="suggested-meta">
+                            <span>Mar 5</span>
+                            <span class="read-time">10 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    </div> <!-- Close container -->
+
+    <script>
+        // Initialize highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const menuOverlay = document.querySelector('.menu-overlay');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            mobileMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+            
+            // Change hamburger to X and back
+            if (mobileMenu.classList.contains('active')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰';
+            }
+        }
+        // Mobile tab switching
+        function showTab(tabName) {
+            const tocContainer = document.getElementById('toc');
+            const contentContainer = document.getElementById('content');
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            // Remove active class from all elements
+            tocContainer.classList.remove('active');
+            contentContainer.classList.remove('active');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to selected tab
+            if (tabName === 'toc') {
+                tocContainer.classList.add('active');
+                tabButtons[0].classList.add('active');
+            } else {
+                contentContainer.classList.add('active');
+                tabButtons[1].classList.add('active');
+            }
+        }
+
+        // Active TOC link highlighting
+        function updateActiveTocLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 150;
+                const sectionHeight = section.offsetHeight;
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-container').querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = '#4caf50';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+
+        // Article engagement functionality
+        let isLiked = false;
+        let isBookmarked = false;
+        let isShared = false;
+        
+        document.getElementById('likeBtn').addEventListener('click', function() {
+            isLiked = !isLiked;
+            const likeCount = document.getElementById('likeCount');
+            const currentCount = parseInt(likeCount.textContent);
+            
+            if (isLiked) {
+                this.classList.add('liked');
+                likeCount.textContent = currentCount + 1;
+                this.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            } else {
+                this.classList.remove('liked');
+                likeCount.textContent = currentCount - 1;
+            }
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Advanced CSS Grid Layouts',
+                    text: 'Check out this comprehensive guide on CSS Grid layouts!',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                navigator.clipboard.writeText(window.location.href);
+                const shareCount = document.getElementById('shareCount');
+                const currentCount = parseInt(shareCount.textContent);
+                shareCount.textContent = currentCount + 1;
+                
+                this.classList.add('shared');
+                const originalText = this.querySelector('span:last-child').textContent;
+                this.querySelector('span:last-child').textContent = 'Copied!';
+                
+                setTimeout(() => {
+                    this.classList.remove('shared');
+                    this.querySelector('span:last-child').textContent = originalText;
+                }, 2000);
+            }
+        });
+
+        document.getElementById('bookmarkBtn').addEventListener('click', function() {
+            isBookmarked = !isBookmarked;
+            
+            if (isBookmarked) {
+                this.style.background = 'linear-gradient(135deg, #ffa726, #ff7043)';
+                this.style.color = 'white';
+                this.querySelector('span:last-child').textContent = 'Saved';
+                this.querySelector('.engagement-icon').textContent = '📌';
+            } else {
+                this.style.background = '';
+                this.style.color = '';
+                this.querySelector('span:last-child').textContent = 'Save';
+                this.querySelector('.engagement-icon').textContent = '🔖';
+            }
+        });
+
+        document.getElementById('commentBtn').addEventListener('click', function() {
+            // Scroll to bottom where comments would be
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        });
+
+        // Event listeners
+        window.addEventListener('scroll', updateActiveTocLink);
+        document.addEventListener('DOMContentLoaded', updateActiveTocLink);
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-list a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    const offsetTop = targetElement.offsetTop - 100;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                    
+                    // On mobile, switch back to content tab after clicking TOC link
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                            showTab('content');
+                        }, 300);
+                    }
+                }
+            });
+        });
+
+        // Auto-hide mobile tabs when scrolling
+        let lastScrollTop = 0;
+        const mobileTabsElement = document.querySelector('.mobile-tabs');
+        
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 768) {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (currentScroll > lastScrollTop && currentScroll > 100) {
+                    // Scrolling down - hide tabs
+                    mobileTabsElement.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scrolling up - show tabs
+                    mobileTabsElement.style.transform = 'translateY(0)';
+                }
+                
+                lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+            }
+        });
+
+        // Reading progress indicator
+        function updateReadingProgress() {
+            const article = document.querySelector('.article-content');
+            const articleHeight = article.offsetHeight;
+            const articleTop = article.offsetTop;
+            const windowHeight = window.innerHeight;
+            const scrollTop = window.pageYOffset;
+            
+            const articleStart = articleTop - windowHeight + 100;
+            const articleEnd = articleTop + articleHeight - windowHeight;
+            
+            if (scrollTop >= articleStart && scrollTop <= articleEnd) {
+                const progress = ((scrollTop - articleStart) / (articleEnd - articleStart)) * 100;
+                document.documentElement.style.setProperty('--reading-progress', `${Math.min(100, Math.max(0, progress))}%`);
+            }
+        }
+
+        window.addEventListener('scroll', updateReadingProgress);
+
+        // Add reading progress styles
+        const progressStyles = `
+            :root {
+                --reading-progress: 0%;
+            }
+            
+            .header::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: var(--reading-progress);
+                height: 3px;
+                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                transition: width 0.1s ease;
+                z-index: 1000;
+            }
+            
+            .mobile-tabs {
+                transition: transform 0.3s ease;
+            }
+            
+            @media (max-width: 768px) {
+                .mobile-tabs {
+                    position: sticky;
+                    top: 71px;
+                    z-index: 50;
+                }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = progressStyles;
+        document.head.appendChild(styleSheet);
+
+        // Image lazy loading effect
+        const images = document.querySelectorAll('.article-image');
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+
+        images.forEach(img => {
+            img.style.opacity = '0';
+            img.style.transform = 'translateY(20px)';
+            img.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            imageObserver.observe(img);
+        });
+
+        // Enhanced code block interactions
+        document.querySelectorAll('.code-container').forEach(container => {
+            // Remove the old Prism-based code
+        });
+
+        // Print styles
+        const printStyles = `
+            @media print {
+                .header, .mobile-tabs, .toc-container, .article-nav {
+                    display: none !important;
+                }
+                
+                .main-container {
+                    grid-template-columns: 1fr;
+                    padding: 0;
+                    max-width: none;
+                }
+                
+                .article-content {
+                    box-shadow: none;
+                    border-radius: 0;
+                    padding: 0;
+                }
+                
+                .code-container {
+                    break-inside: avoid;
+                    box-shadow: none;
+                    border: 1px solid #ddd;
+                }
+                
+                .article-image {
+                    break-inside: avoid;
+                    max-height: 400px;
+                    object-fit: contain;
+                }
+                
+                body {
+                    background: white;
+                }
+            }
+        `;
+        
+        const printStyleSheet = document.createElement('style');
+        printStyleSheet.textContent = printStyles;
+        document.head.appendChild(printStyleSheet);
+    </script>
+</body>
+</html>
