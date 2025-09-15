@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personal Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #242424;
+            background: #ffffff;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #f2f2f2;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1192px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 57px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #242424;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #6B6B6B;
+            font-size: 14px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: #242424;
+        }
+
+        .write-btn {
+            color: #6B6B6B;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 3px;
+        }
+
+        .menu-toggle span {
+            width: 20px;
+            height: 2px;
+            background: #242424;
+            transition: all 0.3s ease;
+        }
+
+        /* Off-canvas menu */
+        .off-canvas-menu {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100vh;
+            background: #fff;
+            z-index: 1001;
+            transition: right 0.3s ease;
+            padding: 80px 24px 24px;
+            border-left: 1px solid #f2f2f2;
+        }
+
+        .off-canvas-menu.active {
+            right: 0;
+        }
+
+        .off-canvas-menu ul {
+            list-style: none;
+        }
+
+        .off-canvas-menu li {
+            margin-bottom: 24px;
+        }
+
+        .off-canvas-menu a {
+            text-decoration: none;
+            color: #242424;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 57px;
+            max-width: 1192px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 48px 0;
+            border-bottom: 1px solid #f2f2f2;
+            margin-bottom: 48px;
+        }
+
+        .hero-content {
+            max-width: 540px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            color: #242424;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #6B6B6B;
+            line-height: 1.4;
+            margin-bottom: 24px;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #6B6B6B;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 400;
+            color: #6B6B6B;
+            padding: 16px 0;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #242424;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #242424;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Article List */
+        .articles-list {
+            max-width: 728px;
+        }
+
+        .article-item {
+            display: flex;
+            gap: 24px;
+            padding: 24px 0;
+            border-bottom: 1px solid #f2f2f2;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .article-item:hover {
+            background: #fafafa;
+            margin: 0 -24px;
+            padding: 24px;
+            border-radius: 4px;
+        }
+
+        .article-content {
+            flex: 1;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #6B6B6B;
+        }
+
+        .author-name {
+            color: #242424;
+            font-weight: 400;
+        }
+
+        .article-title {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            color: #242424;
+        }
+
+        .article-excerpt {
+            font-size: 16px;
+            color: #6B6B6B;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .article-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .article-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #f2f2f2;
+            color: #6B6B6B;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .article-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #6B6B6B;
+            font-size: 13px;
+        }
+
+        .article-image {
+            width: 112px;
+            height: 112px;
+            background: #f2f2f2;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6B6B6B;
+            font-size: 12px;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            max-width: 728px;
+        }
+
+        .project-card {
+            border: 1px solid #f2f2f2;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        .project-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .project-info {
+            padding: 24px;
+        }
+
+        .project-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #242424;
+        }
+
+        .project-description {
+            color: #6B6B6B;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tech-tag {
+            background: #f2f2f2;
+            color: #6B6B6B;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .project-link {
+            color: #1a8917;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .project-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Staff Picks Sidebar */
+        .staff-picks {
+            position: fixed;
+            right: 24px;
+            top: 140px;
+            width: 320px;
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #f2f2f2;
+        }
+
+        .staff-picks h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #242424;
+        }
+
+        .pick-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+
+        .pick-item:last-child {
+            border-bottom: none;
+        }
+
+        .pick-meta {
+            font-size: 13px;
+            color: #6B6B6B;
+            margin-bottom: 4px;
+        }
+
+        .pick-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #242424;
+            line-height: 1.3;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1240px) {
+            .staff-picks {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .article-item {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .article-image {
+                width: 100%;
+                height: 160px;
+                order: -1;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0 16px;
+            }
+
+            .nav-container {
+                padding: 0 16px;
+            }
+
+            .hero {
+                padding: 32px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">YourBlog</a>
+            <ul class="nav-menu">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#" class="write-btn">✏️ Write</a></li>
+            </ul>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Off-canvas Menu -->
+    <div class="overlay" onclick="closeMenu()"></div>
+    <div class="off-canvas-menu">
+        <ul>
+            <li><a href="#" onclick="closeMenu()">Home</a></li>
+            <li><a href="#about" onclick="closeMenu()">About</a></li>
+            <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+            <li><a href="#write" onclick="closeMenu()">Write</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Building Modern Web Applications with CSS Grid</h1>
+                <p>Learn how to create responsive layouts using CSS Grid and Flexbox. This comprehensive guide covers everything from basic concepts to advanced techniques.</p>
+                <div class="hero-meta">
+                    <span class="author-name">Your Name</span>
+                    <span>·</span>
+                    <span>Sep 15, 2025</span>
+                    <span>·</span>
+                    <span>8 min read</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('articles')">For you</button>
+            <button class="tab-btn" onclick="switchTab('projects')">Projects</button>
+        </div>
+
+        <!-- Articles Section -->
+        <section id="articles" class="content-section active">
+            <div class="articles-list">
+                <article class="article-item">
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="author-name">Daniel Craciun</span>
+                            <span>in Level Up Coding</span>
+                            <span>·</span>
+                            <span>Sep 8</span>
+                        </div>
+                        <h2 class="article-title">Stop Using TypeScript Interfaces</h2>
+                        <p class="article-excerpt">Why You Should Use Types Instead</p>
+                        <div class="article-footer">
+                            <div class="article-tags">
+                                <a href="#" class="tag">TypeScript</a>
+                            </div>
+                            <div class="article-actions">
+                                <span>★ 161</span>
+                                <span>💬 7</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="article-image">Featured Image</div>
+                </article>
+
+                <article class="article-item">
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="author-name">Michal Stefanow</span>
+                            <span>·</span>
+                            <span>Aug 27</span>
+                        </div>
+                        <h2 class="article-title">Make any website load faster with 6 lines of HTML</h2>
+                        <p class="article-excerpt">Put this HTML tag into the &lt;head&gt; of your website for near-instant navigation.</p>
+                        <div class="article-footer">
+                            <div class="article-tags">
+                                <a href="#" class="tag">Web Development</a>
+                                <a href="#" class="tag">Performance</a>
+                            </div>
+                            <div class="article-actions">
+                                <span>★ 75</span>
+                                <span>💬 12</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="article-image">Featured Image</div>
+                </article>
+
+                <article class="article-item">
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="author-name">Robbie Dudzinski</span>
+                            <span>·</span>
+                            <span>Aug 20</span>
+                        </div>
+                        <h2 class="article-title">From Raw Statcast Data to Full MLB Dashboard</h2>
+                        <p class="article-excerpt">A complete guide to building interactive sports analytics dashboards using modern web technologies and real MLB data.</p>
+                        <div class="article-footer">
+                            <div class="article-tags">
+                                <a href="#" class="tag">Data Visualization</a>
+                                <a href="#" class="tag">Sports Analytics</a>
+                            </div>
+                            <div class="article-actions">
+                                <span>★ 42</span>
+                                <span>💬 5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="article-image">Featured Image</div>
+                </article>
+
+                <article class="article-item">
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="author-name">Sarah Johnson</span>
+                            <span>in Tech Today</span>
+                            <span>·</span>
+                            <span>Aug 15</span>
+                        </div>
+                        <h2 class="article-title">The Future of JavaScript: What's Coming in ES2025</h2>
+                        <p class="article-excerpt">Explore the latest features and improvements coming to JavaScript. From new syntax to performance enhancements.</p>
+                        <div class="article-footer">
+                            <div class="article-tags">
+                                <a href="#" class="tag">JavaScript</a>
+                                <a href="#" class="tag">ES2025</a>
+                            </div>
+                            <div class="article-actions">
+                                <span>★ 128</span>
+                                <span>💬 18</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="article-image">Featured Image</div>
+                </article>
+
+                <article class="article-item">
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="author-name">Alex Chen</span>
+                            <span>·</span>
+                            <span>Aug 10</span>
+                        </div>
+                        <h2 class="article-title">Mastering React Hooks: A Complete Guide</h2>
+                        <p class="article-excerpt">Deep dive into React Hooks and learn how to build better components with modern patterns and best practices.</p>
+                        <div class="article-footer">
+                            <div class="article-tags">
+                                <a href="#" class="tag">React</a>
+                                <a href="#" class="tag">Hooks</a>
+                            </div>
+                            <div class="article-actions">
+                                <span>★ 89</span>
+                                <span>💬 23</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="article-image">Featured Image</div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="content-section">
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">E-commerce Platform</div>
+                    <div class="project-info">
+                        <h3 class="project-title">Modern E-commerce Platform</h3>
+                        <p class="project-description">A full-stack e-commerce solution with user authentication, payment processing, and admin dashboard.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">React</span>
+                            <span class="tech-tag">Node.js</span>
+                            <span class="tech-tag">MongoDB</span>
+                            <span class="tech-tag">Stripe</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">View Demo</a>
+                            <a href="#" class="project-link">Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-image">Task Manager</div>
+                    <div class="project-info">
+                        <h3 class="project-title">Collaborative Task Manager</h3>
+                        <p class="project-description">Team collaboration tool with real-time updates and drag-and-drop functionality.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Vue.js</span>
+                            <span class="tech-tag">Socket.io</span>
+                            <span class="tech-tag">Express</span>
+                            <span class="tech-tag">PostgreSQL</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">View Demo</a>
+                            <a href="#" class="project-link">Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-image">Weather App</div>
+                    <div class="project-info">
+                        <h3 class="project-title">Weather Dashboard</h3>
+                        <p class="project-description">Beautiful weather application with location-based forecasts and PWA capabilities.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">Chart.js</span>
+                            <span class="tech-tag">Service Worker</span>
+                            <span class="tech-tag">CSS Grid</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">View Demo</a>
+                            <a href="#" class="project-link">Source Code</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-image">Portfolio Website</div>
+                    <div class="project-info">
+                        <h3 class="project-title">Responsive Portfolio</h3>
+                        <p class="project-description">Minimalist portfolio website with smooth animations and optimized performance.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">HTML5</span>
+                            <span class="tech-tag">CSS3</span>
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">GSAP</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">View Demo</a>
+                            <a href="#" class="project-link">Source Code</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Staff Picks Sidebar (Desktop only) -->
+    <aside class="staff-picks">
+        <h3>Staff Picks</h3>
+        <div class="pick-item">
+            <div class="pick-meta">Cam Silver, Ph.D. in 3Streams</div>
+            <div class="pick-title">Teaching Charlie Kirk to My Students</div>
+        </div>
+        <div class="pick-item">
+            <div class="pick-meta">Zulie @ Medium in The Medium Blog</div>
+            <div class="pick-title">Which stories reach and grow your audience? Your new stats pages tell you</div>
+        </div>
+        <div class="pick-item">
+            <div class="pick-meta">Kamyar Razavi in The New Climate</div>
+            <div class="pick-title">Nature's Secret Codes: The Rivers Hidden Beneath Our Streets</div>
+        </div>
+    </aside>
+
+    <script>
+        // Menu toggle functionality
+        function toggleMenu() {
+            const offCanvasMenu = document.querySelector('.off-canvas-menu');
+            const overlay = document.querySelector('.overlay');
+            
+            offCanvasMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeMenu() {
+            const offCanvasMenu = document.querySelector('.off-canvas-menu');
+            const overlay = document.querySelector('.overlay');
+            
+            offCanvasMenu.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Article hover animations
+        document.querySelectorAll('.article-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(8px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Close menu when clicking on links
+        document.querySelectorAll('.off-canvas-menu a').forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
+    </script>
+</body>
+</html>
