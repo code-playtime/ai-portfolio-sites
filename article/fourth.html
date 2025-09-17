@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Modern Web Applications with CSS Grid - YourBlog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #333;
+        }
+
+        .write-btn {
+            background: #ff6b6b;
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .write-btn:hover {
+            background: #ff5252 !important;
+            color: white !important;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 3rem;
+        }
+
+        /* Sidebar - Left Side */
+        .sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .chapters-navigation {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .chapters-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .chapters-list {
+            list-style: none;
+        }
+
+        .chapter-item {
+            margin-bottom: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chapter-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .chapter-header:hover {
+            background: #e9ecef;
+        }
+
+        .chapter-header.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .chapter-pages {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .chapter-pages.expanded {
+            max-height: 200px;
+        }
+
+        .page-item {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .page-item:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .page-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-item:last-child {
+            border-bottom: none;
+        }
+
+        .chevron {
+            transition: transform 0.3s;
+        }
+
+        .chevron.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Article Section */
+        .article-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Article Banner */
+        .article-banner {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .banner-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .banner-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        /* Article Meta */
+        .article-meta {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .meta-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .engagement-bar {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .engagement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            color: #666;
+        }
+
+        .engagement-item:hover {
+            color: #333;
+        }
+
+        .engagement-item.liked {
+            color: #ff6b6b;
+        }
+
+        /* Article Content */
+        .article-content {
+            padding: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .article-content h2 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .article-content h3 {
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem 0;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+            color: #555;
+        }
+
+        .article-content code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        .article-content pre {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        /* Comments Off-canvas */
+        .comments-offcanvas {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .comments-offcanvas.open {
+            right: 0;
+        }
+
+        .comments-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .comments-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .comments-close:hover {
+            background: #f0f0f0;
+        }
+
+        .comments-content {
+            padding: 1.5rem;
+        }
+
+        .comment-form {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .comment-submit {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .comment-submit:hover {
+            background: #5a6fd8;
+        }
+
+        .comments-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .comments-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .comment-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-text {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .comment-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .comment-action {
+            font-size: 0.8rem;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .comment-action:hover {
+            color: #667eea;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 1rem 15px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .banner-content h1 {
+                font-size: 2rem;
+            }
+
+            .article-banner {
+                height: 250px;
+                padding: 1rem;
+            }
+
+            .article-content,
+            .article-meta {
+                padding: 1.5rem;
+            }
+
+            .engagement-bar {
+                gap: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+                order: -1;
+            }
+
+            .chapters-navigation {
+                margin-bottom: 1rem;
+            }
+
+            .comments-offcanvas {
+                width: 100vw;
+                right: -100vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .banner-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .engagement-bar {
+                align-self: stretch;
+                justify-content: space-around;
+            }
+        }
+
+        /* Hide scrollbar for chapters on mobile */
+        @media (max-width: 768px) {
+            .chapters-navigation {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+        }
+
+        /* Disable body scroll when offcanvas is open */
+        body.no-scroll {
+            overflow: hidden;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">YourBlog</a>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#" class="write-btn">✏️ Write</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Sidebar - Left Side -->
+        <aside class="sidebar">
+            <!-- Chapters Navigation -->
+            <div class="chapters-navigation">
+                <h3 class="chapters-title">Chapters & Pages</h3>
+                <ul class="chapters-list">
+                    <li class="chapter-item">
+                        <div class="chapter-header" data-chapter="1">
+                            <span>Chapter 1: CSS Grid Fundamentals</span>
+                            <span class="chevron">▼</span>
+                        </div>
+                        <div class="chapter-pages">
+                            <div class="page-item active" data-page="introduction">Introduction to Grid</div>
+                            <div class="page-item" data-page="getting-started">Getting Started</div>
+                            <div class="page-item" data-page="basic-properties">Basic Properties</div>
+                        </div>
+                    </li>
+                    <li class="chapter-item">
+                        <div class="chapter-header" data-chapter="2">
+                            <span>Chapter 2: Advanced Techniques</span>
+                            <span class="chevron">▼</span>
+                        </div>
+                        <div class="chapter-pages">
+                            <div class="page-item" data-page="advanced-techniques">Advanced Grid</div>
+                            <div class="page-item" data-page="grid-areas">Grid Areas</div>
+                            <div class="page-item" data-page="responsive-design">Responsive Design</div>
+                        </div>
+                    </li>
+                    <li class="chapter-item">
+                        <div class="chapter-header" data-chapter="3">
+                            <span>Chapter 3: Best Practices</span>
+                            <span class="chevron">▼</span>
+                        </div>
+                        <div class="chapter-pages">
+                            <div class="page-item" data-page="grid-vs-flexbox">Grid vs Flexbox</div>
+                            <div class="page-item" data-page="best-practices">Implementation</div>
+                            <div class="page-item" data-page="conclusion">Summary</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Article Section -->
+        <article class="article-section">
+            <!-- Article Banner -->
+            <div class="article-banner">
+                <div class="banner-content">
+                    <h1>Building Modern Web Applications with CSS Grid</h1>
+                    <p>Learn how to create responsive layouts using CSS Grid and Flexbox. This comprehensive guide covers everything from basic concepts to advanced techniques.</p>
+                </div>
+            </div>
+
+            <!-- Article Meta -->
+            <div class="article-meta">
+                <div class="meta-info">
+                    <span><strong>Your Name</strong></span>
+                    <span>•</span>
+                    <span>Sep 15, 2025</span>
+                    <span>•</span>
+                    <span>8 min read</span>
+                </div>
+                <div class="engagement-bar">
+                    <div class="engagement-item" id="likeBtn">
+                        <span>🤍</span>
+                        <span id="likeCount">42</span>
+                    </div>
+                    <div class="engagement-item" id="commentBtn">
+                        <span>💬</span>
+                        <span id="commentCount">12</span>
+                    </div>
+                    <div class="engagement-item" id="shareBtn">
+                        <span>📤</span>
+                        <span>Share</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Content -->
+            <div class="article-content">
+                <h2 id="introduction">Introduction</h2>
+                <p>CSS Grid has revolutionized how we approach web layout design. Unlike traditional methods that relied heavily on floats and positioning, CSS Grid provides a two-dimensional layout system that allows us to create complex, responsive layouts with ease.</p>
+                
+                <p>In this comprehensive guide, we'll explore the fundamentals of CSS Grid, compare it with Flexbox, and learn how to build modern web applications that look great on all devices.</p>
+
+                <h2 id="getting-started">Getting Started with CSS Grid</h2>
+                <p>To start using CSS Grid, you need to understand the basic concepts of containers and items. The grid container is the parent element that contains all grid items, while grid items are the direct children of the grid container.</p>
+
+                <pre><code>.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 20px;
+}</code></pre>
+
+                <h3 id="basic-properties">Basic Properties</h3>
+                <p>The most important properties you'll use when working with CSS Grid include <code>grid-template-columns</code>, <code>grid-template-rows</code>, and <code>grid-gap</code>. These properties define the structure and spacing of your grid layout.</p>
+
+                <h2 id="advanced-techniques">Advanced Grid Techniques</h2>
+                <p>Once you've mastered the basics, you can explore more advanced features like grid areas, implicit grids, and auto-placement algorithms. These features allow you to create sophisticated layouts that adapt to content changes.</p>
+
+                <h3 id="grid-areas">Working with Grid Areas</h3>
+                <p>Grid areas provide a semantic way to define layout regions. You can name different areas of your grid and then assign grid items to these areas using the <code>grid-area</code> property.</p>
+
+                <h3 id="responsive-design">Responsive Design with Grid</h3>
+                <p>CSS Grid excels at creating responsive layouts without media queries. Using functions like <code>minmax()</code>, <code>auto-fit</code>, and <code>auto-fill</code>, you can create layouts that automatically adapt to different screen sizes.</p>
+
+                <h2 id="grid-vs-flexbox">CSS Grid vs Flexbox</h2>
+                <p>While both CSS Grid and Flexbox are powerful layout tools, they serve different purposes. Flexbox is ideal for one-dimensional layouts, while CSS Grid excels at two-dimensional layouts. Understanding when to use each tool is crucial for modern web development.</p>
+
+                <h2 id="best-practices">Best Practices</h2>
+                <p>When implementing CSS Grid in your projects, consider accessibility, browser support, and performance. Always provide fallbacks for older browsers and ensure your layouts work well with assistive technologies.</p>
+
+                <h2 id="conclusion">Conclusion</h2>
+                <p>CSS Grid is a powerful tool that has simplified web layout design. By mastering these concepts and techniques, you'll be able to create beautiful, responsive web applications that work across all devices and browsers. Continue practicing with different grid configurations to fully harness the power of this amazing technology.</p>
+            </div>
+        </article>
+    </main>
+
+    <!-- Comments Off-canvas -->
+    <div class="comments-overlay"></div>
+    <div class="comments-offcanvas">
+        <div class="comments-header">
+            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 600; color: #333;">Comments (12)</h3>
+            <button class="comments-close">×</button>
+        </div>
+        <div class="comments-content">
+            <div class="comment-form">
+                <textarea placeholder="Write a comment..."></textarea>
+                <button class="comment-submit">Post Comment</button>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-author">Sarah Chen</div>
+                <div class="comment-time">2 hours ago</div>
+                <div class="comment-text">Great explanation of CSS Grid! The examples really helped me understand the concepts better. I've been struggling with responsive layouts and this article cleared up so many questions.</div>
+                <div class="comment-actions">
+                    <span class="comment-action">👍 12</span>
+                    <span class="comment-action">Reply</span>
+                </div>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-author">Mike Rodriguez</div>
+                <div class="comment-time">5 hours ago</div>
+                <div class="comment-text">This is exactly what I needed for my current project. Thanks for the detailed guide! The chapter navigation on the left makes it so easy to jump between sections.</div>
+                <div class="comment-actions">
+                    <span class="comment-action">👍 8</span>
+                    <span class="comment-action">Reply</span>
+                </div>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-author">Emma Thompson</div>
+                <div class="comment-time">1 day ago</div>
+                <div class="comment-text">Could you add more examples about grid-template-areas? That section could use more detail. Overall, fantastic resource though!</div>
+                <div class="comment-actions">
+                    <span class="comment-action">👍 15</span>
+                    <span class="comment-action">Reply</span>
+                </div>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-author">Alex Kim</div>
+                <div class="comment-time">1 day ago</div>
+                <div class="comment-text">I love how you explained the difference between Grid and Flexbox. Finally makes sense when to use which one!</div>
+                <div class="comment-actions">
+                    <span class="comment-action">👍 7</span>
+                    <span class="comment-action">Reply</span>
+                </div>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-author">Jennifer Wu</div>
+                <div class="comment-time">2 days ago</div>
+                <div class="comment-text">The responsive design tips are gold! Bookmarking this for future reference. Thank you for taking the time to create such a comprehensive guide.</div>
+                <div class="comment-actions">
+                    <span class="comment-action">👍 11</span>
+                    <span class="comment-action">Reply</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Like functionality
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCount = document.getElementById('likeCount');
+        let isLiked = false;
+        let currentLikes = 42;
+
+        likeBtn.addEventListener('click', function() {
+            if (isLiked) {
+                currentLikes--;
+                likeBtn.classList.remove('liked');
+                likeBtn.innerHTML = '<span>🤍</span><span id="likeCount">' + currentLikes + '</span>';
+            } else {
+                currentLikes++;
+                likeBtn.classList.add('liked');
+                likeBtn.innerHTML = '<span>❤️</span><span id="likeCount">' + currentLikes + '</span>';
+            }
+            isLiked = !isLiked;
+        });
+
+        // Share functionality
+        const shareBtn = document.getElementById('shareBtn');
+        shareBtn.addEventListener('click', function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Building Modern Web Applications with CSS Grid',
+                    text: 'Learn how to create responsive layouts using CSS Grid and Flexbox',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Article URL copied to clipboard!');
+                });
+            }
+        });
+
+        // Comment functionality - Open offcanvas
+        const commentBtn = document.getElementById('commentBtn');
+        const commentsOffcanvas = document.querySelector('.comments-offcanvas');
+        const commentsOverlay = document.querySelector('.comments-overlay');
+        const commentsClose = document.querySelector('.comments-close');
+
+        function openComments() {
+            commentsOffcanvas.classList.add('open');
+            commentsOverlay.classList.add('active');
+            document.body.classList.add('no-scroll');
+        }
+
+        function closeComments() {
+            commentsOffcanvas.classList.remove('open');
+            commentsOverlay.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        }
+
+        commentBtn.addEventListener('click', openComments);
+        commentsClose.addEventListener('click', closeComments);
+        commentsOverlay.addEventListener('click', closeComments);
+
+        // Close offcanvas with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && commentsOffcanvas.classList.contains('open')) {
+                closeComments();
+            }
+        });
+
+        // Chapters and Pages Navigation
+        const chapterHeaders = document.querySelectorAll('.chapter-header');
+        const pageItems = document.querySelectorAll('.page-item');
+        const sections = document.querySelectorAll('h2[id], h3[id]');
+
+        // Toggle chapter expansion
+        chapterHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const chapter = this.parentElement;
+                const pages = chapter.querySelector('.chapter-pages');
+                const chevron = this.querySelector('.chevron');
+                
+                // Toggle expansion
+                pages.classList.toggle('expanded');
+                chevron.classList.toggle('rotated');
+                
+                // Toggle active state
+                this.classList.toggle('active');
+            });
+        });
+
+        // Page navigation
+        pageItems.forEach(page => {
+            page.addEventListener('click', function() {
+                // Remove active from all pages
+                pageItems.forEach(p => p.classList.remove('active'));
+                // Add active to clicked page
+                this.classList.add('active');
+                
+                // Scroll to corresponding section
+                const pageId = this.getAttribute('data-page');
+                const targetSection = document.querySelector('#' + pageId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Track current page based on scroll position
+        function updateActivePage() {
+            let current = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            pageItems.forEach(page => {
+                page.classList.remove('active');
+                if (page.getAttribute('data-page') === current) {
+                    page.classList.add('active');
+                    
+                    // Expand parent chapter if not expanded
+                    const chapter = page.closest('.chapter-item');
+                    const pages = chapter.querySelector('.chapter-pages');
+                    const header = chapter.querySelector('.chapter-header');
+                    const chevron = header.querySelector('.chevron');
+                    
+                    if (!pages.classList.contains('expanded')) {
+                        pages.classList.add('expanded');
+                        chevron.classList.add('rotated');
+                        header.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        // Update active page on scroll
+        window.addEventListener('scroll', updateActivePage);
+        
+        // Initialize first chapter as expanded
+        document.querySelector('.chapter-pages').classList.add('expanded');
+        document.querySelector('.chevron').classList.add('rotated');
+        document.querySelector('.chapter-header').classList.add('active');
+
+        // Update active page on page load
+        updateActivePage();
+    </script>
+</body>
+</html>
