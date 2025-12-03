@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - MS Office 95 Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            background: #008080;
+            color: #000;
+            overflow-x: hidden;
+        }
+
+        /* Classic Window Styles */
+        .window {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+
+        .title-bar {
+            background: linear-gradient(to right, #000080, #1084d0);
+            color: white;
+            padding: 3px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .title-bar-text {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .title-bar-controls {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-info:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .user-avatar {
+            width: 20px;
+            height: 20px;
+            background: #ffff00;
+            border: 1px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            min-width: 180px;
+            display: none;
+            z-index: 10000;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            margin-top: 2px;
+        }
+
+        .user-dropdown.active {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #808080;
+        }
+
+        .user-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown-item:hover {
+            background: #000080;
+            color: white;
+        }
+
+        .user-dropdown-divider {
+            height: 2px;
+            background: #808080;
+            margin: 2px 0;
+        }
+
+        /* Notification Bar */
+        .notification-bar {
+            background: #c0c0c0;
+            border-bottom: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .notification-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification-icon {
+            font-size: 14px;
+        }
+
+        .notification-close {
+            cursor: pointer;
+            padding: 2px 6px;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            font-weight: bold;
+        }
+
+        .notification-close:hover {
+            background: #d4d4d4;
+        }
+
+        .notification-close:active {
+            border-color: #000 #dfdfdf #dfdfdf #000;
+        }
+
+        .notification-bar.info {
+            background: #cce5ff;
+        }
+
+        .notification-bar.success {
+            background: #d4edda;
+        }
+
+        .notification-bar.warning {
+            background: #fff3cd;
+        }
+
+        .notification-bar.error {
+            background: #f8d7da;
+        }
+
+        .title-bar-controls button {
+            width: 18px;
+            height: 16px;
+            padding: 0;
+            font-size: 10px;
+            font-weight: bold;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            cursor: pointer;
+        }
+
+        /* Menu Bar */
+        .menu-bar {
+            background: #c0c0c0;
+            border-bottom: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 2px 5px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .menu-item {
+            padding: 3px 8px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background: #000080;
+            color: white;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: #c0c0c0;
+            padding: 5px;
+            border-bottom: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        /* Main Layout with Sidebar */
+        .main-layout {
+            display: flex;
+            min-height: 600px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #c0c0c0;
+            border-right: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 10px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-toggle:active {
+            border-color: #000 #dfdfdf #dfdfdf #000;
+            transform: translate(1px, 1px);
+        }
+
+        .sidebar-toggle::after {
+            content: '▼';
+            float: right;
+            font-size: 8px;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-toggle.open::after {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-section {
+            margin-bottom: 15px;
+        }
+
+        .sidebar-title {
+            background: #000080;
+            color: white;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            border: 1px solid #000;
+        }
+
+        /* Theme Colors */
+        .theme-selector {
+            margin-top: 10px;
+        }
+
+        .theme-option {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 3px;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .theme-option:hover {
+            border-color: #fff #000 #000 #fff;
+            box-shadow: 0 0 0 1px #000;
+        }
+
+        .theme-option.active::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .theme-classic { background: linear-gradient(to right, #000080, #1084d0); }
+        .theme-forest { background: linear-gradient(to right, #0b6623, #228B22); }
+        .theme-sunset { background: linear-gradient(to right, #8B0000, #dc143c); }
+        .theme-purple { background: linear-gradient(to right, #4B0082, #9932CC); }
+        .theme-teal { background: linear-gradient(to right, #008B8B, #20B2AA); }
+        .theme-slate { background: linear-gradient(to right, #2F4F4F, #5F9EA0); }
+        .theme-wine { background: linear-gradient(to right, #722F37, #C04848); }
+        .theme-olive { background: linear-gradient(to right, #556B2F, #6B8E23); }
+        .theme-plum { background: linear-gradient(to right, #663399, #9370DB); }
+        .theme-steel { background: linear-gradient(to right, #4682B4, #5F9EA0); }
+        .theme-copper { background: linear-gradient(to right, #B87333, #CD853F); }
+        .theme-emerald { background: linear-gradient(to right, #046307, #50C878); }
+
+        .sidebar-item {
+            padding: 5px 8px;
+            margin: 2px 0;
+            cursor: pointer;
+            font-size: 11px;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-item:hover {
+            background: #000080;
+            color: white;
+        }
+
+        .sidebar-item.active {
+            background: #000080;
+            color: white;
+            border-color: #000 #dfdfdf #dfdfdf #000;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 15px;
+            background: #c0c0c0;
+            overflow-x: auto;
+        }
+
+        /* Button Styles */
+        .btn {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 4px 12px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            position: relative;
+            min-width: 75px;
+            box-shadow: 1px 1px 0 #000;
+        }
+
+        .btn:hover {
+            background: #d4d4d4;
+        }
+
+        .btn:active {
+            border-color: #000 #dfdfdf #dfdfdf #000;
+            box-shadow: none;
+            transform: translate(1px, 1px);
+        }
+
+        .btn:disabled {
+            color: #808080;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        .btn-primary {
+            font-weight: bold;
+            background: #000080;
+            color: white;
+        }
+
+        .btn-success {
+            background: #00ff00;
+        }
+
+        .btn-warning {
+            background: #ffff00;
+        }
+
+        .btn-danger {
+            background: #ff0000;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 2px 8px;
+            min-width: 50px;
+            font-size: 10px;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 10px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(to right, #000080, #1084d0);
+            color: white;
+            padding: 4px 8px;
+            margin: -10px -10px 10px -10px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .card-body {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+        }
+
+        th {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 4px 8px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #c0c0c0;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        tr:nth-child(even) {
+            background: #f0f0f0;
+        }
+
+        tr:hover {
+            background: #000080;
+            color: white;
+        }
+
+        /* Alert Styles */
+        .alert {
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            font-size: 11px;
+        }
+
+        .alert-info {
+            background: #c0c0c0;
+        }
+
+        .alert-success {
+            background: #00ff00;
+        }
+
+        .alert-warning {
+            background: #ffff00;
+        }
+
+        .alert-error {
+            background: #ff0000;
+            color: white;
+        }
+
+        .alert-icon {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .alert-close {
+            margin-left: auto;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .alert-close:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Accordion Styles */
+        .accordion {
+            margin: 20px 0;
+        }
+
+        .accordion-item {
+            margin-bottom: 2px;
+        }
+
+        .accordion-header {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header:hover {
+            background: #d4d4d4;
+        }
+
+        .accordion-arrow {
+            transition: transform 0.2s;
+        }
+
+        .accordion-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            padding: 10px;
+            background: white;
+            display: none;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .accordion-content.active {
+            display: block;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 4px 25px 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            position: relative;
+        }
+
+        .dropdown-toggle::after {
+            content: '▼';
+            position: absolute;
+            right: 5px;
+            font-size: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            min-width: 150px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .dropdown-item:hover {
+            background: #000080;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(to right, #000080, #1084d0);
+            color: white;
+            padding: 3px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .modal-body {
+            padding: 15px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            padding: 10px 15px;
+            text-align: right;
+            border-top: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            display: flex;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 2px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            min-width: 30px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #d4d4d4;
+        }
+
+        .pagination button.active {
+            background: #000080;
+            color: white;
+            border-color: #000 #dfdfdf #dfdfdf #000;
+        }
+
+        .pagination button:disabled {
+            color: #808080;
+            cursor: not-allowed;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #c0c0c0;
+            border-top: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+            padding: 2px 5px;
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+        }
+
+        .status-item {
+            border-right: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            padding: 2px 10px;
+        }
+
+        /* Form Controls */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        textarea,
+        select {
+            background: white;
+            border: 2px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            padding: 3px 5px;
+            font-family: inherit;
+            font-size: 11px;
+            width: 100%;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: 1px dotted #000;
+            outline-offset: -2px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            background: #000080;
+            color: white;
+            padding: 5px 10px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            font-size: 12px;
+            border: 2px solid;
+            border-color: #dfdfdf #000 #000 #dfdfdf;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid;
+                border-color: #dfdfdf #000 #000 #dfdfdf;
+                padding: 0;
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .sidebar-section {
+                display: none;
+            }
+
+            .sidebar.mobile-open .sidebar-section {
+                display: block;
+                padding: 10px;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                justify-content: center;
+            }
+
+            .pagination {
+                justify-content: center;
+            }
+
+            .title-bar-text {
+                font-size: 12px;
+            }
+
+            .menu-bar {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <div class="title-bar-text">
+                <span>📊</span>
+                Admin Panel - Control Center
+            </div>
+            <div class="title-bar-controls">
+                <div class="user-info" onclick="toggleUserDropdown()">
+                    <div class="user-avatar">👤</div>
+                    <span>Admin User</span>
+                    <span style="font-size: 8px;">▼</span>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="event.stopPropagation(); alert('Profile settings');">
+                            👤 My Profile
+                        </div>
+                        <div class="user-dropdown-item" onclick="event.stopPropagation(); alert('Account settings');">
+                            ⚙️ Account Settings
+                        </div>
+                        <div class="user-dropdown-item" onclick="event.stopPropagation(); alert('Security settings');">
+                            🔐 Security & Privacy
+                        </div>
+                        <div class="user-dropdown-item" onclick="event.stopPropagation(); alert('Notifications');">
+                            🔔 Notifications
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <div class="user-dropdown-item" onclick="event.stopPropagation(); alert('Logging out...');">
+                            🚪 Logout
+                        </div>
+                    </div>
+                </div>
+                <button aria-label="Minimize">_</button>
+                <button aria-label="Maximize">□</button>
+                <button aria-label="Close">×</button>
+            </div>
+        </div>
+
+        <!-- Menu Bar -->
+        <div class="menu-bar">
+            <div class="menu-item">File</div>
+            <div class="menu-item">Edit</div>
+            <div class="menu-item">View</div>
+            <div class="menu-item">Tools</div>
+            <div class="menu-item">Help</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="btn">📄 New</button>
+            <button class="btn">📂 Open</button>
+            <button class="btn">💾 Save</button>
+            <button class="btn">✂️ Cut</button>
+            <button class="btn">📋 Copy</button>
+            <button class="btn">📌 Paste</button>
+            <button class="btn" onclick="openModal()">🔍 Search</button>
+        </div>
+
+        <!-- Notification Bar -->
+        <div class="notification-bar success" id="notificationBar">
+            <div class="notification-content">
+                <span class="notification-icon">✓</span>
+                <span><strong>Welcome back, Admin!</strong> You have 3 new messages and 5 pending tasks.</span>
+            </div>
+            <button class="notification-close" onclick="closeNotification()">×</button>
+        </div>
+
+        <!-- Main Layout with Sidebar -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Navigation Menu</button>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📁 Navigation</div>
+                    <div class="sidebar-item active">🏠 Dashboard</div>
+                    <div class="sidebar-item">👥 Users</div>
+                    <div class="sidebar-item">📊 Reports</div>
+                    <div class="sidebar-item">⚙️ Settings</div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🛠️ Tools</div>
+                    <div class="sidebar-item">📈 Analytics</div>
+                    <div class="sidebar-item">📧 Messages</div>
+                    <div class="sidebar-item">🔔 Notifications</div>
+                    <div class="sidebar-item">📝 Logs</div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">👤 Account</div>
+                    <div class="sidebar-item">🔐 Security</div>
+                    <div class="sidebar-item">📱 Preferences</div>
+                    <div class="sidebar-item">🚪 Logout</div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🎨 Theme Colors</div>
+                    <div style="font-size: 10px; margin-bottom: 5px; padding: 0 2px;">Click to change window theme:</div>
+                    <div class="theme-selector">
+                        <div class="theme-option theme-classic active" onclick="changeTheme('classic')" title="Classic Blue"></div>
+                        <div class="theme-option theme-forest" onclick="changeTheme('forest')" title="Forest Green"></div>
+                        <div class="theme-option theme-sunset" onclick="changeTheme('sunset')" title="Sunset Red"></div>
+                        <div class="theme-option theme-purple" onclick="changeTheme('purple')" title="Royal Purple"></div>
+                        <div class="theme-option theme-teal" onclick="changeTheme('teal')" title="Ocean Teal"></div>
+                        <div class="theme-option theme-slate" onclick="changeTheme('slate')" title="Slate Gray"></div>
+                    </div>
+                    <div class="theme-selector" style="margin-top: 5px;">
+                        <div class="theme-option theme-wine" onclick="changeTheme('wine')" title="Wine Red"></div>
+                        <div class="theme-option theme-olive" onclick="changeTheme('olive')" title="Olive Green"></div>
+                        <div class="theme-option theme-plum" onclick="changeTheme('plum')" title="Plum Purple"></div>
+                        <div class="theme-option theme-steel" onclick="changeTheme('steel')" title="Steel Blue"></div>
+                        <div class="theme-option theme-copper" onclick="changeTheme('copper')" title="Copper Brown"></div>
+                        <div class="theme-option theme-emerald" onclick="changeTheme('emerald')" title="Emerald Green"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content">
+                <!-- Dashboard Cards -->
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">📊 Total Users</div>
+                        <div class="card-body">
+                            <h2 style="font-size: 24px; margin: 10px 0;">1,234</h2>
+                            <p>Active users this month</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm">View Details</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">💰 Revenue</div>
+                        <div class="card-body">
+                            <h2 style="font-size: 24px; margin: 10px 0;">$45,678</h2>
+                            <p>Total earnings this quarter</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm">View Report</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">📦 Orders</div>
+                        <div class="card-body">
+                            <h2 style="font-size: 24px; margin: 10px 0;">567</h2>
+                            <p>Pending orders to process</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm">Manage Orders</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Section -->
+                <div class="section-title">🔔 Alerts & Notifications</div>
+                
+                <div style="margin-bottom: 10px;">
+                    <button class="btn btn-sm" onclick="showNotification('info')">Show Info</button>
+                    <button class="btn btn-sm" onclick="showNotification('success')">Show Success</button>
+                    <button class="btn btn-sm" onclick="showNotification('warning')">Show Warning</button>
+                    <button class="btn btn-sm" onclick="showNotification('error')">Show Error</button>
+                </div>
+                
+                <div class="alert alert-info">
+                    <span class="alert-icon">ℹ️</span>
+                    <div>This is an informational alert. System is running normally.</div>
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
+                </div>
+
+                <div class="alert alert-success">
+                    <span class="alert-icon">✓</span>
+                    <div>Success! Your changes have been saved successfully.</div>
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div>Warning: Your storage is 85% full. Consider upgrading your plan.</div>
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
+                </div>
+
+                <div class="alert alert-error">
+                    <span class="alert-icon">✕</span>
+                    <div>Error: Failed to connect to database. Please check your connection.</div>
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
+                </div>
+
+                <!-- Buttons Section -->
+                <div class="section-title">🔘 Button Styles</div>
+                <div class="button-group">
+                    <button class="btn">Default</button>
+                    <button class="btn btn-primary">Primary</button>
+                    <button class="btn btn-success">Success</button>
+                    <button class="btn btn-warning">Warning</button>
+                    <button class="btn btn-danger">Danger</button>
+                    <button class="btn" disabled>Disabled</button>
+                    <button class="btn btn-sm">Small</button>
+                </div>
+
+                <!-- Dropdown Section -->
+                <div class="section-title">📋 Dropdown Menus</div>
+                <div style="margin: 10px 0;">
+                    <div class="dropdown" style="margin-right: 10px; display: inline-block;">
+                        <button class="dropdown-toggle" onclick="toggleDropdown('dropdown1')">Actions</button>
+                        <div class="dropdown-menu" id="dropdown1">
+                            <div class="dropdown-item">Edit</div>
+                            <div class="dropdown-item">Delete</div>
+                            <div class="dropdown-item">Share</div>
+                            <div class="dropdown-item">Export</div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown" style="display: inline-block;">
+                        <button class="dropdown-toggle" onclick="toggleDropdown('dropdown2')">More Options</button>
+                        <div class="dropdown-menu" id="dropdown2">
+                            <div class="dropdown-item">Settings</div>
+                            <div class="dropdown-item">Help</div>
+                            <div class="dropdown-item">About</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="section-title">📊 Data Table</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>001</td>
+                                <td>John Doe</td>
+                                <td>john@example.com</td>
+                                <td>Admin</td>
+                                <td>Active</td>
+                                <td><button class="btn btn-sm">Edit</button></td>
+                            </tr>
+                            <tr>
+                                <td>002</td>
+                                <td>Jane Smith</td>
+                                <td>jane@example.com</td>
+                                <td>Editor</td>
+                                <td>Active</td>
+                                <td><button class="btn btn-sm">Edit</button></td>
+                            </tr>
+                            <tr>
+                                <td>003</td>
+                                <td>Bob Johnson</td>
+                                <td>bob@example.com</td>
+                                <td>Viewer</td>
+                                <td>Inactive</td>
+                                <td><button class="btn btn-sm">Edit</button></td>
+                            </tr>
+                            <tr>
+                                <td>004</td>
+                                <td>Alice Brown</td>
+                                <td>alice@example.com</td>
+                                <td>Editor</td>
+                                <td>Active</td>
+                                <td><button class="btn btn-sm">Edit</button></td>
+                            </tr>
+                            <tr>
+                                <td>005</td>
+                                <td>Charlie Wilson</td>
+                                <td>charlie@example.com</td>
+                                <td>Admin</td>
+                                <td>Active</td>
+                                <td><button class="btn btn-sm">Edit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button disabled>« First</button>
+                    <button disabled>‹ Prev</button>
+                    <button class="active">1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>Next ›</button>
+                    <button>Last »</button>
+                </div>
+
+                <!-- Accordion Section -->
+                <div class="section-title">📂 Accordion</div>
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>📄 General Information</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            This section contains general information about the system. You can manage various settings and configurations here. The admin panel provides comprehensive control over all aspects of your application including user management, content moderation, and system monitoring.
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>🔧 Advanced Settings</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            Configure advanced options such as API integrations, webhook endpoints, custom scripts, and automation rules. These settings require administrator privileges and should be modified with caution.
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>📊 Reports & Analytics</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            Access detailed reports on system usage, user activity, performance metrics, and revenue statistics. Export data in various formats including CSV, Excel, and PDF for further analysis.
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>🔐 Security Options</span>
+                            <span class="accordion-arrow">▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            Manage security settings including two-factor authentication, IP whitelisting, session timeout, password policies, and audit logs. Regular security reviews are recommended.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Section -->
+                <div class="section-title">📝 Form Example</div>
+                <div class="card">
+                    <div class="card-header">User Registration Form</div>
+                    <div class="card-body">
+                        <form onsubmit="event.preventDefault(); alert('Form submitted!');">
+                            <div class="form-group">
+                                <label>Full Name:</label>
+                                <input type="text" placeholder="Enter your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address:</label>
+                                <input type="email" placeholder="email@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Role:</label>
+                                <select>
+                                    <option>Select Role</option>
+                                    <option>Administrator</option>
+                                    <option>Editor</option>
+                                    <option>Viewer</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message:</label>
+                                <textarea rows="4" placeholder="Enter your message here..."></textarea>
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="reset" class="btn">Reset</button>
+                                <button type="button" class="btn" onclick="openModal()">Open Modal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">Ready</div>
+            <div class="status-item">Users: 1,234</div>
+            <div class="status-item">Server: Online</div>
+            <div class="status-item">12:34 PM</div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span>🔍 Search Dialog</span>
+                <button onclick="closeModal()" style="background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #000 #000 #dfdfdf; padding: 0 5px; cursor: pointer;">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This is a classic Windows 95 style modal dialog box. You can add any content here including forms, messages, or confirmations.</p>
+                <div class="form-group">
+                    <label>Search Query:</label>
+                    <input type="text" placeholder="Enter search term...">
+                </div>
+                <div class="form-group">
+                    <label>Filter By:</label>
+                    <select>
+                        <option>All Categories</option>
+                        <option>Users</option>
+                        <option>Posts</option>
+                        <option>Comments</option>
+                    </select>
+                </div>
+                <p style="margin-top: 10px;">Modal dialogs are great for user interactions without leaving the current page. They maintain the retro aesthetic while being fully functional.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal()">OK</button>
+                <button class="btn" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User dropdown toggle
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+            
+            // Close dropdown when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeUserDropdown(e) {
+                    if (!e.target.closest('.user-info')) {
+                        dropdown.classList.remove('active');
+                        document.removeEventListener('click', closeUserDropdown);
+                    }
+                });
+            }, 0);
+        }
+
+        // Notification functions
+        function closeNotification() {
+            document.getElementById('notificationBar').style.display = 'none';
+        }
+
+        function showNotification(type) {
+            const notificationBar = document.getElementById('notificationBar');
+            const messages = {
+                info: { icon: 'ℹ️', text: '<strong>Information:</strong> System update available. Click to learn more.' },
+                success: { icon: '✓', text: '<strong>Success!</strong> Your changes have been saved successfully.' },
+                warning: { icon: '⚠️', text: '<strong>Warning:</strong> Your session will expire in 10 minutes.' },
+                error: { icon: '✕', text: '<strong>Error:</strong> Failed to connect to server. Please try again.' }
+            };
+            
+            notificationBar.className = 'notification-bar ' + type;
+            notificationBar.style.display = 'flex';
+            notificationBar.querySelector('.notification-content').innerHTML = `
+                <span class="notification-icon">${messages[type].icon}</span>
+                <span>${messages[type].text}</span>
+            `;
+        }
+
+        // Theme color schemes
+        const themes = {
+            classic: {
+                titleBar: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #000080 0%, #0000c0 100%)',
+                sectionTitle: 'linear-gradient(90deg, #000080 0%, #0000c0 100%)',
+                cardHeader: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+                modalHeader: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #0055cc 0%, #000080 100%)',
+                activeItem: '#000080'
+            },
+            forest: {
+                titleBar: 'linear-gradient(90deg, #0b6623 0%, #228B22 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #0b6623 0%, #147a2f 100%)',
+                sectionTitle: 'linear-gradient(90deg, #0b6623 0%, #147a2f 100%)',
+                cardHeader: 'linear-gradient(90deg, #0b6623 0%, #228B22 100%)',
+                modalHeader: 'linear-gradient(90deg, #0b6623 0%, #228B22 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #228B22 0%, #0b6623 100%)',
+                activeItem: '#0b6623'
+            },
+            sunset: {
+                titleBar: 'linear-gradient(90deg, #8B0000 0%, #dc143c 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #8B0000 0%, #b30000 100%)',
+                sectionTitle: 'linear-gradient(90deg, #8B0000 0%, #b30000 100%)',
+                cardHeader: 'linear-gradient(90deg, #8B0000 0%, #dc143c 100%)',
+                modalHeader: 'linear-gradient(90deg, #8B0000 0%, #dc143c 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #dc143c 0%, #8B0000 100%)',
+                activeItem: '#8B0000'
+            },
+            purple: {
+                titleBar: 'linear-gradient(90deg, #4B0082 0%, #9932CC 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #4B0082 0%, #6a0dad 100%)',
+                sectionTitle: 'linear-gradient(90deg, #4B0082 0%, #6a0dad 100%)',
+                cardHeader: 'linear-gradient(90deg, #4B0082 0%, #9932CC 100%)',
+                modalHeader: 'linear-gradient(90deg, #4B0082 0%, #9932CC 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #9932CC 0%, #4B0082 100%)',
+                activeItem: '#4B0082'
+            },
+            teal: {
+                titleBar: 'linear-gradient(90deg, #008B8B 0%, #20B2AA 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #008B8B 0%, #00a5a5 100%)',
+                sectionTitle: 'linear-gradient(90deg, #008B8B 0%, #00a5a5 100%)',
+                cardHeader: 'linear-gradient(90deg, #008B8B 0%, #20B2AA 100%)',
+                modalHeader: 'linear-gradient(90deg, #008B8B 0%, #20B2AA 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #20B2AA 0%, #008B8B 100%)',
+                activeItem: '#008B8B'
+            },
+            slate: {
+                titleBar: 'linear-gradient(90deg, #2F4F4F 0%, #5F9EA0 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #2F4F4F 0%, #456565 100%)',
+                sectionTitle: 'linear-gradient(90deg, #2F4F4F 0%, #456565 100%)',
+                cardHeader: 'linear-gradient(90deg, #2F4F4F 0%, #5F9EA0 100%)',
+                modalHeader: 'linear-gradient(90deg, #2F4F4F 0%, #5F9EA0 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #5F9EA0 0%, #2F4F4F 100%)',
+                activeItem: '#2F4F4F'
+            },
+            wine: {
+                titleBar: 'linear-gradient(90deg, #722F37 0%, #C04848 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #722F37 0%, #8b3a3a 100%)',
+                sectionTitle: 'linear-gradient(90deg, #722F37 0%, #8b3a3a 100%)',
+                cardHeader: 'linear-gradient(90deg, #722F37 0%, #C04848 100%)',
+                modalHeader: 'linear-gradient(90deg, #722F37 0%, #C04848 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #C04848 0%, #722F37 100%)',
+                activeItem: '#722F37'
+            },
+            olive: {
+                titleBar: 'linear-gradient(90deg, #556B2F 0%, #6B8E23 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #556B2F 0%, #5f7730 100%)',
+                sectionTitle: 'linear-gradient(90deg, #556B2F 0%, #5f7730 100%)',
+                cardHeader: 'linear-gradient(90deg, #556B2F 0%, #6B8E23 100%)',
+                modalHeader: 'linear-gradient(90deg, #556B2F 0%, #6B8E23 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #6B8E23 0%, #556B2F 100%)',
+                activeItem: '#556B2F'
+            },
+            plum: {
+                titleBar: 'linear-gradient(90deg, #663399 0%, #9370DB 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #663399 0%, #7a45b0 100%)',
+                sectionTitle: 'linear-gradient(90deg, #663399 0%, #7a45b0 100%)',
+                cardHeader: 'linear-gradient(90deg, #663399 0%, #9370DB 100%)',
+                modalHeader: 'linear-gradient(90deg, #663399 0%, #9370DB 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #9370DB 0%, #663399 100%)',
+                activeItem: '#663399'
+            },
+            steel: {
+                titleBar: 'linear-gradient(90deg, #4682B4 0%, #5F9EA0 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #4682B4 0%, #5291c0 100%)',
+                sectionTitle: 'linear-gradient(90deg, #4682B4 0%, #5291c0 100%)',
+                cardHeader: 'linear-gradient(90deg, #4682B4 0%, #5F9EA0 100%)',
+                modalHeader: 'linear-gradient(90deg, #4682B4 0%, #5F9EA0 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #5F9EA0 0%, #4682B4 100%)',
+                activeItem: '#4682B4'
+            },
+            copper: {
+                titleBar: 'linear-gradient(90deg, #B87333 0%, #CD853F 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #B87333 0%, #c47f3d 100%)',
+                sectionTitle: 'linear-gradient(90deg, #B87333 0%, #c47f3d 100%)',
+                cardHeader: 'linear-gradient(90deg, #B87333 0%, #CD853F 100%)',
+                modalHeader: 'linear-gradient(90deg, #B87333 0%, #CD853F 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #CD853F 0%, #B87333 100%)',
+                activeItem: '#B87333'
+            },
+            emerald: {
+                titleBar: 'linear-gradient(90deg, #046307 0%, #50C878 100%)',
+                sidebarTitle: 'linear-gradient(90deg, #046307 0%, #0a7a0e 100%)',
+                sectionTitle: 'linear-gradient(90deg, #046307 0%, #0a7a0e 100%)',
+                cardHeader: 'linear-gradient(90deg, #046307 0%, #50C878 100%)',
+                modalHeader: 'linear-gradient(90deg, #046307 0%, #50C878 100%)',
+                buttonPrimary: 'linear-gradient(180deg, #50C878 0%, #046307 100%)',
+                activeItem: '#046307'
+            }
+        };
+
+        // Change theme function
+        function changeTheme(themeName) {
+            const theme = themes[themeName];
+            
+            // Update title bar
+            document.querySelector('.title-bar').style.background = theme.titleBar;
+            
+            // Update all sidebar titles
+            document.querySelectorAll('.sidebar-title').forEach(el => {
+                el.style.background = theme.sidebarTitle;
+            });
+            
+            // Update all section titles
+            document.querySelectorAll('.section-title').forEach(el => {
+                el.style.background = theme.sectionTitle;
+            });
+            
+            // Update all card headers
+            document.querySelectorAll('.card-header').forEach(el => {
+                el.style.background = theme.cardHeader;
+            });
+            
+            // Update modal header
+            document.querySelectorAll('.modal-header').forEach(el => {
+                el.style.background = theme.modalHeader;
+            });
+            
+            // Update primary buttons
+            document.querySelectorAll('.btn-primary').forEach(el => {
+                el.style.background = theme.buttonPrimary;
+            });
+            
+            // Update active sidebar items and pagination
+            const style = document.createElement('style');
+            style.id = 'dynamic-theme-style';
+            const existingStyle = document.getElementById('dynamic-theme-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            style.innerHTML = `
+                .sidebar-item.active,
+                .sidebar-item:hover {
+                    background: ${theme.activeItem} !important;
+                    color: white !important;
+                }
+                .pagination button.active {
+                    background: ${theme.activeItem} !important;
+                    color: white !important;
+                }
+                .menu-item:hover,
+                .menu-item.active {
+                    background: ${theme.activeItem} !important;
+                    color: white !important;
+                }
+                tr:hover {
+                    background: ${theme.activeItem} !important;
+                    color: white !important;
+                }
+                .dropdown-item:hover {
+                    background: ${theme.activeItem} !important;
+                    color: white !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Update active state on theme selector
+            document.querySelectorAll('.theme-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`.theme-${themeName}`).classList.add('active');
+            
+            // Save preference to localStorage
+            localStorage.setItem('adminPanelTheme', themeName);
+        }
+
+        // Load saved theme on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('adminPanelTheme') || 'classic';
+            if (savedTheme !== 'classic') {
+                changeTheme(savedTheme);
+            }
+        });
+
+        // Sidebar mobile toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = sidebar.querySelector('.sidebar-toggle');
+            sidebar.classList.toggle('mobile-open');
+            toggle.classList.toggle('open');
+        }
+
+        // Accordion functionality
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.accordion-arrow');
+            
+            content.classList.toggle('active');
+            arrow.classList.toggle('open');
+        }
+
+        // Dropdown functionality
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle('active');
+            
+            // Close dropdown when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeDropdown(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        dropdown.classList.remove('active');
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            }, 0);
+        }
+
+        // Modal functionality
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Pagination functionality
+        document.querySelectorAll('.pagination button:not([disabled]):not(.active)').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelector('.pagination button.active').classList.remove('active');
+                this.classList.add('active');
+            });
+        });
+
+        // Sidebar navigation
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelector('.sidebar-item.active').classList.remove('active');
+                this.classList.add('active');
+                
+                // Close mobile sidebar after selection
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Update clock in status bar
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const statusItems = document.querySelectorAll('.status-item');
+            if (statusItems.length > 3) {
+                statusItems[3].textContent = timeStr;
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 60000);
+    </script>
+</body>
+</html>
