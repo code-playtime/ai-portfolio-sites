@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows XP Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --xp-blue: #0054E3;
+            --xp-blue-light: #3C7EF6;
+            --xp-blue-dark: #003DB3;
+            --xp-green: #70B24E;
+            --xp-orange: #F89A2C;
+            --xp-taskbar: #245EDC;
+            --xp-window-border: #0831D9;
+            --xp-title-start: #0997FF;
+            --xp-title-end: #0054E3;
+            --xp-bg: #ECE9D8;
+            --xp-border-light: #FFFFFF;
+            --xp-border-dark: #ACA899;
+            --xp-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Tahoma', 'Microsoft Sans Serif', sans-serif;
+            background: var(--xp-bg);
+            overflow-x: hidden;
+        }
+
+        /* Theme Classes */
+        body.theme-olive {
+            --xp-bg: #D2CFC1;
+            --xp-blue: #7B8F3E;
+            --xp-blue-light: #9DB05E;
+            --xp-blue-dark: #5E6E2E;
+            --xp-taskbar: #7B8F3E;
+            --xp-title-start: #9DB05E;
+            --xp-title-end: #7B8F3E;
+        }
+
+        body.theme-silver {
+            --xp-bg: #E6E6E6;
+            --xp-blue: #8495B0;
+            --xp-blue-light: #A5B8D0;
+            --xp-blue-dark: #647890;
+            --xp-taskbar: #8495B0;
+            --xp-title-start: #A5B8D0;
+            --xp-title-end: #8495B0;
+        }
+
+        /* XP Button Styles */
+        .xp-button {
+            padding: 4px 12px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #ECE9D8 50%, #E0DED0 100%);
+            border: 1px solid #003C74;
+            border-radius: 3px;
+            color: #000;
+            cursor: pointer;
+            font-family: 'Tahoma', sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.6);
+            transition: all 0.1s;
+        }
+
+        .xp-button:hover {
+            background: linear-gradient(180deg, #FFF4CC 0%, #FFEEBB 50%, #FFE5A0 100%);
+            border-color: #F7941D;
+        }
+
+        .xp-button:active {
+            background: linear-gradient(180deg, #E0DED0 0%, #ECE9D8 50%, #FFFFFF 100%);
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .xp-button.primary {
+            background: linear-gradient(180deg, #4B9EF7 0%, #2E7DD1 50%, #1E5BB8 100%);
+            color: white;
+            border-color: #003C74;
+        }
+
+        .xp-button.success {
+            background: linear-gradient(180deg, #8BC34A 0%, #70B24E 50%, #5A9D3E 100%);
+            color: white;
+        }
+
+        .xp-button.danger {
+            background: linear-gradient(180deg, #FF6B6B 0%, #EE5555 50%, #DD4444 100%);
+            color: white;
+        }
+
+        /* Window Container */
+        .xp-window {
+            background: var(--xp-bg);
+            border: 1px solid var(--xp-window-border);
+            box-shadow: 0 0 0 3px rgba(0, 83, 227, 0.3), 4px 4px 8px rgba(0, 0, 0, 0.3);
+            border-radius: 8px 8px 4px 4px;
+            overflow: hidden;
+        }
+
+        .xp-titlebar {
+            background: linear-gradient(180deg, var(--xp-title-start) 0%, var(--xp-title-end) 100%);
+            padding: 4px 6px 4px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .xp-titlebar-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .xp-titlebar-button {
+            width: 21px;
+            height: 21px;
+            background: linear-gradient(180deg, #E9E9F7 0%, #B8C5E0 100%);
+            border: 1px solid #003C74;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .xp-titlebar-button:hover {
+            background: linear-gradient(180deg, #FFF4CC 0%, #FFE5A0 100%);
+        }
+
+        .xp-titlebar-button:active {
+            background: linear-gradient(180deg, #B8C5E0 0%, #E9E9F7 100%);
+        }
+
+        /* Layout */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--xp-bg);
+            border-right: 3px solid;
+            border-color: transparent var(--xp-blue) var(--xp-blue) transparent;
+            padding: 10px;
+            transition: transform 0.3s;
+            box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+            position: fixed;
+            z-index: 1000;
+            height: 100vh;
+        }
+
+        .sidebar.mobile-visible {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            background: linear-gradient(180deg, var(--xp-title-start) 0%, var(--xp-title-end) 100%);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 8px 8px 4px 4px;
+            box-shadow: 0 0 0 1px var(--xp-window-border), 0 3px 8px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: white;
+            border: 2px outset #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            color: white;
+            font-size: 11px;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            background: var(--xp-bg);
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            min-width: 150px;
+            box-shadow: 2px 2px 5px var(--xp-shadow);
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid var(--xp-border-dark);
+        }
+
+        .dropdown-item:hover {
+            background: var(--xp-blue);
+            color: white;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Sidebar Menu */
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 2px;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 8px 12px;
+            color: #000;
+            text-decoration: none;
+            font-size: 11px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background: var(--xp-blue);
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: var(--xp-blue);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Cards */
+        .xp-card {
+            background: var(--xp-bg);
+            border: 1px solid #8C9AB8;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .xp-card-header {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--xp-blue);
+            color: var(--xp-blue);
+        }
+
+        /* Tables */
+        .xp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            background: white;
+            border: 1px solid #8C9AB8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .xp-table th {
+            background: linear-gradient(180deg, #F9F9FB 0%, #E5E9F2 100%);
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 1px solid #8C9AB8;
+            border-right: 1px solid #D4D8E1;
+            color: #333;
+        }
+
+        .xp-table td {
+            padding: 8px;
+            border-bottom: 1px solid #E5E9F2;
+            border-right: 1px solid #E5E9F2;
+        }
+
+        .xp-table tr:hover {
+            background: #FFF8DC;
+        }
+
+        /* Alerts */
+        .xp-alert {
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid;
+            border-radius: 4px;
+            font-size: 11px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .xp-alert.info {
+            background: linear-gradient(180deg, #EBF4FF 0%, #D6E9FF 100%);
+            border-color: #4A9EFF;
+            color: #004085;
+        }
+
+        .xp-alert.success {
+            background: linear-gradient(180deg, #E8F5E9 0%, #D4EDD6 100%);
+            border-color: #4CAF50;
+            color: #1B5E20;
+        }
+
+        .xp-alert.warning {
+            background: linear-gradient(180deg, #FFF8E1 0%, #FFECB3 100%);
+            border-color: #FF9800;
+            color: #663C00;
+        }
+
+        .xp-alert.error {
+            background: linear-gradient(180deg, #FFEBEE 0%, #FFCDD2 100%);
+            border-color: #F44336;
+            color: #B71C1C;
+        }
+
+        .alert-close {
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Accordion */
+        .xp-accordion {
+            margin-bottom: 15px;
+        }
+
+        .accordion-header {
+            background: linear-gradient(180deg, #FFFFFF 0%, #E6E6E6 100%);
+            padding: 8px 12px;
+            cursor: pointer;
+            border: 2px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header:hover {
+            background: linear-gradient(180deg, #FFF8DC 0%, #FFEEB0 100%);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+            background: white;
+            border: 2px solid var(--xp-border-dark);
+            border-top: none;
+        }
+
+        .accordion-content.show {
+            max-height: 500px;
+            padding: 10px;
+        }
+
+        /* Modal */
+        .xp-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .xp-modal.show {
+            display: flex;
+        }
+
+        .xp-modal-content {
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .xp-modal-body {
+            background: var(--xp-bg);
+            padding: 20px;
+            font-size: 11px;
+        }
+
+        .xp-modal-footer {
+            background: var(--xp-bg);
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 2px groove var(--xp-border-dark);
+        }
+
+        /* Pagination */
+        .xp-pagination {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            font-size: 11px;
+        }
+
+        .page-btn {
+            padding: 4px 10px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #E6E6E6 100%);
+            border: 1px solid var(--xp-border-dark);
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .page-btn:hover {
+            background: linear-gradient(180deg, #FFF8DC 0%, #FFEEB0 100%);
+        }
+
+        .page-btn.active {
+            background: var(--xp-blue);
+            color: white;
+            font-weight: bold;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Theme Switcher */
+        .theme-switcher {
+            margin-bottom: 15px;
+        }
+
+        .theme-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            margin-right: 5px;
+            font-size: 11px;
+        }
+
+        .theme-preview {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #000;
+            border-radius: 2px;
+        }
+
+        .theme-preview.blue {
+            background: #0054E3;
+        }
+
+        .theme-preview.olive {
+            background: #7B8F3E;
+        }
+
+        .theme-preview.silver {
+            background: #8495B0;
+        }
+
+        /* Grid Layout */
+        .xp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: linear-gradient(135deg, var(--xp-blue-light) 0%, var(--xp-blue) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--xp-blue-dark);
+            box-shadow: 2px 2px 5px var(--xp-shadow);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+            }
+
+            .sidebar.mobile-hidden {
+                transform: translateX(-100%);
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .xp-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 10px;
+            }
+
+            .topbar {
+                padding: 10px;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #ECE9D8;
+            border: 1px solid #ACA899;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #FFFFFF 0%, #C0C0C0 100%);
+            border: 1px solid #808080;
+        }
+
+        ::-webkit-scrollbar-button {
+            background: linear-gradient(180deg, #FFFFFF 0%, #C0C0C0 100%);
+            border: 1px solid #808080;
+            height: 16px;
+        }
+
+        /* Start button styling */
+        .topbar h1 {
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar mobile-hidden" id="sidebar">
+            <div class="xp-card">
+                <div class="xp-card-header">⊞ Navigation</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item"><a href="#" class="sidebar-link active">📊 Dashboard</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">👥 Users</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">📝 Posts</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">📊 Analytics</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">⚙️ Settings</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">💬 Messages</a></li>
+                    <li class="sidebar-item"><a href="#" class="sidebar-link">📁 Files</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h1>🖥️ Windows XP Admin Panel</h1>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-info" onclick="toggleUserDropdown()">
+                        <div class="user-avatar">A</div>
+                        <span>Admin User</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <div class="dropdown-item">👤 Profile</div>
+                        <div class="dropdown-item">⚙️ Settings</div>
+                        <div class="dropdown-item">❓ Help</div>
+                        <div class="dropdown-item">🚪 Logout</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme Switcher -->
+            <div class="xp-card theme-switcher">
+                <div class="xp-card-header">🎨 Theme Selector</div>
+                <button class="xp-button theme-button" onclick="setTheme('blue')">
+                    <span class="theme-preview blue"></span> Blue (Default)
+                </button>
+                <button class="xp-button theme-button" onclick="setTheme('olive')">
+                    <span class="theme-preview olive"></span> Olive Green
+                </button>
+                <button class="xp-button theme-button" onclick="setTheme('silver')">
+                    <span class="theme-preview silver"></span> Silver
+                </button>
+            </div>
+
+            <!-- Alerts -->
+            <div class="xp-alert info">
+                <strong>ℹ️ Information:</strong> Welcome to your Windows XP styled dashboard!
+                <span class="alert-close" onclick="this.parentElement.style.display='none'">✕</span>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="xp-grid">
+                <div class="stat-card">
+                    <div class="stat-value">1,234</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">567</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">89</div>
+                    <div class="stat-label">New Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$45.6K</div>
+                    <div class="stat-label">Revenue</div>
+                </div>
+            </div>
+
+            <!-- Buttons Demo -->
+            <div class="xp-card">
+                <div class="xp-card-header">Buttons</div>
+                <button class="xp-button">Default</button>
+                <button class="xp-button primary">Primary</button>
+                <button class="xp-button success">Success</button>
+                <button class="xp-button danger">Danger</button>
+            </div>
+
+            <!-- Accordions -->
+            <div class="xp-card">
+                <div class="xp-card-header">Accordions</div>
+                <div class="xp-accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>📄 Section 1</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        This is the content of section 1. It contains important information about your system.
+                    </div>
+                </div>
+                <div class="xp-accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>📄 Section 2</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        This is the content of section 2. More details can be found here.
+                    </div>
+                </div>
+                <div class="xp-accordion">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>📄 Section 3</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        This is the content of section 3. Additional information is available in this section.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="xp-card">
+                <div class="xp-card-header">Recent Users</div>
+                <table class="xp-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>John Doe</td>
+                            <td>john@example.com</td>
+                            <td>✅ Active</td>
+                            <td>
+                                <button class="xp-button" style="padding: 2px 8px;">Edit</button>
+                                <button class="xp-button danger" style="padding: 2px 8px;">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Jane Smith</td>
+                            <td>jane@example.com</td>
+                            <td>✅ Active</td>
+                            <td>
+                                <button class="xp-button" style="padding: 2px 8px;">Edit</button>
+                                <button class="xp-button danger" style="padding: 2px 8px;">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Bob Johnson</td>
+                            <td>bob@example.com</td>
+                            <td>⏸️ Inactive</td>
+                            <td>
+                                <button class="xp-button" style="padding: 2px 8px;">Edit</button>
+                                <button class="xp-button danger" style="padding: 2px 8px;">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Alice Williams</td>
+                            <td>alice@example.com</td>
+                            <td>✅ Active</td>
+                            <td>
+                                <button class="xp-button" style="padding: 2px 8px;">Edit</button>
+                                <button class="xp-button danger" style="padding: 2px 8px;">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div style="margin-top: 15px;">
+                    <div class="xp-pagination">
+                        <button class="page-btn disabled">« Prev</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn">Next »</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Examples -->
+            <div class="xp-card">
+                <div class="xp-card-header">Alert Messages</div>
+                <div class="xp-alert success">
+                    <strong>✓ Success:</strong> Your changes have been saved successfully!
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">✕</span>
+                </div>
+                <div class="xp-alert warning">
+                    <strong>⚠ Warning:</strong> Please review your settings before continuing.
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">✕</span>
+                </div>
+                <div class="xp-alert error">
+                    <strong>✕ Error:</strong> An error occurred while processing your request.
+                    <span class="alert-close" onclick="this.parentElement.style.display='none'">✕</span>
+                </div>
+            </div>
+
+            <!-- Modal Trigger -->
+            <div class="xp-card">
+                <div class="xp-card-header">Modal Demo</div>
+                <button class="xp-button primary" onclick="openModal()">Open Modal Window</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="xp-modal" id="modal">
+        <div class="xp-modal-content xp-window">
+            <div class="xp-titlebar">
+                <span>💬 Message Window</span>
+                <div class="xp-titlebar-buttons">
+                    <div class="xp-titlebar-button" onclick="closeModal()">✕</div>
+                </div>
+            </div>
+            <div class="xp-modal-body">
+                <h3 style="margin-bottom: 10px;">Welcome to Windows XP!</h3>
+                <p>This is a modal window styled like a classic Windows XP dialog box. You can add any content here.</p>
+                <p style="margin-top: 10px;">Click the X button or the Close button below to close this dialog.</p>
+            </div>
+            <div class="xp-modal-footer">
+                <button class="xp-button" onclick="closeModal()">OK</button>
+                <button class="xp-button" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Sidebar for Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-hidden');
+            sidebar.classList.toggle('mobile-visible');
+        }
+
+        // Toggle User Dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown && !userDropdown.contains(event.target)) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        // Toggle Accordion
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('span:last-child');
+            
+            // Close all other accordions
+            document.querySelectorAll('.accordion-content').forEach(item => {
+                if (item !== content) {
+                    item.classList.remove('show');
+                    item.previousElementSibling.querySelector('span:last-child').textContent = '▼';
+                }
+            });
+            
+            // Toggle current accordion
+            content.classList.toggle('show');
+            arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Theme Switcher
+        function setTheme(theme) {
+            document.body.className = '';
+            if (theme !== 'blue') {
+                document.body.classList.add('theme-' + theme);
+            }
+        }
+
+        // Pagination
+        document.querySelectorAll('.page-btn:not(.disabled)').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.classList.contains('disabled')) {
+                    document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Sidebar link active state
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
