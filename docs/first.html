@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexPHP Framework - Documentation</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff2d20;
+            --primary-dark: #e02616;
+            --bg-main: #ffffff;
+            --bg-sidebar: #f8f9fa;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border: #e2e8f0;
+            --code-bg: #f7fafc;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-main);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            margin-left: auto;
+        }
+
+        .container {
+            display: flex;
+            margin-top: 60px;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 2rem 0;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-content {
+            padding: 0 1.5rem;
+        }
+
+        .chapter {
+            margin-bottom: 1.5rem;
+        }
+
+        .chapter-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .subchapter {
+            list-style: none;
+        }
+
+        .subchapter a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .subchapter a:hover {
+            background: rgba(255, 45, 32, 0.1);
+            color: var(--primary);
+        }
+
+        .subchapter a.active {
+            background: rgba(255, 45, 32, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 3rem;
+            max-width: 900px;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: 1.875rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: var(--primary);
+        }
+
+        pre {
+            background: #282c34;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: #abb2bf;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .note {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .note p {
+            margin-bottom: 0;
+            color: #2c5282;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .warning p {
+            margin-bottom: 0;
+            color: #7c2d12;
+        }
+
+        ul,
+        ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <a href="#" class="logo">FlexPHP Framework</a>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <div class="chapter">
+                    <div class="chapter-title">Getting Started</div>
+                    <ul class="subchapter">
+                        <li><a href="#installation" class="nav-link active">Installation</a></li>
+                        <li><a href="#configuration" class="nav-link">Configuration</a></li>
+                        <li><a href="#directory-structure" class="nav-link">Directory Structure</a></li>
+                    </ul>
+                </div>
+
+                <div class="chapter">
+                    <div class="chapter-title">Architecture</div>
+                    <ul class="subchapter">
+                        <li><a href="#request-lifecycle" class="nav-link">Request Lifecycle</a></li>
+                        <li><a href="#service-container" class="nav-link">Service Container</a></li>
+                        <li><a href="#service-providers" class="nav-link">Service Providers</a></li>
+                    </ul>
+                </div>
+
+                <div class="chapter">
+                    <div class="chapter-title">The Basics</div>
+                    <ul class="subchapter">
+                        <li><a href="#routing" class="nav-link">Routing</a></li>
+                        <li><a href="#middleware" class="nav-link">Middleware</a></li>
+                        <li><a href="#controllers" class="nav-link">Controllers</a></li>
+                        <li><a href="#requests" class="nav-link">Requests</a></li>
+                        <li><a href="#responses" class="nav-link">Responses</a></li>
+                    </ul>
+                </div>
+
+                <div class="chapter">
+                    <div class="chapter-title">Database</div>
+                    <ul class="subchapter">
+                        <li><a href="#database-setup" class="nav-link">Database Setup</a></li>
+                        <li><a href="#query-builder" class="nav-link">Query Builder</a></li>
+                        <li><a href="#migrations" class="nav-link">Migrations</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section id="installation" class="content-section active">
+                <h1>Installation</h1>
+                <p>FlexPHP is a modern PHP framework designed for building robust web applications with elegant syntax
+                    and powerful features.</p>
+
+                <h2>Server Requirements</h2>
+                <p>Before installing FlexPHP, ensure your server meets the following requirements:</p>
+                <ul>
+                    <li>PHP >= 8.1</li>
+                    <li>Composer</li>
+                    <li>OpenSSL PHP Extension</li>
+                    <li>PDO PHP Extension</li>
+                    <li>Mbstring PHP Extension</li>
+                </ul>
+
+                <h2>Installing FlexPHP</h2>
+                <p>You can install FlexPHP via Composer. Run the following command in your terminal:</p>
+                <pre><code class="language-bash">php flex migrate</code></pre>
+
+                <h2>Rolling Back Migrations</h2>
+                <p>Rollback the last batch of migrations:</p>
+                <pre><code class="language-bash">php flex migrate:rollback</code></pre>
+
+                <p>Rollback all migrations:</p>
+                <pre><code class="language-bash">php flex migrate:reset</code></pre>
+
+                <h2>Column Types</h2>
+                <p>The schema builder supports various column types:</p>
+                <pre><code class="language-php">&lt;?php
+
+$table->bigIncrements('id');
+$table->string('name', 100);
+$table->text('description');
+$table->integer('votes');
+$table->decimal('amount', 8, 2);
+$table->boolean('confirmed');
+$table->date('created_date');
+$table->datetime('created_at');
+$table->timestamp('updated_at');
+$table->json('options');</code></pre>
+
+                <div class="note">
+                    <p><strong>Tip:</strong> Always create a corresponding down method to reverse your migration
+                        changes.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Initialize syntax highlighting
+        document.addEventListener('DOMContentLoaded', function () {
+            hljs.highlightAll();
+
+            // Navigation functionality
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            // Handle navigation clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+
+                    // Add active class to clicked link
+                    this.classList.add('active');
+
+                    // Hide all sections
+                    sections.forEach(section => section.classList.remove('active'));
+
+                    // Show target section
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+
+                        // Scroll to top of content
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                        // Re-highlight code blocks in the new section
+                        targetSection.querySelectorAll('pre code').forEach(block => {
+                            hljs.highlightElement(block);
+                        });
+
+                        // Close sidebar on mobile after selection
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('open');
+                        }
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            menuToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('open');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+
+            // Handle logo click
+            document.querySelector('.logo').addEventListener('click', function (e) {
+                e.preventDefault();
+                // Click the first nav link (Installation)
+                navLinks[0].click();
+            });
+        });
+    </script>
+</body>
+
+</html>language-bash">composer create-project flexphp/flexphp my-app</code></pre>
+
+<p>After installation, navigate to your project directory:</p>
+<pre><code class="language-bash">cd my-app</code></pre>
+
+<h2>Local Development Server</h2>
+<p>FlexPHP includes a built-in development server. To start it, run:</p>
+<pre><code class="language-bash">php flex serve</code></pre>
+
+<p>Your application will be available at <code>http://localhost:8000</code></p>
+
+<div class="note">
+    <p><strong>Note:</strong> The development server is only for local development. Use a proper web server like Apache
+        or Nginx in production.</p>
+</div>
+</section>
+
+<section id="configuration" class="content-section">
+    <h1>Configuration</h1>
+    <p>All configuration files for FlexPHP are stored in the <code>config</code> directory. Each option is documented,
+        so feel free to explore the files.</p>
+
+    <h2>Environment Configuration</h2>
+    <p>FlexPHP uses environment variables to manage configuration settings. When you install FlexPHP, a
+        <code>.env.example</code> file is included in the root directory. Copy this file to create your own
+        <code>.env</code> file:</p>
+    <pre><code class="language-bash">cp .env.example .env</code></pre>
+
+    <h2>Application Key</h2>
+    <p>After creating your <code>.env</code> file, generate an application key:</p>
+    <pre><code class="language-bash">php flex key:generate</code></pre>
+
+    <p>This key is used for encrypting user sessions and other encrypted data.</p>
+
+    <h2>Environment Variables</h2>
+    <p>Here's an example of common environment variables:</p>
+    <pre><code class="language-bash">APP_NAME=FlexPHP
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=flexphp
+DB_USERNAME=root
+DB_PASSWORD=</code></pre>
+
+    <div class="warning">
+        <p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. It may contain
+            sensitive credentials.</p>
+    </div>
+</section>
+
+<section id="directory-structure" class="content-section">
+    <h1>Directory Structure</h1>
+    <p>The default FlexPHP application structure is intended to provide a great starting point for both large and small
+        applications.</p>
+
+    <h2>The Root Directory</h2>
+    <p>The root directory contains several folders and files:</p>
+
+    <h3>The App Directory</h3>
+    <p>The <code>app</code> directory contains the core code of your application. It includes:</p>
+    <ul>
+        <li><strong>Controllers</strong> - HTTP controllers</li>
+        <li><strong>Models</strong> - Eloquent models</li>
+        <li><strong>Middleware</strong> - HTTP middleware</li>
+        <li><strong>Providers</strong> - Service providers</li>
+    </ul>
+
+    <h3>The Config Directory</h3>
+    <p>The <code>config</code> directory contains all of your application's configuration files.</p>
+
+    <h3>The Database Directory</h3>
+    <p>The <code>database</code> directory contains database migrations, factories, and seeds.</p>
+
+    <h3>The Public Directory</h3>
+    <p>The <code>public</code> directory contains the front controller and your assets (images, JavaScript, CSS, etc.).
+    </p>
+
+    <h3>The Routes Directory</h3>
+    <p>The <code>routes</code> directory contains all route definitions for your application.</p>
+</section>
+
+<section id="request-lifecycle" class="content-section">
+    <h1>Request Lifecycle</h1>
+    <p>Understanding the request lifecycle helps you comprehend how FlexPHP processes incoming requests.</p>
+
+    <h2>Lifecycle Overview</h2>
+    <p>When a request enters your FlexPHP application, it goes through the following steps:</p>
+    <ol>
+        <li>The request enters through <code>public/index.php</code></li>
+        <li>The HTTP Kernel handles the request</li>
+        <li>The request passes through middleware</li>
+        <li>The router dispatches the request to a controller or closure</li>
+        <li>The response is generated and sent back through middleware</li>
+        <li>The response is sent to the browser</li>
+    </ol>
+
+    <h2>Entry Point</h2>
+    <p>All requests to your application are directed to <code>public/index.php</code>:</p>
+    <pre><code class="language-php">&lt;?php
+
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$kernel = $app->make(Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+);
+
+$response->send();
+
+$kernel->terminate($request, $response);</code></pre>
+</section>
+
+<section id="service-container" class="content-section">
+    <h1>Service Container</h1>
+    <p>The FlexPHP service container is a powerful tool for managing class dependencies and performing dependency
+        injection.</p>
+
+    <h2>Binding</h2>
+    <p>You can bind a class or interface to the container using the <code>bind</code> method:</p>
+    <pre><code class="language-php">&lt;?php
+
+$this->app->bind(UserRepository::class, function ($app) {
+    return new UserRepository($app->make('db'));
+});</code></pre>
+
+    <h2>Resolving</h2>
+    <p>You can resolve a class from the container using the <code>make</code> method:</p>
+    <pre><code class="language-php">&lt;?php
+
+$repository = $app->make(UserRepository::class);</code></pre>
+
+    <h2>Automatic Injection</h2>
+    <p>The container automatically resolves dependencies in controller constructors:</p>
+    <pre><code class="language-php">&lt;?php
+
+namespace App\Controllers;
+
+use App\Repositories\UserRepository;
+
+class UserController extends Controller
+{
+    protected $users;
+
+    public function __construct(UserRepository $users)
+    {
+        $this->users = $users;
+    }
+}</code></pre>
+</section>
+
+<section id="service-providers" class="content-section">
+    <h1>Service Providers</h1>
+    <p>Service providers are the central place to configure your application. They bind services into the service
+        container.</p>
+
+    <h2>Writing Service Providers</h2>
+    <p>All service providers extend the <code>ServiceProvider</code> class:</p>
+    <pre><code class="language-php">&lt;?php
+
+namespace App\Providers;
+
+use FlexPHP\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        $this->app->bind('custom', function () {
+            return new CustomClass();
+        });
+    }
+
+    public function boot()
+    {
+        // Bootstrap application services
+    }
+}</code></pre>
+
+    <h2>Registering Providers</h2>
+    <p>Register your service providers in <code>config/app.php</code>:</p>
+    <pre><code class="language-php">&lt;?php
+
+'providers' => [
+    App\Providers\AppServiceProvider::class,
+    App\Providers\RouteServiceProvider::class,
+],</code></pre>
+</section>
+
+<section id="routing" class="content-section">
+    <h1>Routing</h1>
+    <p>FlexPHP routes are defined in the <code>routes</code> directory. The framework automatically loads these files.
+    </p>
+
+    <h2>Basic Routing</h2>
+    <p>The most basic FlexPHP routes accept a URI and a closure:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::get('/welcome', function () {
+    return 'Welcome to FlexPHP!';
+});</code></pre>
+
+    <h2>Route Parameters</h2>
+    <p>You can capture segments of the URI within your route:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::get('/user/{id}', function ($id) {
+    return 'User '.$id;
+});</code></pre>
+
+    <h2>Named Routes</h2>
+    <p>Named routes allow you to conveniently generate URLs or redirects:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::get('/profile', function () {
+    // ...
+})->name('profile');
+
+// Generating URLs
+$url = route('profile');</code></pre>
+
+    <h2>Route Groups</h2>
+    <p>Route groups allow you to share attributes across multiple routes:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::prefix('admin')->group(function () {
+    Route::get('/users', function () {
+        // Matches /admin/users
+    });
+});</code></pre>
+</section>
+
+<section id="middleware" class="content-section">
+    <h1>Middleware</h1>
+    <p>Middleware provides a convenient mechanism for filtering HTTP requests entering your application.</p>
+
+    <h2>Defining Middleware</h2>
+    <p>Create a new middleware using the make command:</p>
+    <pre><code class="language-bash">php flex make:middleware CheckAge</code></pre>
+
+    <p>This command will create a new middleware class:</p>
+    <pre><code class="language-php">&lt;?php
+
+namespace App\Middleware;
+
+use Closure;
+
+class CheckAge
+{
+    public function handle($request, Closure $next)
+    {
+        if ($request->age <= 18) {
+            return redirect('home');
+        }
+
+        return $next($request);
+    }
+}</code></pre>
+
+    <h2>Registering Middleware</h2>
+    <p>Assign middleware to routes in your route files:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::get('/admin', function () {
+    // ...
+})->middleware(CheckAge::class);</code></pre>
+</section>
+
+<section id="controllers" class="content-section">
+    <h1>Controllers</h1>
+    <p>Controllers group related request handling logic into a single class, stored in the <code>app/Controllers</code>
+        directory.</p>
+
+    <h2>Basic Controllers</h2>
+    <p>Here's an example of a basic controller:</p>
+    <pre><code class="language-php">&lt;?php
+
+namespace App\Controllers;
+
+use App\Models\User;
+
+class UserController extends Controller
+{
+    public function index()
+    {
+        $users = User::all();
+        return view('users.index', ['users' => $users]);
+    }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+        return view('users.show', ['user' => $user]);
+    }
+}</code></pre>
+
+    <h2>Resource Controllers</h2>
+    <p>FlexPHP resource controllers provide CRUD operations:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::resource('photos', PhotoController::class);</code></pre>
+
+    <p>This creates multiple routes for typical CRUD operations:</p>
+    <ul>
+        <li>GET /photos - index</li>
+        <li>GET /photos/create - create</li>
+        <li>POST /photos - store</li>
+        <li>GET /photos/{id} - show</li>
+        <li>GET /photos/{id}/edit - edit</li>
+        <li>PUT/PATCH /photos/{id} - update</li>
+        <li>DELETE /photos/{id} - destroy</li>
+    </ul>
+</section>
+
+<section id="requests" class="content-section">
+    <h1>Requests</h1>
+    <p>FlexPHP's request class provides an object-oriented way to interact with the current HTTP request.</p>
+
+    <h2>Accessing the Request</h2>
+    <p>Obtain an instance of the current request via dependency injection:</p>
+    <pre><code class="language-php">&lt;?php
+
+namespace App\Controllers;
+
+use FlexPHP\Http\Request;
+
+class UserController extends Controller
+{
+    public function store(Request $request)
+    {
+        $name = $request->input('name');
+        // ...
+    }
+}</code></pre>
+
+    <h2>Retrieving Input</h2>
+    <p>Access all input data using the <code>all</code> method:</p>
+    <pre><code class="language-php">&lt;?php
+
+$input = $request->all();</code></pre>
+
+    <p>Retrieve a specific input value:</p>
+    <pre><code class="language-php">&lt;?php
+
+$name = $request->input('name');
+$email = $request->input('email', 'default@example.com');</code></pre>
+
+    <h2>Request Validation</h2>
+    <p>Validate incoming request data:</p>
+    <pre><code class="language-php">&lt;?php
+
+$validated = $request->validate([
+    'name' => 'required|max:255',
+    'email' => 'required|email',
+    'age' => 'required|integer|min:18',
+]);</code></pre>
+</section>
+
+<section id="responses" class="content-section">
+    <h1>Responses</h1>
+    <p>All routes and controllers should return a response to be sent back to the user's browser.</p>
+
+    <h2>Basic Responses</h2>
+    <p>Return strings or arrays from routes:</p>
+    <pre><code class="language-php">&lt;?php
+
+Route::get('/', function () {
+    return 'Hello World';
+});
+
+Route::get('/json', function () {
+    return ['name' => 'FlexPHP', 'version' => '1.0'];
+});</code></pre>
+
+    <h2>Response Objects</h2>
+    <p>Create response instances for more control:</p>
+    <pre><code class="language-php">&lt;?php
+
+return response('Hello World', 200)
+    ->header('Content-Type', 'text/plain');</code></pre>
+
+    <h2>Redirects</h2>
+    <p>Redirect responses are instances of the <code>RedirectResponse</code> class:</p>
+    <pre><code class="language-php">&lt;?php
+
+return redirect('/home');
+
+return redirect()->route('profile');
+
+return redirect()->back();</code></pre>
+
+    <h2>JSON Responses</h2>
+    <p>The <code>json</code> method automatically sets the Content-Type header:</p>
+    <pre><code class="language-php">&lt;?php
+
+return response()->json([
+    'name' => 'John',
+    'status' => 'active'
+]);</code></pre>
+</section>
+
+<section id="database-setup" class="content-section">
+    <h1>Database Setup</h1>
+    <p>FlexPHP makes interacting with databases extremely simple across a variety of database backends.</p>
+
+    <h2>Configuration</h2>
+    <p>Database configuration is located in <code>config/database.php</code>. You can configure multiple database
+        connections:</p>
+    <pre><code class="language-php">&lt;?php
+
+'connections' => [
+    'mysql' => [
+        'driver' => 'mysql',
+        'host' => env('DB_HOST', '127.0.0.1'),
+        'port' => env('DB_PORT', '3306'),
+        'database' => env('DB_DATABASE', 'flexphp'),
+        'username' => env('DB_USERNAME', 'root'),
+        'password' => env('DB_PASSWORD', ''),
+    ],
+],</code></pre>
+
+    <h2>Running Queries</h2>
+    <p>You can run queries using the <code>DB</code> facade:</p>
+    <pre><code class="language-php">&lt;?php
+
+use FlexPHP\Support\Facades\DB;
+
+$users = DB::select('SELECT * FROM users WHERE active = ?', [1]);</code></pre>
+</section>
+
+<section id="query-builder" class="content-section">
+    <h1>Query Builder</h1>
+    <p>FlexPHP's query builder provides a convenient, fluent interface for creating and running database queries.</p>
+
+    <h2>Retrieving Results</h2>
+    <p>Retrieve all rows from a table:</p>
+    <pre><code class="language-php">&lt;?php
+
+use FlexPHP\Support\Facades\DB;
+
+$users = DB::table('users')->get();</code></pre>
+
+    <p>Retrieve a single row:</p>
+    <pre><code class="language-php">&lt;?php
+
+$user = DB::table('users')->where('name', 'John')->first();</code></pre>
+
+    <h2>Where Clauses</h2>
+    <p>Add where clauses to your queries:</p>
+    <pre><code class="language-php">&lt;?php
+
+$users = DB::table('users')
+    ->where('votes', '>', 100)
+    ->where('status', 'active')
+    ->get();</code></pre>
+
+    <h2>Ordering and Grouping</h2>
+    <p>Order and group query results:</p>
+    <pre><code class="language-php">&lt;?php
+
+$users = DB::table('users')
+    ->orderBy('name', 'desc')
+    ->groupBy('account_id')
+    ->get();</code></pre>
+
+    <h2>Inserts</h2>
+    <p>Insert records into the database:</p>
+    <pre><code class="language-php">&lt;?php
+
+DB::table('users')->insert([
+    'email' => 'john@example.com',
+    'name' => 'John Doe'
+]);</code></pre>
+
+    <h2>Updates</h2>
+    <p>Update existing records:</p>
+    <pre><code class="language-php">&lt;?php
+
+DB::table('users')
+    ->where('id', 1)
+    ->update(['votes' => 1]);</code></pre>
+
+    <h2>Deletes</h2>
+    <p>Delete records from the database:</p>
+    <pre><code class="language-php">&lt;?php
+
+DB::table('users')->where('votes', '<', 100)->delete();</code></pre>
+</section>
+
+<section id="migrations" class="content-section">
+    <h1>Migrations</h1>
+    <p>Migrations are like version control for your database, allowing your team to define and share the application's
+        database schema.</p>
+
+    <h2>Generating Migrations</h2>
+    <p>Create a new migration using the make command:</p>
+    <pre><code class="language-bash">php flex make:migration create_users_table</code></pre>
+
+    <h2>Migration Structure</h2>
+    <p>A migration class contains two methods: <code>up</code> and <code>down</code>:</p>
+    <pre><code class="language-php">&lt;?php
+
+use FlexPHP\Database\Migrations\Migration;
+use FlexPHP\Database\Schema\Blueprint;
+use FlexPHP\Support\Facades\Schema;
+
+class CreateUsersTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('users');
+    }
+}</code></pre>
+
+    <h2>Running Migrations</h2>
+    <p>Run all outstanding migrations:</p>
+    <pre><code class=""></code></pre>
