@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian-Style Rich Text Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1e1e1e;
+            color: #dcddde;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #202020;
+        }
+
+        .toolbar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 4px;
+            padding-right: 8px;
+            border-right: 1px solid #3a3a3a;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .toolbar-btn {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #dcddde;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .toolbar-btn:hover {
+            background: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+
+        .toolbar-btn.active {
+            background: #7f6df2;
+            border-color: #7f6df2;
+            color: white;
+        }
+
+        .toolbar-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        select.toolbar-btn {
+            padding: 6px 10px;
+        }
+
+        input[type="color"] {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #2a2a2a;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            background: #1e1e1e;
+        }
+
+        .editor {
+            background: #202020;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 40px;
+            min-height: 600px;
+            outline: none;
+            color: #dcddde;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .editor:focus {
+            border-color: #7f6df2;
+        }
+
+        .editor h1 {
+            font-size: 2em;
+            margin: 0.67em 0;
+            color: #fff;
+        }
+
+        .editor h2 {
+            font-size: 1.5em;
+            margin: 0.75em 0;
+            color: #fff;
+        }
+
+        .editor h3 {
+            font-size: 1.17em;
+            margin: 0.83em 0;
+            color: #fff;
+        }
+
+        .editor p {
+            margin: 1em 0;
+        }
+
+        .editor ul, .editor ol {
+            margin: 1em 0;
+            padding-left: 40px;
+        }
+
+        .editor li {
+            margin: 0.5em 0;
+        }
+
+        .editor blockquote {
+            border-left: 4px solid #7f6df2;
+            padding-left: 16px;
+            margin: 1em 0;
+            color: #b4b5b8;
+            font-style: italic;
+        }
+
+        .editor code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e96900;
+        }
+
+        .editor pre {
+            background: #2a2a2a;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .editor pre code {
+            background: transparent;
+            padding: 0;
+            color: #9cdcfe;
+        }
+
+        .editor a {
+            color: #7f6df2;
+            text-decoration: none;
+        }
+
+        .editor a:hover {
+            text-decoration: underline;
+        }
+
+        .editor img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin: 1em 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .editor table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+
+        .editor table td, .editor table th {
+            border: 1px solid #3a3a3a;
+            padding: 8px 12px;
+        }
+
+        .editor table th {
+            background: #2a2a2a;
+            font-weight: bold;
+        }
+
+        .editor hr {
+            border: none;
+            border-top: 2px solid #3a3a3a;
+            margin: 2em 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .modal-body {
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #dcddde;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #7f6df2;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: #7f6df2;
+            color: white;
+            border-color: #7f6df2;
+        }
+
+        .modal-btn-primary:hover {
+            background: #6c5ce7;
+        }
+
+        .modal-btn-secondary {
+            background: #2a2a2a;
+            color: #dcddde;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        .status-bar {
+            background: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .plugin-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #2a2a2a;
+            border-left: 1px solid #3a3a3a;
+            transition: right 0.3s;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .plugin-panel.active {
+            right: 0;
+        }
+
+        .plugin-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .plugin-item {
+            background: #1e1e1e;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .plugin-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .plugin-description {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .plugin-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            width: 40px;
+            height: 20px;
+            background: #3a3a3a;
+            border-radius: 10px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #7f6df2;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Form wrapper for submission -->
+    <form id="editorForm" action="/submit" method="POST">
+        <input type="hidden" id="editorContent" name="content" value="">
+    </form>
+
+    <div class="editor-container">
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <select class="toolbar-btn" id="formatBlock">
+                    <option value="p">Paragraph</option>
+                    <option value="h1">Heading 1</option>
+                    <option value="h2">Heading 2</option>
+                    <option value="h3">Heading 3</option>
+                    <option value="h4">Heading 4</option>
+                    <option value="h5">Heading 5</option>
+                    <option value="h6">Heading 6</option>
+                </select>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-command="bold" title="Bold (Ctrl+B)">
+                    <strong>B</strong>
+                </button>
+                <button class="toolbar-btn" data-command="italic" title="Italic (Ctrl+I)">
+                    <em>I</em>
+                </button>
+                <button class="toolbar-btn" data-command="underline" title="Underline (Ctrl+U)">
+                    <u>U</u>
+                </button>
+                <button class="toolbar-btn" data-command="strikeThrough" title="Strikethrough">
+                    <s>S</s>
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                    • List
+                </button>
+                <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                    1. List
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-command="justifyLeft" title="Align Left">
+                    ←
+                </button>
+                <button class="toolbar-btn" data-command="justifyCenter" title="Align Center">
+                    ↔
+                </button>
+                <button class="toolbar-btn" data-command="justifyRight" title="Align Right">
+                    →
+                </button>
+                <button class="toolbar-btn" data-command="justifyFull" title="Justify">
+                    ⇔
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="insertLink" title="Insert Link">
+                    🔗 Link
+                </button>
+                <button class="toolbar-btn" id="insertImage" title="Insert Image">
+                    🖼️ Image
+                </button>
+                <button class="toolbar-btn" id="insertTable" title="Insert Table">
+                    📊 Table
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-command="formatBlock" data-value="blockquote" title="Quote">
+                    " Quote
+                </button>
+                <button class="toolbar-btn" data-command="formatBlock" data-value="pre" title="Code Block">
+                    &lt;/&gt; Code
+                </button>
+                <button class="toolbar-btn" data-command="insertHorizontalRule" title="Horizontal Rule">
+                    ― HR
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <label title="Text Color">
+                    <input type="color" id="textColor" value="#dcddde">
+                </label>
+                <label title="Background Color">
+                    <input type="color" id="bgColor" value="#202020">
+                </label>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" data-command="undo" title="Undo (Ctrl+Z)">
+                    ↶ Undo
+                </button>
+                <button class="toolbar-btn" data-command="redo" title="Redo (Ctrl+Y)">
+                    ↷ Redo
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="togglePlugins" title="Plugins">
+                    🔌 Plugins
+                </button>
+                <button class="toolbar-btn" id="submitBtn" title="Submit Content" style="background: #10b981; border-color: #10b981; color: white;">
+                    📤 Submit
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <div class="editor" contenteditable="true" id="editor">
+                <h1>Welcome to Obsidian-Style Editor</h1>
+                <p>Start typing your content here. You can:</p>
+                <ul>
+                    <li>Format text with bold, italic, underline, and more</li>
+                    <li>Copy and paste images directly into the editor</li>
+                    <li>Create tables, lists, and code blocks</li>
+                    <li>Add links and customize colors</li>
+                    <li>Create and manage plugins</li>
+                </ul>
+                <p>Try pasting an image with <strong>Ctrl+V</strong> or selecting text to modify its style!</p>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="wordCount">Words: 0 | Characters: 0</span>
+            <span id="pluginStatus">Plugins: 0 active</span>
+        </div>
+    </div>
+
+    <!-- Plugin Panel -->
+    <div class="plugin-panel" id="pluginPanel">
+        <div class="plugin-header">Plugin Manager</div>
+        <div id="pluginList"></div>
+        <button class="modal-btn modal-btn-primary" id="createPlugin" style="width: 100%; margin-top: 12px;">
+            + Create New Plugin
+        </button>
+    </div>
+
+    <!-- Link Modal -->
+    <div class="modal" id="linkModal">
+        <div class="modal-content">
+            <div class="modal-header">Insert Link</div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="linkText" placeholder="Link text">
+                <input type="text" class="modal-input" id="linkUrl" placeholder="URL (https://...)">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="insertLinkBtn">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">Insert Image</div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="imageUrl" placeholder="Image URL">
+                <input type="text" class="modal-input" id="imageAlt" placeholder="Alt text (optional)">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('imageModal')">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="insertImageBtn">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Modal -->
+    <div class="modal" id="tableModal">
+        <div class="modal-content">
+            <div class="modal-header">Insert Table</div>
+            <div class="modal-body">
+                <input type="number" class="modal-input" id="tableRows" placeholder="Number of rows" min="1" value="3">
+                <input type="number" class="modal-input" id="tableCols" placeholder="Number of columns" min="1" value="3">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('tableModal')">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="insertTableBtn">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plugin Creation Modal -->
+    <div class="modal" id="pluginModal">
+        <div class="modal-content">
+            <div class="modal-header">Create Plugin</div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="pluginName" placeholder="Plugin name">
+                <input type="text" class="modal-input" id="pluginDesc" placeholder="Description">
+                <textarea class="modal-input" id="pluginCode" placeholder="Plugin code (JavaScript)" rows="10"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('pluginModal')">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="createPluginBtn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Editor Core
+        class ObsidianEditor {
+            constructor() {
+                this.editor = document.getElementById('editor');
+                this.hiddenInput = document.getElementById('editorContent');
+                this.form = document.getElementById('editorForm');
+                this.plugins = new Map();
+                this.loadedPlugins = new Set();
+                
+                // Event handlers storage
+                this.eventHandlers = {
+                    change: [],
+                    load: [],
+                    focus: [],
+                    blur: [],
+                    input: []
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.setupToolbar();
+                this.setupImagePaste();
+                this.setupFormatBlock();
+                this.setupColors();
+                this.setupModals();
+                this.setupPlugins();
+                this.setupWordCount();
+                this.setupKeyboardShortcuts();
+                this.updateToolbarState();
+                this.setupFormSubmission();
+                this.setupEditorEvents();
+                
+                // Auto-save to localStorage and sync with hidden input
+                this.editor.addEventListener('input', () => {
+                    this.syncContent();
+                    this.saveContent();
+                    this.updateWordCount();
+                    this.trigger('input', { content: this.getContent() });
+                });
+
+                // Update toolbar on selection change
+                document.addEventListener('selectionchange', () => {
+                    this.updateToolbarState();
+                });
+
+                // Load saved content
+                this.loadContent();
+                
+                // Trigger load event
+                this.trigger('load', { content: this.getContent() });
+            }
+
+            setupEditorEvents() {
+                // Focus event
+                this.editor.addEventListener('focus', () => {
+                    this.trigger('focus', { content: this.getContent() });
+                });
+
+                // Blur event
+                this.editor.addEventListener('blur', () => {
+                    this.trigger('blur', { content: this.getContent() });
+                });
+
+                // Change event (triggered on blur if content changed)
+                let lastContent = this.getContent();
+                this.editor.addEventListener('blur', () => {
+                    const currentContent = this.getContent();
+                    if (currentContent !== lastContent) {
+                        this.trigger('change', { 
+                            content: currentContent,
+                            previousContent: lastContent
+                        });
+                        lastContent = currentContent;
+                    }
+                });
+            }
+
+            setupFormSubmission() {
+                const submitBtn = document.getElementById('submitBtn');
+                
+                submitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.submit();
+                });
+
+                // Handle form submission
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.syncContent();
+                    
+                    // You can customize this to actually submit the form
+                    console.log('Form submitted with content:', this.getContent());
+                    alert('Form submitted! Check console for content.\n\nIn production, this would POST to your server.');
+                    
+                    // Uncomment to actually submit:
+                    // this.form.submit();
+                });
+            }
+
+            // Public API Methods
+            
+            /**
+             * Get current editor content
+             */
+            getContent() {
+                return this.editor.innerHTML;
+            }
+
+            /**
+             * Set editor content
+             */
+            setContent(html) {
+                this.editor.innerHTML = html;
+                this.syncContent();
+                this.updateWordCount();
+            }
+
+            /**
+             * Get plain text content
+             */
+            getText() {
+                return this.editor.innerText;
+            }
+
+            /**
+             * Sync editor content with hidden input
+             */
+            syncContent() {
+                this.hiddenInput.value = this.getContent();
+            }
+
+            /**
+             * Submit the form programmatically
+             */
+            submit() {
+                this.syncContent();
+                this.form.dispatchEvent(new Event('submit'));
+            }
+
+            /**
+             * Register event handler
+             * @param {string} eventName - 'change', 'load', 'focus', 'blur', 'input'
+             * @param {function} callback - Function to call when event occurs
+             */
+            on(eventName, callback) {
+                if (this.eventHandlers[eventName]) {
+                    this.eventHandlers[eventName].push(callback);
+                } else {
+                    console.warn(`Event "${eventName}" is not supported. Supported events: change, load, focus, blur, input`);
+                }
+                return this; // Allow chaining
+            }
+
+            /**
+             * Remove event handler
+             */
+            off(eventName, callback) {
+                if (this.eventHandlers[eventName]) {
+                    const index = this.eventHandlers[eventName].indexOf(callback);
+                    if (index > -1) {
+                        this.eventHandlers[eventName].splice(index, 1);
+                    }
+                }
+                return this;
+            }
+
+            /**
+             * Trigger event
+             */
+            trigger(eventName, data) {
+                if (this.eventHandlers[eventName]) {
+                    this.eventHandlers[eventName].forEach(callback => {
+                        try {
+                            callback(data);
+                        } catch (error) {
+                            console.error(`Error in ${eventName} handler:`, error);
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Clear editor content
+             */
+            clear() {
+                this.editor.innerHTML = '';
+                this.syncContent();
+                this.updateWordCount();
+            }
+
+            /**
+             * Focus the editor
+             */
+            focus() {
+                this.editor.focus();
+            }
+
+            /**
+             * Get word count
+             */
+            getWordCount() {
+                const text = this.editor.innerText || '';
+                return text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            }
+
+            /**
+             * Get character count
+             */
+            getCharCount() {
+                return (this.editor.innerText || '').length;
+            }
+
+            setupToolbar() {
+                document.querySelectorAll('.toolbar-btn[data-command]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const command = btn.dataset.command;
+                        const value = btn.dataset.value || null;
+                        
+                        if (command === 'formatBlock' && value) {
+                            document.execCommand('formatBlock', false, value);
+                        } else {
+                            document.execCommand(command, false, value);
+                        }
+                        
+                        this.editor.focus();
+                        this.updateToolbarState();
+                    });
+                });
+            }
+
+            setupImagePaste() {
+                this.editor.addEventListener('paste', (e) => {
+                    const items = e.clipboardData.items;
+                    
+                    for (let item of items) {
+                        if (item.type.indexOf('image') !== -1) {
+                            e.preventDefault();
+                            const blob = item.getAsFile();
+                            const reader = new FileReader();
+                            
+                            reader.onload = (event) => {
+                                const img = document.createElement('img');
+                                img.src = event.target.result;
+                                img.style.maxWidth = '100%';
+                                
+                                const selection = window.getSelection();
+                                if (selection.rangeCount > 0) {
+                                    const range = selection.getRangeAt(0);
+                                    range.deleteContents();
+                                    range.insertNode(img);
+                                    
+                                    // Move cursor after image
+                                    range.setStartAfter(img);
+                                    range.setEndAfter(img);
+                                    selection.removeAllRanges();
+                                    selection.addRange(range);
+                                }
+                            };
+                            
+                            reader.readAsDataURL(blob);
+                        }
+                    }
+                });
+            }
+
+            setupFormatBlock() {
+                const formatSelect = document.getElementById('formatBlock');
+                formatSelect.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    document.execCommand('formatBlock', false, value);
+                    this.editor.focus();
+                });
+            }
+
+            setupColors() {
+                document.getElementById('textColor').addEventListener('change', (e) => {
+                    document.execCommand('foreColor', false, e.target.value);
+                    this.editor.focus();
+                });
+
+                document.getElementById('bgColor').addEventListener('change', (e) => {
+                    document.execCommand('backColor', false, e.target.value);
+                    this.editor.focus();
+                });
+            }
+
+            setupModals() {
+                // Link Modal
+                document.getElementById('insertLink').addEventListener('click', () => {
+                    this.openModal('linkModal');
+                });
+
+                document.getElementById('insertLinkBtn').addEventListener('click', () => {
+                    const text = document.getElementById('linkText').value;
+                    const url = document.getElementById('linkUrl').value;
+                    
+                    if (url) {
+                        const selection = window.getSelection();
+                        const range = selection.getRangeAt(0);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.textContent = text || url;
+                        
+                        range.deleteContents();
+                        range.insertNode(link);
+                        
+                        this.closeModal('linkModal');
+                        document.getElementById('linkText').value = '';
+                        document.getElementById('linkUrl').value = '';
+                        this.editor.focus();
+                    }
+                });
+
+                // Image Modal
+                document.getElementById('insertImage').addEventListener('click', () => {
+                    this.openModal('imageModal');
+                });
+
+                document.getElementById('insertImageBtn').addEventListener('click', () => {
+                    const url = document.getElementById('imageUrl').value;
+                    const alt = document.getElementById('imageAlt').value;
+                    
+                    if (url) {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = alt || '';
+                        img.style.maxWidth = '100%';
+                        
+                        const selection = window.getSelection();
+                        const range = selection.getRangeAt(0);
+                        range.insertNode(img);
+                        
+                        this.closeModal('imageModal');
+                        document.getElementById('imageUrl').value = '';
+                        document.getElementById('imageAlt').value = '';
+                        this.editor.focus();
+                    }
+                });
+
+                // Table Modal
+                document.getElementById('insertTable').addEventListener('click', () => {
+                    this.openModal('tableModal');
+                });
+
+                document.getElementById('insertTableBtn').addEventListener('click', () => {
+                    const rows = parseInt(document.getElementById('tableRows').value) || 3;
+                    const cols = parseInt(document.getElementById('tableCols').value) || 3;
+                    
+                    const table = document.createElement('table');
+                    
+                    for (let i = 0; i < rows; i++) {
+                        const tr = document.createElement('tr');
+                        for (let j = 0; j < cols; j++) {
+                            const cell = i === 0 ? document.createElement('th') : document.createElement('td');
+                            cell.textContent = i === 0 ? `Header ${j + 1}` : 'Cell';
+                            tr.appendChild(cell);
+                        }
+                        table.appendChild(tr);
+                    }
+                    
+                    const selection = window.getSelection();
+                    const range = selection.getRangeAt(0);
+                    range.insertNode(table);
+                    
+                    this.closeModal('tableModal');
+                    this.editor.focus();
+                });
+            }
+
+            setupPlugins() {
+                document.getElementById('togglePlugins').addEventListener('click', () => {
+                    document.getElementById('pluginPanel').classList.toggle('active');
+                });
+
+                document.getElementById('createPlugin').addEventListener('click', () => {
+                    this.openModal('pluginModal');
+                });
+
+                document.getElementById('createPluginBtn').addEventListener('click', () => {
+                    this.createPlugin();
+                });
+
+                this.renderPlugins();
+            }
+
+            setupWordCount() {
+                this.updateWordCount();
+            }
+
+            setupKeyboardShortcuts() {
+                this.editor.addEventListener('keydown', (e) => {
+                    // Ctrl+B for bold
+                    if (e.ctrlKey && e.key === 'b') {
+                        e.preventDefault();
+                        document.execCommand('bold');
+                    }
+                    // Ctrl+I for italic
+                    if (e.ctrlKey && e.key === 'i') {
+                        e.preventDefault();
+                        document.execCommand('italic');
+                    }
+                    // Ctrl+U for underline
+                    if (e.ctrlKey && e.key === 'u') {
+                        e.preventDefault();
+                        document.execCommand('underline');
+                    }
+                });
+            }
+
+            updateToolbarState() {
+                document.querySelectorAll('.toolbar-btn[data-command]').forEach(btn => {
+                    const command = btn.dataset.command;
+                    try {
+                        if (document.queryCommandState(command)) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    } catch (e) {
+                        // Some commands don't support queryCommandState
+                    }
+                });
+            }
+
+            updateWordCount() {
+                const text = this.editor.innerText || '';
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+                const chars = text.length;
+                document.getElementById('wordCount').textContent = `Words: ${words} | Characters: ${chars}`;
+            }
+
+            openModal(modalId) {
+                document.getElementById(modalId).classList.add('active');
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+
+            saveContent() {
+                localStorage.setItem('editorContent', this.editor.innerHTML);
+            }
+
+            loadContent() {
+                const saved = localStorage.getItem('editorContent');
+                if (saved) {
+                    // Optionally load saved content
+                    // this.editor.innerHTML = saved;
+                }
+            }
+
+            // Plugin System
+            registerPlugin(name, description, code) {
+                this.plugins.set(name, {
+                    name,
+                    description,
+                    code,
+                    enabled: false
+                });
+                this.savePlugins();
+                this.renderPlugins();
+            }
+
+            togglePlugin(name) {
+                const plugin = this.plugins.get(name);
+                if (!plugin) return;
+
+                plugin.enabled = !plugin.enabled;
+                
+                if (plugin.enabled) {
+                    this.executePlugin(name);
+                } else {
+                    this.loadedPlugins.delete(name);
+                }
+                
+                this.savePlugins();
+                this.renderPlugins();
+                this.updatePluginStatus();
+            }
+
+            executePlugin(name) {
+                const plugin = this.plugins.get(name);
+                if (!plugin) return;
+
+                try {
+                    // Create a safe execution context
+                    const pluginContext = {
+                        editor: this.editor,
+                        insertText: (text) => {
+                            document.execCommand('insertText', false, text);
+                        },
+                        getSelection: () => window.getSelection(),
+                        alert: (msg) => alert(msg),
+                        console: console
+                    };
+
+                    // Execute plugin code
+                    const pluginFunction = new Function('context', plugin.code);
+                    pluginFunction(pluginContext);
+                    
+                    this.loadedPlugins.add(name);
+                } catch (error) {
+                    console.error(`Error executing plugin "${name}":`, error);
+                    alert(`Plugin error: ${error.message}`);
+                    plugin.enabled = false;
+                }
+            }
+
+            createPlugin() {
+                const name = document.getElementById('pluginName').value;
+                const description = document.getElementById('pluginDesc').value;
+                const code = document.getElementById('pluginCode').value;
+
+                if (!name || !code) {
+                    alert('Please provide a name and code for the plugin');
+                    return;
+                }
+
+                this.registerPlugin(name, description, code);
+                
+                document.getElementById('pluginName').value = '';
+                document.getElementById('pluginDesc').value = '';
+                document.getElementById('pluginCode').value = '';
+                
+                this.closeModal('pluginModal');
+            }
+
+            renderPlugins() {
+                const pluginList = document.getElementById('pluginList');
+                pluginList.innerHTML = '';
+
+                this.plugins.forEach((plugin, name) => {
+                    const item = document.createElement('div');
+                    item.className = 'plugin-item';
+                    item.innerHTML = `
+                        <div class="plugin-name">${plugin.name}</div>
+                        <div class="plugin-description">${plugin.description || 'No description'}</div>
+                        <div class="plugin-toggle">
+                            <div class="toggle-switch ${plugin.enabled ? 'active' : ''}" data-plugin="${name}"></div>
+                            <span>${plugin.enabled ? 'Enabled' : 'Disabled'}</span>
+                        </div>
+                    `;
+
+                    const toggle = item.querySelector('.toggle-switch');
+                    toggle.addEventListener('click', () => {
+                        this.togglePlugin(name);
+                    });
+
+                    pluginList.appendChild(item);
+                });
+            }
+
+            updatePluginStatus() {
+                const activeCount = Array.from(this.plugins.values()).filter(p => p.enabled).length;
+                document.getElementById('pluginStatus').textContent = `Plugins: ${activeCount} active`;
+            }
+
+            savePlugins() {
+                const pluginData = Array.from(this.plugins.entries()).map(([name, plugin]) => ({
+                    name,
+                    description: plugin.description,
+                    code: plugin.code,
+                    enabled: plugin.enabled
+                }));
+                localStorage.setItem('editorPlugins', JSON.stringify(pluginData));
+            }
+
+            loadPlugins() {
+                const saved = localStorage.getItem('editorPlugins');
+                if (saved) {
+                    try {
+                        const pluginData = JSON.parse(saved);
+                        pluginData.forEach(plugin => {
+                            this.plugins.set(plugin.name, plugin);
+                            if (plugin.enabled) {
+                                this.executePlugin(plugin.name);
+                            }
+                        });
+                        this.renderPlugins();
+                        this.updatePluginStatus();
+                    } catch (e) {
+                        console.error('Error loading plugins:', e);
+                    }
+                }
+            }
+        }
+
+        // Global functions for modals
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Initialize editor
+        const editor = new ObsidianEditor();
+        editor.loadPlugins();
+
+        // Add sample plugins for demonstration
+        if (editor.plugins.size === 0) {
+            editor.registerPlugin(
+                'Word Counter',
+                'Displays a word count alert',
+                `
+                const text = context.editor.innerText || '';
+                const words = text.trim().split(/\\s+/).filter(w => w.length > 0).length;
+                context.alert('Word count: ' + words);
+                `
+            );
+
+            editor.registerPlugin(
+                'Uppercase Selection',
+                'Converts selected text to uppercase',
+                `
+                const selection = context.getSelection();
+                if (selection.toString()) {
+                    const text = selection.toString().toUpperCase();
+                    document.execCommand('insertText', false, text);
+                }
+                `
+            );
+
+            editor.registerPlugin(
+                'Insert Date',
+                'Inserts current date at cursor',
+                `
+                const date = new Date().toLocaleDateString();
+                context.insertText(date);
+                `
+            );
+        }
+
+        // ============================================
+        // EVENT HANDLERS DEMONSTRATION
+        // ============================================
+        
+        // Example: Listen to change event
+        editor.on('change', (data) => {
+            console.log('Content changed!', {
+                newContent: data.content,
+                oldContent: data.previousContent
+            });
+        });
+
+        // Example: Listen to input event (fires on every keystroke)
+        editor.on('input', (data) => {
+            console.log('Input detected:', data.content.substring(0, 50) + '...');
+        });
+
+        // Example: Listen to load event
+        editor.on('load', (data) => {
+            console.log('Editor loaded with content:', data.content);
+        });
+
+        // Example: Listen to focus event
+        editor.on('focus', () => {
+            console.log('Editor focused');
+        });
+
+        // Example: Listen to blur event
+        editor.on('blur', () => {
+            console.log('Editor blurred');
+        });
+
+        // ============================================
+        // PUBLIC API USAGE EXAMPLES
+        // ============================================
+        
+        // Make editor globally accessible for easy testing
+        window.editorAPI = {
+            // Get current content
+            getContent: () => editor.getContent(),
+            
+            // Set content
+            setContent: (html) => editor.setContent(html),
+            
+            // Get plain text
+            getText: () => editor.getText(),
+            
+            // Clear editor
+            clear: () => editor.clear(),
+            
+            // Focus editor
+            focus: () => editor.focus(),
+            
+            // Submit form
+            submit: () => editor.submit(),
+            
+            // Get word count
+            getWordCount: () => editor.getWordCount(),
+            
+            // Get character count
+            getCharCount: () => editor.getCharCount(),
+            
+            // Event listeners
+            on: (event, callback) => editor.on(event, callback),
+            off: (event, callback) => editor.off(event, callback),
+            
+            // Access editor instance
+            instance: editor
+        };
+
+        console.log('%c Editor API Available! ', 'background: #7f6df2; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;');
+        console.log('Try these commands in the console:');
+        console.log('  editorAPI.getContent() - Get HTML content');
+        console.log('  editorAPI.getText() - Get plain text');
+        console.log('  editorAPI.setContent("<h1>Hello</h1>") - Set content');
+        console.log('  editorAPI.clear() - Clear editor');
+        console.log('  editorAPI.submit() - Submit form');
+        console.log('  editorAPI.getWordCount() - Get word count');
+        console.log('  editorAPI.on("change", callback) - Listen to events');
+    </script>
+</body>
+</html>
