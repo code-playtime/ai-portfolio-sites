@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Framework - Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #ff2d20;
+            --primary-dark: #e02512;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --border-color: #e2e8f0;
+            --sidebar-width: 280px;
+            --header-height: 64px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .mobile-menu-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            margin-top: var(--header-height);
+            display: flex;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 2rem 0;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        .search-box {
+            margin: 0 1.5rem 2rem;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .nav-chapter {
+            margin-bottom: 1rem;
+        }
+
+        .nav-chapter-title {
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+
+        .nav-chapter-title:hover {
+            background: var(--bg-secondary);
+        }
+
+        .nav-chapter-title svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s;
+        }
+
+        .nav-chapter.active .nav-chapter-title svg {
+            transform: rotate(90deg);
+        }
+
+        .nav-pages {
+            display: none;
+            padding: 0.5rem 0;
+        }
+
+        .nav-chapter.active .nav-pages {
+            display: block;
+        }
+
+        .nav-page {
+            display: block;
+            padding: 0.5rem 1.5rem 0.5rem 2.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-page:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .nav-page.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 3rem 2rem;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .content-inner {
+            max-width: 800px;
+        }
+
+        .content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .content ul, .content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .content a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .content a:hover {
+            text-decoration: underline;
+        }
+
+        .content code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875em;
+            font-family: 'Courier New', monospace;
+            color: var(--primary-color);
+        }
+
+        .content pre {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .content pre code {
+            background: none;
+            padding: 0;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e3a8a;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #78350f;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #064e3b;
+        }
+
+        .alert strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Table of Contents */
+        .toc {
+            position: fixed;
+            right: 2rem;
+            top: calc(var(--header-height) + 3rem);
+            width: 200px;
+            max-height: calc(100vh - var(--header-height) - 6rem);
+            overflow-y: auto;
+        }
+
+        .toc-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .toc-link:hover {
+            color: var(--text-primary);
+            border-left-color: var(--border-color);
+        }
+
+        .toc-link.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .toc {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+                z-index: 999;
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 2rem 1.5rem;
+            }
+
+            .header {
+                padding: 0 1rem;
+            }
+
+            .content h1 {
+                font-size: 2rem;
+            }
+
+            .content h2 {
+                font-size: 1.5rem;
+            }
+
+            .content h3 {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <a href="#" class="logo">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Quantum Framework
+            </a>
+        </div>
+    </header>
+
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="search-box">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" placeholder="Search documentation..." id="searchInput">
+            </div>
+
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">Getting Started</div>
+                    
+                    <div class="nav-chapter active">
+                        <div class="nav-chapter-title">
+                            <span>Prologue</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page active" data-page="introduction">Introduction</a>
+                            <a href="#" class="nav-page" data-page="installation">Installation</a>
+                            <a href="#" class="nav-page" data-page="configuration">Configuration</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>Architecture</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="request-lifecycle">Request Lifecycle</a>
+                            <a href="#" class="nav-page" data-page="service-container">Service Container</a>
+                            <a href="#" class="nav-page" data-page="facades">Facades</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Core Concepts</div>
+                    
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>Routing</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="basic-routing">Basic Routing</a>
+                            <a href="#" class="nav-page" data-page="route-parameters">Route Parameters</a>
+                            <a href="#" class="nav-page" data-page="route-groups">Route Groups</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>Controllers</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="basic-controllers">Basic Controllers</a>
+                            <a href="#" class="nav-page" data-page="resource-controllers">Resource Controllers</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>Database</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="query-builder">Query Builder</a>
+                            <a href="#" class="nav-page" data-page="migrations">Migrations</a>
+                            <a href="#" class="nav-page" data-page="seeding">Seeding</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Advanced</div>
+                    
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>Authentication</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="auth-quickstart">Quick Start</a>
+                            <a href="#" class="nav-page" data-page="auth-guard">Authentication Guard</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-chapter">
+                        <div class="nav-chapter-title">
+                            <span>API Development</span>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="nav-pages">
+                            <a href="#" class="nav-page" data-page="api-resources">API Resources</a>
+                            <a href="#" class="nav-page" data-page="api-auth">API Authentication</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-inner" id="mainContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </main>
+
+        <!-- Table of Contents -->
+        <aside class="toc" id="toc">
+            <div class="toc-title">On This Page</div>
+            <ul class="toc-list" id="tocList"></ul>
+        </aside>
+    </div>
+
+    <script>
+        // Page content data
+        const pages = {
+            introduction: {
+                title: 'Introduction',
+                content: `
+                    <h1>Introduction</h1>
+                    <p>Welcome to the Quantum Framework documentation. Quantum is a modern, elegant PHP framework designed to make web development a joyful and creative experience. We believe development should be an enjoyable, creative experience to be truly fulfilling.</p>
+                    
+                    <h2>What is Quantum?</h2>
+                    <p>Quantum Framework is a web application framework with expressive, elegant syntax. It attempts to take the pain out of development by easing common tasks used in most web projects, such as:</p>
+                    
+                    <ul>
+                        <li>Simple, fast routing engine</li>
+                        <li>Powerful dependency injection container</li>
+                        <li>Multiple back-ends for session and cache storage</li>
+                        <li>Expressive, intuitive database ORM</li>
+                        <li>Database agnostic schema migrations</li>
+                        <li>Robust background job processing</li>
+                        <li>Real-time event broadcasting</li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Quantum is designed to make common web development tasks easy without sacrificing power and flexibility for experienced developers.
+                    </div>
+                    
+                    <h2>Why Quantum?</h2>
+                    <p>There are many frameworks available for building web applications. However, we believe Quantum is the best choice for building modern, full-stack web applications.</p>
+                    
+                    <h3>Progressive Framework</h3>
+                    <p>Quantum is a progressive framework. Whether you're building a simple website or a complex, large-scale application, Quantum provides the tools you need.</p>
+                    
+                    <pre><code class="language-php">// Simple route definition
+Route::get('/welcome', function () {
+    return view('welcome');
+});
+
+// RESTful resource controller
+Route::resource('posts', PostController::class);</code></pre>
+                    
+                    <h3>Community & Ecosystem</h3>
+                    <p>Quantum has a vibrant ecosystem of packages and tools. The framework is complemented by a variety of tools that make building applications even more enjoyable:</p>
+                    
+                    <ul>
+                        <li><strong>Quantum Forge</strong> - Powerful command-line tool</li>
+                        <li><strong>Quantum Echo</strong> - Event broadcasting system</li>
+                        <li><strong>Quantum Horizon</strong> - Beautiful dashboard for monitoring queues</li>
+                        <li><strong>Quantum Telescope</strong> - Debug assistant</li>
+                    </ul>
+                    
+                    <div class="alert alert-success">
+                        <strong>Ready to get started?</strong> Head over to the installation guide to begin your journey with Quantum Framework.
+                    </div>
+                `
+            },
+            installation: {
+                title: 'Installation',
+                content: `
+                    <h1>Installation</h1>
+                    <p>Quantum utilizes Composer to manage its dependencies. Before using Quantum, make sure you have Composer installed on your machine.</p>
+                    
+                    <h2>Server Requirements</h2>
+                    <p>The Quantum framework has a few system requirements. You should ensure your web server has the following minimum PHP version and extensions:</p>
+                    
+                    <ul>
+                        <li>PHP >= 8.1</li>
+                        <li>Ctype PHP Extension</li>
+                        <li>cURL PHP Extension</li>
+                        <li>DOM PHP Extension</li>
+                        <li>Fileinfo PHP Extension</li>
+                        <li>Filter PHP Extension</li>
+                        <li>Hash PHP Extension</li>
+                        <li>Mbstring PHP Extension</li>
+                        <li>OpenSSL PHP Extension</li>
+                        <li>PCRE PHP Extension</li>
+                        <li>PDO PHP Extension</li>
+                        <li>Session PHP Extension</li>
+                        <li>Tokenizer PHP Extension</li>
+                        <li>XML PHP Extension</li>
+                    </ul>
+                    
+                    <h2>Installing Quantum</h2>
+                    <p>Quantum utilizes Composer to manage dependencies. So, before using Quantum, you will need to make sure you have Composer installed on your machine.</p>
+                    
+                    <h3>Via Quantum Installer</h3>
+                    <p>First, download the Quantum installer using Composer:</p>
+                    
+                    <pre><code class="language-bash">composer global require quantum/installer</code></pre>
+                    
+                    <p>Once installed, the <code>quantum new</code> command will create a fresh Quantum installation in the directory you specify:</p>
+                    
+                    <pre><code class="language-bash">quantum new blog</code></pre>
+                    
+                    <h3>Via Composer Create-Project</h3>
+                    <p>Alternatively, you may install Quantum by issuing the Composer create-project command in your terminal:</p>
+                    
+                    <pre><code class="language-bash">composer create-project --prefer-dist quantum/quantum blog</code></pre>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> Make sure your web server points to the public directory of your Quantum application to ensure proper security.
+                    </div>
+                    
+                    <h2>Configuration</h2>
+                    <p>All of the configuration files for the Quantum framework are stored in the <code>config</code> directory. Each option is documented, so feel free to look through the files and get familiar with the options available to you.</p>
+                    
+                    <h3>Environment Configuration</h3>
+                    <p>It is often helpful to have different configuration values based on the environment where the application is running. For example, you may wish to use a different cache driver locally than you do on your production server.</p>
+                    
+                    <pre><code class="language-bash">APP_NAME=Quantum
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=quantum
+DB_USERNAME=root
+DB_PASSWORD=</code></pre>
+                    
+                    <h3>Application Key</h3>
+                    <p>After installing Quantum, you should generate an application key using the following command:</p>
+                    
+                    <pre><code class="language-bash">php quantum key:generate</code></pre>
+                    
+                    <div class="alert alert-info">
+                        <strong>Tip:</strong> The application key will be used to encrypt user sessions and other encrypted data. Keep it secret!
+                    </div>
+                `
+            },
+            configuration: {
+                title: 'Configuration',
+                content: `
+                    <h1>Configuration</h1>
+                    <p>All of the configuration files for the Quantum framework are stored in the <code>config</code> directory. Each option is documented, so feel free to look through the files and get familiar with the options available to you.</p>
+                    
+                    <h2>Environment Configuration</h2>
+                    <p>It is often helpful to have different configuration values based on the environment where the application is running. Quantum utilizes the DotEnv PHP library to make this a breeze.</p>
+                    
+                    <h3>Environment File Security</h3>
+                    <p>Your <code>.env</code> file should not be committed to your application's source control, since each developer or server using your application could require a different environment configuration.</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Security Note:</strong> Never commit your .env file to source control. It may contain sensitive credentials.
+                    </div>
+                    
+                    <h3>Retrieving Environment Configuration</h3>
+                    <p>All of the variables listed in the <code>.env</code> file will be loaded into the <code>$_ENV</code> PHP super-global when your application receives a request. You may use the <code>env</code> helper to retrieve values:</p>
+                    
+                    <pre><code class="language-php">$debug = env('APP_DEBUG', false);</code></pre>
+                    
+                    <h2>Accessing Configuration Values</h2>
+                    <p>You may easily access your configuration values using the global <code>config</code> helper function from anywhere in your application:</p>
+                    
+                    <pre><code class="language-php">$value = config('app.timezone');
+
+// Retrieve a default value if the configuration value does not exist
+$value = config('app.timezone', 'UTC');</code></pre>
+                    
+                    <h3>Setting Configuration Values</h3>
+                    <p>To set configuration values at runtime, pass an array to the config helper:</p>
+                    
+                    <pre><code class="language-php">config(['app.timezone' => 'America/New_York']);</code></pre>
+                    
+                    <h2>Configuration Caching</h2>
+                    <p>To give your application a speed boost, you should cache all of your configuration files into a single file using the <code>config:cache</code> Artisan command:</p>
+                    
+                    <pre><code class="language-bash">php quantum config:cache</code></pre>
+                    
+                    <div class="alert alert-info">
+                        <strong>Performance Tip:</strong> Configuration caching can significantly improve your application's performance in production.
+                    </div>
+                    
+                    <h2>Debug Mode</h2>
+                    <p>The <code>debug</code> option in your <code>config/app.php</code> configuration file determines how much information about an error is displayed to the user. By default, this option is set to respect the value of the <code>APP_DEBUG</code> environment variable:</p>
+                    
+                    <pre><code class="language-php">'debug' => env('APP_DEBUG', false),</code></pre>
+                    
+                    <p>For local development, you should set the <code>APP_DEBUG</code> environment variable to <code>true</code>. In your production environment, this value should always be <code>false</code>.</p>
+                `
+            },
+            'basic-routing': {
+                title: 'Basic Routing',
+                content: `
+                    <h1>Routing</h1>
+                    <p>The most basic Quantum routes accept a URI and a closure, providing a very simple and expressive method of defining routes and behavior without complicated routing configuration files.</p>
+                    
+                    <h2>Basic Routes</h2>
+                    <p>All Quantum routes are defined in your route files, which are located in the <code>routes</code> directory. The most basic route accepts a URI and a closure:</p>
+                    
+                    <pre><code class="language-php">use Illuminate\\Support\\Facades\\Route;
+
+Route::get('/greeting', function () {
+    return 'Hello World';
+});</code></pre>
+                    
+                    <h3>Available Router Methods</h3>
+                    <p>The router allows you to register routes that respond to any HTTP verb:</p>
+                    
+                    <pre><code class="language-php">Route::get($uri, $callback);
+Route::post($uri, $callback);
+Route::put($uri, $callback);
+Route::patch($uri, $callback);
+Route::delete($uri, $callback);
+Route::options($uri, $callback);</code></pre>
+                    
+                    <p>Sometimes you may need to register a route that responds to multiple HTTP verbs:</p>
+                    
+                    <pre><code class="language-php">Route::match(['get', 'post'], '/', function () {
+    // Responds to both GET and POST requests
+});
+
+Route::any('/', function () {
+    // Responds to any HTTP verb
+});</code></pre>
+                    
+                    <h2>Route Parameters</h2>
+                    <p>Sometimes you will need to capture segments of the URI within your route. For example, you may need to capture a user's ID from the URL:</p>
+                    
+                    <pre><code class="language-php">Route::get('/user/{id}', function (string $id) {
+    return 'User '.$id;
+});</code></pre>
+                    
+                    <h3>Optional Parameters</h3>
+                    <p>You may define optional route parameters by placing a <code>?</code> mark after the parameter name:</p>
+                    
+                    <pre><code class="language-php">Route::get('/user/{name?}', function (?string $name = null) {
+    return $name ?? 'Guest';
+});</code></pre>
+                    
+                    <div class="alert alert-success">
+                        <strong>Pro Tip:</strong> Route parameters are always enclosed within {} braces and should consist of alphabetic characters.
+                    </div>
+                `
+            }
+        };
+
+        // DOM elements
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mainContent = document.getElementById('mainContent');
+        const tocList = document.getElementById('tocList');
+        const searchInput = document.getElementById('searchInput');
+
+        // Initialize
+        let currentPage = 'introduction';
+        loadPage(currentPage);
+
+        // Chapter toggle functionality
+        document.querySelectorAll('.nav-chapter-title').forEach(title => {
+            title.addEventListener('click', function() {
+                const chapter = this.parentElement;
+                chapter.classList.toggle('active');
+            });
+        });
+
+        // Page navigation
+        document.querySelectorAll('.nav-page').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.dataset.page;
+                
+                // Update active states
+                document.querySelectorAll('.nav-page').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Load page
+                loadPage(page);
+                
+                // Close mobile menu
+                closeMobileMenu();
+            });
+        });
+
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', closeMobileMenu);
+
+        function closeMobileMenu() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Load page content
+        function loadPage(pageKey) {
+            const page = pages[pageKey];
+            if (!page) return;
+            
+            currentPage = pageKey;
+            mainContent.innerHTML = page.content;
+            
+            // Highlight code blocks
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+            
+            // Generate table of contents
+            generateTOC();
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Generate table of contents
+        function generateTOC() {
+            const headings = mainContent.querySelectorAll('h2, h3');
+            tocList.innerHTML = '';
+            
+            headings.forEach((heading, index) => {
+                const id = 'heading-' + index;
+                heading.id = id;
+                
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#' + id;
+                a.textContent = heading.textContent;
+                a.className = 'toc-link';
+                a.style.paddingLeft = heading.tagName === 'H3' ? '1.5rem' : '0.75rem';
+                
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Update active state
+                    document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+            });
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            document.querySelectorAll('.nav-page').forEach(page => {
+                const text = page.textContent.toLowerCase();
+                const chapter = page.closest('.nav-chapter');
+                
+                if (text.includes(searchTerm)) {
+                    page.style.display = 'block';
+                    if (searchTerm) {
+                        chapter.classList.add('active');
+                    }
+                } else {
+                    page.style.display = searchTerm ? 'none' : 'block';
+                }
+            });
+            
+            // Hide chapters with no visible pages
+            if (searchTerm) {
+                document.querySelectorAll('.nav-chapter').forEach(chapter => {
+                    const visiblePages = chapter.querySelectorAll('.nav-page[style="display: block"]');
+                    if (visiblePages.length === 0) {
+                        chapter.style.display = 'none';
+                    } else {
+                        chapter.style.display = 'block';
+                    }
+                });
+            } else {
+                document.querySelectorAll('.nav-chapter').forEach(chapter => {
+                    chapter.style.display = 'block';
+                });
+            }
+        });
+
+        // Scroll spy for TOC
+        let tocObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    document.querySelectorAll('.toc-link').forEach(link => {
+                        if (link.getAttribute('href') === '#' + id) {
+                            document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: '-100px 0px -66%' });
+
+        // Observe headings for scroll spy
+        setTimeout(() => {
+            document.querySelectorAll('h2, h3').forEach(heading => {
+                tocObserver.observe(heading);
+            });
+        }, 100);
+    </script>
+</body>
+</html>
