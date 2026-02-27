@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Editor</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f4f3ee; --surface:#faf9f6; --surface2:#efeee7;
+  --border:#dddbd0; --border-light:#e8e6dd;
+  --text:#1a1a1a; --muted:#6b6860; --faint:#a09d94;
+  --accent:#5c6bc0; --accent-bg:#eceef9;
+  --link:#4a6fa5; --code-bg:#eceae0;
+  --tbg:#f0efe8;
+  --sh:0 1px 3px rgba(0,0,0,.07);
+  --shm:0 4px 16px rgba(0,0,0,.09),0 1px 4px rgba(0,0,0,.05);
+  --r:6px;
+  --body:'Lora',Georgia,serif;
+  --ui:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+}
+body { font-family:var(--ui); background:var(--bg); color:var(--text); }
+
+/* ── wrapper ── */
+.mde { display:flex; flex-direction:column; border:1px solid var(--border); border-radius:var(--r); background:var(--surface); box-shadow:var(--shm); overflow:hidden; }
+
+/* ── toolbar ── */
+.mde-bar { display:flex; align-items:center; gap:1px; padding:5px 10px; background:var(--tbg); border-bottom:1px solid var(--border); flex-shrink:0; user-select:none; flex-wrap:wrap; }
+.mde-grp { display:flex; align-items:center; gap:1px; }
+.mde-sep { width:1px; height:18px; background:var(--border); margin:0 4px; }
+.mde-btn { display:flex; align-items:center; justify-content:center; min-width:27px; height:26px; padding:0 4px; border:none; background:transparent; border-radius:4px; cursor:pointer; color:var(--muted); font-size:12px; font-family:var(--ui); position:relative; transition:background .1s,color .1s; }
+.mde-btn:hover { background:var(--border-light); color:var(--text); }
+.mde-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.mde-lbl { font-size:11px; font-weight:600; font-family:var(--mono); }
+.mde-pill { margin-left:auto; display:flex; background:var(--surface2); border-radius:20px; padding:2px; border:1px solid var(--border); }
+.mde-pb { padding:2px 10px; border:none; background:transparent; border-radius:16px; cursor:pointer; font-size:11px; font-weight:500; font-family:var(--ui); color:var(--muted); transition:all .15s; }
+.mde-pb.on { background:var(--surface); color:var(--text); box-shadow:var(--sh); }
+.mde-btn[title]:hover::after { content:attr(title); position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:3px 7px; border-radius:4px; font-size:11px; white-space:nowrap; pointer-events:none; z-index:999; font-family:var(--ui); }
+
+/* ── body ── */
+.mde-body { display:flex; flex:1; overflow:hidden; min-height:0; position:relative; }
+
+/* ── live pane ── */
+.mde-live { flex:1; overflow-y:auto; padding:26px 42px 80px; outline:none; cursor:text; background:var(--surface); }
+.mde-live.ph::before { content:attr(data-ph); display:block; color:var(--faint); font-style:italic; font-family:var(--body); font-size:16px; pointer-events:none; }
+
+/* ── text lines ── */
+.ln { position:relative; min-height:1.6em; font-family:var(--body); font-size:16px; line-height:1.8; color:var(--text); outline:none; }
+.ln.is-ed { font-family:var(--mono)!important; font-size:14px!important; line-height:1.75!important; background:rgba(92,107,192,.05)!important; color:#333!important; border-radius:3px; padding:1px 4px; margin:0 -4px; white-space:pre-wrap!important; font-weight:400!important; font-style:normal!important; }
+.ln.h1 { font-size:2em; font-weight:700; line-height:1.25; border-bottom:2px solid var(--border); padding-bottom:.12em; }
+.ln.h2 { font-size:1.5em; font-weight:600; line-height:1.3; }
+.ln.h3 { font-size:1.2em; font-weight:600; }
+.ln.h4 { font-size:1.05em; font-weight:600; }
+.ln.h5 { font-size:1em; font-weight:600; color:var(--muted); }
+.ln.h6 { font-size:.9em; font-weight:600; color:var(--faint); }
+.ln.hr { border:none; border-top:2px solid var(--border); height:2px; overflow:hidden; font-size:0; color:transparent; min-height:0; padding:0; margin:6px 0; }
+.ln.bq { border-left:3px solid var(--accent); padding-left:.9em; color:var(--muted); font-style:italic; background:var(--accent-bg); border-radius:0 3px 3px 0; }
+.ln.ul { padding-left:1.4em; }
+.ln.ol { padding-left:1.4em; }
+.ln.empty { min-height:1.6em; }
+.ln strong { font-weight:700; } .ln em { font-style:italic; } .ln del { text-decoration:line-through; color:var(--muted); }
+.ln a { color:var(--link); } .ln img { max-width:100%; border-radius:4px; display:block; margin:2px 0; }
+.ln .ic { font-family:var(--mono); font-size:.83em; background:var(--code-bg); padding:1px 5px; border-radius:3px; color:#c7254e; }
+
+/* ══════════════════════════════════════════════════════
+   CODE BLOCK
+   Structure: .cb > .cb-head + .cb-ta (textarea)
+   The textarea IS the editor — dark-styled, always visible.
+   No overlay, no tricks. Grows to fit content via JS.
+══════════════════════════════════════════════════════ */
+.cb {
+  margin:4px 0;
+  border-radius:var(--r);
+  border:1px solid rgba(0,0,0,.18);
+  background:#282c34;
+  overflow:hidden;
+}
+.cb-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 14px; background:rgba(0,0,0,.25);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  user-select:none; font-size:13px;
+}
+.cb-lang { font-family:var(--mono); font-size:11px; color:#abb2bf; text-transform:uppercase; letter-spacing:.06em; }
+.cb-copy { font-size:11px; padding:2px 9px; border:1px solid rgba(255,255,255,.18); background:transparent; border-radius:3px; color:#abb2bf; cursor:pointer; font-family:var(--ui); transition:all .15s; }
+.cb-copy:hover { background:rgba(255,255,255,.1); color:#fff; }
+
+/* The textarea IS the code editor — no overlay tricks */
+.cb-ta {
+  display:block;
+  width:100%;
+  margin:0;
+  border:none;
+  outline:none;
+  resize:none;
+  overflow:hidden; /* auto-grow via JS, no scrollbar */
+  background:#282c34;
+  color:#abb2bf;
+  caret-color:#e6e6e6;
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.6;
+  padding:14px 16px;
+  tab-size:2;
+  white-space:pre;
+  word-wrap:normal;
+  overflow-wrap:normal;
+  min-height:3em;
+}
+.cb-ta:focus { background:#2c313a; color:#e6e6e6; outline:none; }
+.cb:focus-within { outline:2px solid rgba(92,107,192,.4); outline-offset:1px; }
+
+/* ── source/split/preview ── */
+.mde-src-wrap { flex:1; display:flex; min-height:0; }
+.mde-sp, .mde-pp { flex:1; overflow-y:auto; padding:26px 36px 60px; }
+.mde-sp { border-right:1px solid var(--border); }
+.mde-st { width:100%; height:100%; min-height:360px; border:none; background:transparent; resize:none; outline:none; font-family:var(--mono); font-size:13px; line-height:1.75; color:var(--text); tab-size:2; }
+.mde-pp { font-family:var(--body); font-size:16px; line-height:1.8; }
+.mde-pf { flex:1; overflow-y:auto; padding:36px 56px 80px; font-family:var(--body); font-size:17px; line-height:1.85; background:var(--surface); }
+
+/* shared render styles */
+.rnd h1 { font-size:2em; font-weight:700; margin:.2em 0 .1em; border-bottom:2px solid var(--border); padding-bottom:.2em; }
+.rnd h2 { font-size:1.5em; font-weight:600; margin:.2em 0 .1em; }
+.rnd h3 { font-size:1.2em; font-weight:600; margin:.15em 0; }
+.rnd p  { margin:.4em 0; }
+.rnd ul,.rnd ol { padding-left:1.6em; margin:.3em 0; }
+.rnd li { margin:.1em 0; }
+.rnd blockquote { border-left:3px solid var(--accent); margin:.4em 0; padding:.2em 0 .2em 1em; color:var(--muted); font-style:italic; background:var(--accent-bg); border-radius:0 4px 4px 0; }
+.rnd hr { border:none; border-top:1px solid var(--border); margin:.8em 0; }
+.rnd a  { color:var(--link); }
+.rnd img { max-width:100%; border-radius:var(--r); display:block; margin:.4em 0; }
+.rnd table { border-collapse:collapse; width:100%; margin:.4em 0; font-size:14px; }
+.rnd th,.rnd td { border:1px solid var(--border); padding:6px 12px; }
+.rnd th { background:var(--surface2); font-weight:600; font-family:var(--ui); font-size:13px; }
+.rnd tr:nth-child(even) { background:var(--surface2); }
+.rnd code { font-family:var(--mono); font-size:.84em; background:var(--code-bg); padding:1px 5px; border-radius:3px; color:#c7254e; }
+.rnd strong { font-weight:700; } .rnd em { font-style:italic; } .rnd del { text-decoration:line-through; }
+.prv-cb { background:#282c34; border-radius:var(--r); overflow:hidden; margin:.4em 0; border:1px solid rgba(0,0,0,.15); }
+.prv-cb-h { display:flex; align-items:center; justify-content:space-between; padding:6px 14px; background:rgba(0,0,0,.22); }
+.prv-cb-h span { font-family:var(--mono); font-size:11px; color:#abb2bf; text-transform:uppercase; letter-spacing:.06em; }
+.prv-cb pre { margin:0; }
+.prv-cb pre code { display:block; padding:14px 16px; font-family:var(--mono); font-size:13px; line-height:1.6; background:transparent; color:#abb2bf; white-space:pre; }
+.prv-cb .hljs { background:transparent; padding:0; }
+
+/* ── status ── */
+.mde-st-bar { display:flex; align-items:center; gap:12px; padding:4px 12px; background:var(--tbg); border-top:1px solid var(--border); font-size:11px; color:var(--faint); font-family:var(--ui); user-select:none; flex-shrink:0; }
+.mde-st-r { margin-left:auto; }
+.ok { color:#4caf50; font-weight:600; }
+.mde-live::-webkit-scrollbar,.mde-sp::-webkit-scrollbar,.mde-pp::-webkit-scrollbar,.mde-pf::-webkit-scrollbar { width:5px; }
+.mde-live::-webkit-scrollbar-track,.mde-sp::-webkit-scrollbar-track,.mde-pp::-webkit-scrollbar-track,.mde-pf::-webkit-scrollbar-track { background:transparent; }
+.mde-live::-webkit-scrollbar-thumb,.mde-sp::-webkit-scrollbar-thumb,.mde-pp::-webkit-scrollbar-thumb,.mde-pf::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.phi { position:absolute; bottom:14px; right:14px; background:var(--accent); color:#fff; padding:5px 12px; border-radius:20px; font-size:12px; font-family:var(--ui); opacity:0; transform:translateY(4px); transition:all .2s; pointer-events:none; z-index:10; }
+.phi.show { opacity:1; transform:translateY(0); }
+.smenu { position:absolute; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shm); width:210px; overflow:hidden; z-index:200; display:none; }
+.si { display:flex; align-items:center; gap:10px; padding:7px 12px; cursor:pointer; font-size:13px; font-family:var(--ui); }
+.si:hover { background:var(--accent-bg); color:var(--accent); }
+.sic { width:22px; height:22px; display:flex; align-items:center; justify-content:center; background:var(--surface2); border-radius:4px; font-size:11px; font-weight:700; font-family:var(--mono); flex-shrink:0; }
+.mde-live.drag-over { outline:2px dashed var(--accent); outline-offset:-3px; background:var(--accent-bg); }
+
+/* demo */
+.page { max-width:900px; margin:36px auto; padding:0 20px 60px; }
+.page h1 { font-family:var(--body); font-size:26px; font-weight:600; margin-bottom:6px; }
+.page .sub { font-size:13px; color:var(--muted); margin-bottom:30px; font-family:var(--ui); }
+.sec { margin-bottom:36px; }
+.lbl { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:7px; font-family:var(--ui); }
+.api { background:#1e1e2e; color:#cdd6f4; border-radius:var(--r); padding:16px 20px; font-family:var(--mono); font-size:13px; line-height:1.7; margin-top:10px; }
+.api .kw{color:#cba6f7} .api .fn{color:#89b4fa} .api .st{color:#a6e3a1} .api .cm{color:#6c7086}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>✦ Markdown Editor</h1>
+  <p class="sub">Obsidian-style live editor — click any text line to edit inline, click inside a code block to edit code directly.</p>
+  <div class="sec">
+    <div class="lbl">Editor 1</div>
+    <div id="editor1" style="height:540px"></div>
+    <input type="hidden" id="content1">
+  </div>
+  <div class="sec">
+    <div class="lbl">Editor 2</div>
+    <div id="editor2" style="height:300px"></div>
+    <input type="hidden" id="content2">
+  </div>
+  <div class="sec">
+    <div class="lbl">API</div>
+    <div class="api">
+<span class="kw">const</span> ed = <span class="kw">new</span> <span class="fn">MarkdownEditor</span>(<span class="st">'#editor1'</span>, { initialValue: <span class="st">'...'</span> });<br>
+ed.<span class="fn">init</span>();<br><br>
+ed.<span class="fn">on</span>(<span class="st">'change'</span>, (html, md) => {});<br>
+ed.<span class="fn">on</span>(<span class="st">'save'</span>, (html, md) => {});<br><br>
+ed.<span class="fn">getValue</span>();&nbsp;&nbsp;<span class="cm">// HTML</span><br>
+ed.<span class="fn">getMarkdown</span>();&nbsp;&nbsp;<span class="cm">// Markdown</span><br>
+ed.<span class="fn">loadValue</span>(str);&nbsp;<span class="cm">// load HTML or MD</span><br>
+ed.<span class="fn">clear</span>(); ed.<span class="fn">focus</span>(); ed.<span class="fn">destroy</span>();
+    </div>
+  </div>
+</div>
+
+<script>
+(function(G){'use strict';
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const uid = () => 'mde_'+Math.random().toString(36).slice(2,9);
+
+/* ── HTML → Markdown ── */
+function h2md(html){
+  if(!html)return'';
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  function w(n,d){
+    d=d||0;
+    if(n.nodeType===3)return n.textContent;
+    if(n.nodeType!==1)return'';
+    const t=n.tagName.toLowerCase();
+    const c=()=>Array.from(n.childNodes).map(x=>w(x,d)).join('');
+    switch(t){
+      case'h1':return'# '+c().trim()+'\n';
+      case'h2':return'## '+c().trim()+'\n';
+      case'h3':return'### '+c().trim()+'\n';
+      case'h4':return'#### '+c().trim()+'\n';
+      case'h5':return'##### '+c().trim()+'\n';
+      case'h6':return'###### '+c().trim()+'\n';
+      case'p':{const x=c().trim();return x?x+'\n':'';}
+      case'strong':case'b':return'**'+c()+'**';
+      case'em':case'i':return'*'+c()+'*';
+      case'del':case's':return'~~'+c()+'~~';
+      case'a':return'['+c()+']('+(n.getAttribute('href')||'')+')';
+      case'img':return'!['+(n.getAttribute('alt')||'')+']('+(n.getAttribute('src')||'')+')';
+      case'br':return'\n';
+      case'hr':return'---\n';
+      case'blockquote':return c().trim().split('\n').map(l=>'> '+l).join('\n')+'\n';
+      case'code':return n.parentElement&&n.parentElement.tagName.toLowerCase()==='pre'?n.textContent:'`'+n.textContent+'`';
+      case'pre':{const ce=n.querySelector('code');const m=ce&&ce.className.match(/language-(\w+)/);return'```'+(m?m[1]:'')+'\n'+(ce?ce.textContent:n.textContent).replace(/\n$/,'')+'\n```\n';}
+      case'ul':return Array.from(n.children).map(li=>'- '+w(li,d+1).trim()).join('\n')+'\n';
+      case'ol':return Array.from(n.children).map((li,i)=>(i+1)+'. '+w(li,d+1).trim()).join('\n')+'\n';
+      case'li':return c().trim();
+      case'table':{
+        const rows=Array.from(n.querySelectorAll('tr'));
+        if(!rows.length)return'';
+        const hd=Array.from(rows[0].querySelectorAll('th,td')).map(x=>x.textContent.trim());
+        let md='| '+hd.join(' | ')+' |\n| '+hd.map(()=>'---').join(' | ')+' |\n';
+        rows.slice(1).forEach(r=>{md+='| '+Array.from(r.querySelectorAll('td')).map(x=>x.textContent.trim()).join(' | ')+' |\n';});
+        return md;
+      }
+      default:return c();
+    }
+  }
+  return w(doc.body).replace(/\n{3,}/g,'\n\n').trim();
+}
+const isHtml=s=>/<[a-z][\s\S]*>/i.test(s);
+
+/* ── Inline markdown → HTML ── */
+function inl(raw){
+  let s=esc(raw);
+  s=s.replace(/`([^`\n]+)`/g,'<span class="ic">$1</span>');
+  s=s.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/__(.+?)__/g,'<strong>$1</strong>');
+  s=s.replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+  s=s.replace(/_([^_\n]+)_/g,'<em>$1</em>');
+  s=s.replace(/~~(.+?)~~/g,'<del>$1</del>');
+  s=s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" loading="lazy">');
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+
+/* ── Line type ── */
+function ltype(text){
+  if(/^#{6} /.test(text))return'h6';
+  if(/^#{5} /.test(text))return'h5';
+  if(/^#{4} /.test(text))return'h4';
+  if(/^#{3} /.test(text))return'h3';
+  if(/^#{2} /.test(text))return'h2';
+  if(/^# /.test(text))return'h1';
+  if(/^(---+|\*\*\*+)\s*$/.test(text))return'hr';
+  if(/^> ?/.test(text))return'bq';
+  if(/^[-*+] /.test(text))return'ul';
+  if(/^\d+\. /.test(text))return'ol';
+  if(text.trim()==='')return'empty';
+  return'p';
+}
+
+/* ── Render a text line ── */
+function renderLn(el,text){
+  const t=ltype(text);
+  el.className='ln '+t;
+  el.contentEditable='false';
+  el.removeAttribute('style');
+  switch(t){
+    case'h1':case'h2':case'h3':case'h4':case'h5':case'h6':el.innerHTML=inl(text.replace(/^#+\s/,''))||'<br>';break;
+    case'hr':el.textContent='';break;
+    case'bq':el.innerHTML=inl(text.replace(/^> ?/,''))||'<br>';break;
+    case'ul':el.innerHTML='• '+inl(text.replace(/^[-*+] /,''));break;
+    case'ol':{const m=text.match(/^(\d+)\. (.*)/);el.innerHTML=(m?m[1]+'. ':'')+inl(m?m[2]:text);break;}
+    case'empty':el.innerHTML='<br>';break;
+    default:el.innerHTML=inl(text)||'<br>';
+  }
+}
+function editLn(el,text){
+  el.className='ln is-ed';
+  el.contentEditable='true';
+  el.textContent=text;
+}
+
+/* ── Highlight helper ── */
+function doHl(lang,code){
+  const vl=lang&&hljs.getLanguage(lang)?lang:'plaintext';
+  try{return vl!=='plaintext'?hljs.highlight(code,{language:vl}).value:esc(code);}
+  catch(e){return esc(code);}
+}
+
+/* ════════════════════════════════════════════════════════
+   makeCodeBlock — dark-styled textarea that auto-grows.
+   Click inside to edit. Tab indents. Arrow keys navigate out.
+════════════════════════════════════════════════════════ */
+function makeCodeBlock(lang, code, editor){
+  const vl = lang&&hljs.getLanguage(lang)?lang:'plaintext';
+
+  const block = document.createElement('div');
+  block.className = 'cb';
+  block.dataset.cb = '1';
+  block.dataset.lang = lang||'';
+  block.dataset.code = code;
+
+  block.innerHTML = `
+    <div class="cb-head">
+      <span class="cb-lang">${esc(vl||'code')}</span>
+      <button class="cb-copy" tabindex="-1">Copy</button>
+    </div>
+    <textarea class="cb-ta" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"></textarea>`;
+
+  const ta      = block.querySelector('.cb-ta');
+  const copyBtn = block.querySelector('.cb-copy');
+
+  ta.value = code;
+
+  /* Auto-grow: expand textarea to fit content, never show scrollbar */
+  function grow(){
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+  /* Run after paint so scrollHeight is correct */
+  requestAnimationFrame(grow);
+
+  ta.addEventListener('input', ()=>{
+    grow();
+    block.dataset.code = ta.value;
+    editor._deferSync();
+  });
+
+  ta.addEventListener('keydown', e=>{
+    if(e.key==='Tab'){
+      e.preventDefault(); e.stopPropagation();
+      const s=ta.selectionStart, en=ta.selectionEnd;
+      ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(en);
+      ta.selectionStart=ta.selectionEnd=s+2;
+      grow();
+      block.dataset.code=ta.value;
+      editor._deferSync();
+      return;
+    }
+    if(e.key==='s'&&(e.ctrlKey||e.metaKey)){
+      e.preventDefault(); e.stopPropagation();
+      editor._save(); return;
+    }
+    if(e.key==='ArrowUp'&&ta.selectionStart===0){
+      e.preventDefault(); e.stopPropagation();
+      const prev=editor._prevLn(block);
+      if(prev) editor._focusLn(prev,false);
+      return;
+    }
+    if(e.key==='ArrowDown'&&ta.selectionStart===ta.value.length){
+      e.preventDefault(); e.stopPropagation();
+      const next=editor._nextLn(block);
+      if(next) editor._focusLn(next,true);
+      return;
+    }
+  });
+
+  ta.addEventListener('blur', ()=>{
+    block.dataset.code = ta.value;
+    editor._deferSync();
+  });
+
+  block.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(e.target.closest('.cb-head')) return;
+    ta.focus();
+  });
+
+  copyBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const text=ta.value;
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(text).then(()=>{
+        copyBtn.textContent='✓ Copied';
+        setTimeout(()=>copyBtn.textContent='Copy',1500);
+      });
+    } else {
+      const tmp=document.createElement('textarea');
+      tmp.value=text; tmp.style.cssText='position:fixed;opacity:0';
+      document.body.appendChild(tmp); tmp.select(); document.execCommand('copy');
+      document.body.removeChild(tmp);
+      copyBtn.textContent='✓ Copied';
+      setTimeout(()=>copyBtn.textContent='Copy',1500);
+    }
+  });
+
+  return block;
+}
+
+/* ── Output HTML ── */
+function toHtml(md){
+  if(!md)return'';
+  if(typeof marked==='undefined')return'<p>'+esc(md)+'</p>';
+  const r=new marked.Renderer();
+  r.code=(code,lang)=>{
+    const vl=lang&&hljs.getLanguage(lang)?lang:'plaintext';
+    return`<div class="prv-cb"><div class="prv-cb-h"><span>${esc(vl)}</span></div><pre><code class="hljs language-${esc(vl)}">${doHl(lang,code)}</code></pre></div>`;
+  };
+  r.link=(h,t,tx)=>`<a href="${h}"${t?` title="${esc(t)}"`:''} target="_blank" rel="noopener">${tx}</a>`;
+  r.image=(h,t,a)=>`<img src="${h}"${a?` alt="${esc(a)}"`:''} loading="lazy">`;
+  try{marked.setOptions({renderer:r,gfm:true,breaks:true,headerIds:false,mangle:false});return marked.parse(md);}
+  catch(e){return'<p>'+esc(md)+'</p>';}
+}
+
+/* ════════════════════════════════════════════════════════
+   MarkdownEditor
+════════════════════════════════════════════════════════ */
+class MarkdownEditor{
+  constructor(sel,opts){
+    this._sel=sel;
+    this._o=Object.assign({placeholder:'Start writing… type / for commands',initialValue:''},opts||{});
+    this._id=uid();
+    this._el=null; this._wrap=null; this._live=null;
+    this._mode='live'; this._md='';
+    this._ev={}; this._saveT=null; this._syncT=null;
+    this._undos=[]; this._redos=[]; this._comp=false;
+  }
+
+  init(){
+    this._el=typeof this._sel==='string'?document.querySelector(this._sel):this._sel;
+    if(!this._el){console.error('[MDE] not found:',this._sel);return this;}
+    this._build();
+    this._bind();
+    if(this._o.initialValue)this.loadValue(this._o.initialValue);
+    else this._draw();
+    return this;
+  }
+
+  on(ev,fn){(this._ev[ev]=this._ev[ev]||[]).push(fn);return this;}
+  off(ev,fn){if(this._ev[ev])this._ev[ev]=this._ev[ev].filter(h=>h!==fn);return this;}
+  getValue(){return toHtml(this._md);}
+  getMarkdown(){return this._md;}
+  loadValue(v){
+    this._md=(!v?'':isHtml(v)?h2md(v):v).replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    if(this._live)this._draw();
+    this._hidden();return this;
+  }
+  clear(){this._md='';this._undos=[];this._redos=[];if(this._live)this._draw();this._hidden();return this;}
+  focus(){if(this._live)this._live.focus();return this;}
+  destroy(){if(this._wrap)this._wrap.remove();this._ev={};}
+  _emit(ev,...a){(this._ev[ev]||[]).forEach(h=>h(...a));}
+
+  /* ── Build DOM ── */
+  _build(){
+    this._wrap=document.createElement('div');
+    this._wrap.className='mde';
+    this._wrap.id=this._id;
+    const h=this._el.style.height;
+    if(h){this._wrap.style.height=h;this._el.style.height='';}
+    this._wrap.innerHTML=this._tb()+`
+      <div class="mde-body">
+        <div class="mde-live" data-ph="${this._o.placeholder}" spellcheck="true" tabindex="0"></div>
+        <div class="mde-src-wrap" style="display:none">
+          <div class="mde-sp"><textarea class="mde-st" spellcheck="false"></textarea></div>
+          <div class="mde-pp rnd"></div>
+        </div>
+        <div class="mde-pf rnd" style="display:none"></div>
+        <div class="phi">📎 Image pasted!</div>
+        <div class="smenu"></div>
+      </div>
+      <div class="mde-st-bar">
+        <span class="mde-sm">Live Preview</span>
+        <span class="mde-wc">0 words</span>
+        <span class="mde-st-r">Ctrl+S to save · / for commands</span>
+      </div>`;
+    this._el.appendChild(this._wrap);
+    this._live=this._wrap.querySelector('.mde-live');
+  }
+
+  _tb(){
+    const S={
+      b:`<svg viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 010 8H6z"/><path d="M6 12h9a4 4 0 010 8H6z"/></svg>`,
+      i:`<svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
+      s:`<svg viewBox="0 0 24 24"><path d="M16 4H9a3 3 0 000 6h6a3 3 0 010 6H6"/><line x1="4" y1="12" x2="20" y2="12"/></svg>`,
+      lk:`<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+      im:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
+      ic:`<svg viewBox="0 0 24 24"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>`,
+      cb:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><path d="M9 16l-2-2 2-2"/><path d="M15 12l2 2-2 2"/></svg>`,
+      bq:`<svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>`,
+      ul:`<svg viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>`,
+      ol:`<svg viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>`,
+      tb:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>`,
+      hr:`<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+      un:`<svg viewBox="0 0 24 24"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>`,
+      re:`<svg viewBox="0 0 24 24"><polyline points="15,14 20,9 15,4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>`,
+    };
+    const B=(c,icon,tip)=>`<button class="mde-btn" data-c="${c}" title="${tip}">${icon}</button>`;
+    const L=(c,l,tip)=>`<button class="mde-btn mde-lbl" data-c="${c}" title="${tip}">${l}</button>`;
+    return`<div class="mde-bar">
+      <div class="mde-grp">${L('h1','H1','Heading 1')}${L('h2','H2','Heading 2')}${L('h3','H3','Heading 3')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-grp">${B('bold',S.b,'Bold (Ctrl+B)')}${B('italic',S.i,'Italic (Ctrl+I)')}${B('strike',S.s,'Strikethrough')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-grp">${B('link',S.lk,'Link')}${B('image',S.im,'Image')}${B('inlinecode',S.ic,'Inline Code')}${B('codeblock',S.cb,'Code Block')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-grp">${B('quote',S.bq,'Blockquote')}${B('ul',S.ul,'Bullet List')}${B('ol',S.ol,'Numbered List')}${B('table',S.tb,'Table')}${B('hr',S.hr,'Divider')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-grp">${B('undo',S.un,'Undo (Ctrl+Z)')}${B('redo',S.re,'Redo (Ctrl+Y)')}</div>
+      <div class="mde-pill">
+        <button class="mde-pb on" data-mode="live">Live</button>
+        <button class="mde-pb" data-mode="source">Source</button>
+        <button class="mde-pb" data-mode="preview">Preview</button>
+      </div>
+    </div>`;
+  }
+
+  /* ── Events ── */
+  _bind(){
+    const w=this._wrap,lv=this._live;
+    w.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('mousedown',e=>{e.preventDefault();this._cmd(b.dataset.c);}));
+    w.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>this._setMode(b.dataset.mode)));
+    lv.addEventListener('click',e=>this._click(e));
+    lv.addEventListener('keydown',e=>this._kd(e));
+    lv.addEventListener('input',()=>this._inp());
+    lv.addEventListener('paste',e=>this._paste(e));
+    lv.addEventListener('drop',e=>this._drop(e));
+    lv.addEventListener('dragover',e=>{e.preventDefault();lv.classList.add('drag-over');});
+    lv.addEventListener('dragleave',()=>lv.classList.remove('drag-over'));
+    lv.addEventListener('compositionstart',()=>this._comp=true);
+    lv.addEventListener('compositionend',()=>{this._comp=false;this._inp();});
+    const ta=w.querySelector('.mde-st');
+    if(ta){
+      ta.addEventListener('input',()=>{this._md=ta.value;this._srcPrv();this._emitChange();});
+      ta.addEventListener('keydown',e=>{
+        if(e.key==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();this._save();}
+        if(e.key==='Tab'){e.preventDefault();document.execCommand('insertText',false,'  ');}
+      });
+    }
+  }
+
+  /* ── Click on live area ── */
+  _click(e){
+    if(e.target.closest('.cb'))return; // code blocks handle themselves
+    let el=e.target;
+    while(el&&el!==this._live){if(el.classList&&el.classList.contains('ln'))break;el=el.parentElement;}
+    if(el&&el.classList.contains('ln')&&!el.classList.contains('is-ed')){
+      this._focusLn(el);
+    } else if(!el||el===this._live){
+      const lines=[...this._live.querySelectorAll('.ln')];
+      if(lines.length)this._focusLn(lines[lines.length-1]);
+      else{const d=this._mkLn('');this._live.appendChild(d);this._focusLn(d);}
+    }
+  }
+
+  /* ── Keydown (text lines only) ── */
+  _kd(e){
+    if(e.key==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();this._save();return;}
+    if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();this._undo();return;}
+    if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();this._redo();return;}
+    if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();this._w2('**');return;}
+    if((e.ctrlKey||e.metaKey)&&e.key==='i'){e.preventDefault();this._w2('*');return;}
+    const f=this._live.querySelector('.ln.is-ed');
+    if(!f)return;
+    if(e.key==='Escape'){this._blurLn(f);return;}
+    if(e.key==='Tab'){e.preventDefault();document.execCommand('insertText',false,'  ');return;}
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();this._enter(f);return;}
+    if(e.key==='Backspace'){this._bs(e,f);return;}
+    if(e.key==='ArrowUp'){
+      const sel=window.getSelection();
+      const pos=sel.rangeCount?this._cp(f):0;
+      if(pos<=1){
+        const prev=this._prevLn(f);
+        if(prev){e.preventDefault();this._blurLn(f);this._focusLn(prev,false);}
+      }
+      return;
+    }
+    if(e.key==='ArrowDown'){
+      const text=f.textContent,sel=window.getSelection();
+      const pos=sel.rangeCount?this._cp(f):text.length;
+      if(pos>=text.length-1){
+        const next=this._nextLn(f);
+        if(next){e.preventDefault();this._blurLn(f);this._focusLn(next,true);}
+      }
+      return;
+    }
+    if(e.key==='/'&&f.textContent.trim()==='')setTimeout(()=>this._slash(f),0);
+  }
+
+  _inp(){
+    if(this._comp)return;
+    const f=this._live.querySelector('.ln.is-ed');
+    if(!f)return;
+    f.dataset.md=f.textContent;
+    this._deferSync();
+  }
+
+  /* Deferred sync — called by both text lines and code blocks */
+  _deferSync(){
+    clearTimeout(this._syncT);
+    this._syncT=setTimeout(()=>{this._sync();this._emitChange();},80);
+  }
+
+  /* ── Enter ── */
+  _enter(f){
+    const text=f.textContent,t=ltype(text);
+    if((t==='ul'||t==='ol')&&text.trim()===text.match(/^([-*+]|\d+\.) /)[0]){
+      this._st(f,'');const nl=this._mkLn('');this._after(f,nl);this._blurLn(f);this._focusLn(nl);
+      this._sync();this._emitChange();return;
+    }
+    const pos=this._cp(f),before=text.slice(0,pos),after=text.slice(pos);
+    let pfx='';
+    if(t==='ul')pfx=text.match(/^[-*+] /)[0];
+    if(t==='ol'){const n=parseInt(text.match(/^\d+/)[0]);pfx=(n+1)+'. ';}
+    if(t==='bq')pfx=text.match(/^> ?/)[0];
+    this._st(f,before);
+    const nl=this._mkLn(pfx+after);this._after(f,nl);this._blurLn(f);this._focusLn(nl);
+    const nd=nl.firstChild||nl;const r=document.createRange(),s=window.getSelection();
+    r.setStart(nd,Math.min(pfx.length,nd.length||0));r.collapse(true);s.removeAllRanges();s.addRange(r);
+    this._sync();this._emitChange();
+  }
+
+  /* ── Backspace ── */
+  _bs(e,f){
+    const sel=window.getSelection();if(!sel.rangeCount)return;
+    const r=sel.getRangeAt(0),text=f.textContent,at0=r.collapsed&&r.startOffset===0;
+    if(at0&&text===''){
+      e.preventDefault();
+      const prev=this._prevLn(f);f.remove();this._sync();
+      if(prev){this._blurLn(this._live.querySelector('.is-ed'));editLn(prev,prev.dataset.md||'');prev.focus();this._ce(prev);}
+      this._emitChange();return;
+    }
+    if(at0&&text){
+      const prev=this._prevLn(f);
+      if(prev&&!prev.dataset.cb){
+        e.preventDefault();
+        const pm=prev.dataset.md||'',mg=pm+text;
+        f.remove();editLn(prev,mg);prev.dataset.md=mg;prev.focus();
+        const nd=prev.firstChild||prev;const r2=document.createRange(),s2=window.getSelection();
+        r2.setStart(nd,Math.min(pm.length,nd.length||0));r2.collapse(true);s2.removeAllRanges();s2.addRange(r2);
+        this._sync();this._emitChange();
+      }
+    }
+  }
+
+  /* ── Focus / blur lines ── */
+  _focusLn(el,atStart){
+    if(el.dataset.cb){
+      // focus the textarea inside
+      const ta=el.querySelector('.cb-ta');
+      if(ta){
+        ta.focus();
+        if(atStart===true)ta.setSelectionRange(0,0);
+        else ta.setSelectionRange(ta.value.length,ta.value.length);
+      }
+      return;
+    }
+    const cur=this._live.querySelector('.ln.is-ed');
+    if(cur&&cur!==el)this._blurLn(cur);
+    const md=el.dataset.md||'';
+    editLn(el,md);el.focus();
+    const nd=el.firstChild||el;const r=document.createRange(),s=window.getSelection();
+    if(atStart===true)r.setStart(nd,0);
+    else r.setStart(nd,nd.length||nd.textContent.length||0);
+    r.collapse(true);s.removeAllRanges();s.addRange(r);
+  }
+  _blurLn(el){
+    if(!el||el.dataset.cb)return;
+    const md=el.textContent;el.dataset.md=md;renderLn(el,md);
+  }
+
+  /* ── Navigation helpers ── */
+  _prevLn(el){
+    let p=el.previousElementSibling;
+    while(p&&!p.classList.contains('ln')&&!p.dataset.cb)p=p.previousElementSibling;
+    return p||null;
+  }
+  _nextLn(el){
+    let n=el.nextElementSibling;
+    while(n&&!n.classList.contains('ln')&&!n.dataset.cb)n=n.nextElementSibling;
+    return n||null;
+  }
+
+  /* ── DOM helpers ── */
+  _mkLn(text){const d=document.createElement('div');d.className='ln';d.dataset.md=text;renderLn(d,text);return d;}
+  _after(ref,el){if(ref.nextSibling)this._live.insertBefore(el,ref.nextSibling);else this._live.appendChild(el);}
+  _cp(el){
+    const sel=window.getSelection();if(!sel.rangeCount)return el.textContent.length;
+    const r=sel.getRangeAt(0).cloneRange(),b=document.createRange();
+    try{b.setStart(el.firstChild||el,0);b.setEnd(r.startContainer,r.startOffset);}catch(e){return 0;}
+    return b.toString().length;
+  }
+  _ce(el){const nd=el.firstChild||el;const r=document.createRange(),s=window.getSelection();r.setStart(nd,nd.nodeType===3?nd.length:nd.textContent.length);r.collapse(true);s.removeAllRanges();s.addRange(r);}
+  _st(el,t){el.textContent=t;el.dataset.md=t;}
+
+  /* ── Sync DOM → _md ── */
+  _sync(){
+    const parts=[];
+    this._live.childNodes.forEach(n=>{
+      if(n.nodeType!==1)return;
+      if(n.dataset.cb){
+        const lang=n.dataset.lang||'',code=n.dataset.code||'';
+        parts.push('```'+lang);
+        code.split('\n').forEach(l=>parts.push(l));
+        parts.push('```');
+      } else if(n.classList.contains('ln')){
+        if(n.classList.contains('is-ed'))n.dataset.md=n.textContent;
+        parts.push(n.dataset.md||'');
+      }
+    });
+    const nm=parts.join('\n');
+    if(nm!==this._md){this._push(this._md);this._md=nm;}
+    this._wc();this._hidden();this._phCheck();
+  }
+
+  /* ── Draw from _md ── */
+  _draw(){
+    this._live.innerHTML='';
+    if(!this._md){this._live.appendChild(this._mkLn(''));this._wc();this._phCheck();return;}
+    const lines=this._md.split('\n');let i=0;
+    while(i<lines.length){
+      const line=lines[i];
+      const m=line.match(/^(`{3,}|~{3,})(.*)/);
+      if(m){
+        const lang=(m[2]||'').trim();i++;
+        const codeLines=[];
+        while(i<lines.length){
+          if(lines[i].match(/^(`{3,}|~{3,})\s*$/)){i++;break;}
+          codeLines.push(lines[i]);i++;
+        }
+        this._live.appendChild(makeCodeBlock(lang,codeLines.join('\n'),this));
+      } else {
+        this._live.appendChild(this._mkLn(line));i++;
+      }
+    }
+    this._wc();this._phCheck();
+  }
+
+  /* ── Paste / Drop ── */
+  _paste(e){
+    const cd=e.clipboardData||window.clipboardData;
+    const img=Array.from(cd.items||[]).find(it=>it.type.startsWith('image/'));
+    if(img){e.preventDefault();this._imgFile(img.getAsFile());return;}
+    const html=cd.getData('text/html');
+    if(html&&isHtml(html)){e.preventDefault();this._ins(h2md(html));return;}
+    const text=cd.getData('text/plain');
+    if(text&&text.includes('\n')){e.preventDefault();this._ins(text);}
+  }
+  _drop(e){
+    e.preventDefault();this._live.classList.remove('drag-over');
+    const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
+    if(f)this._imgFile(f);
+  }
+  _imgFile(file){
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      this._ins(`![${file.name||'image'}](${ev.target.result})`);
+      const h=this._wrap.querySelector('.phi');
+      if(h){h.classList.add('show');setTimeout(()=>h.classList.remove('show'),2000);}
+    };
+    reader.readAsDataURL(file);
+  }
+  _ins(text){
+    const f=this._live.querySelector('.ln.is-ed');
+    const lines=text.split('\n');
+    if(!f){lines.forEach(l=>this._live.appendChild(this._mkLn(l)));this._sync();this._emitChange();return;}
+    if(lines.length===1){document.execCommand('insertText',false,text);f.dataset.md=f.textContent;}
+    else{
+      const pos=this._cp(f),cur=f.textContent;
+      const all=[cur.slice(0,pos)+lines[0],...lines.slice(1,-1),lines[lines.length-1]+cur.slice(pos)];
+      this._st(f,all[0]);this._blurLn(f);
+      let ref=f;for(let i=1;i<all.length;i++){const nl=this._mkLn(all[i]);this._after(ref,nl);ref=nl;}
+      this._focusLn(ref);
+    }
+    this._sync();this._emitChange();
+  }
+
+  /* ── Slash menu ── */
+  _slash(ln){
+    const menu=this._wrap.querySelector('.smenu');
+    const items=[
+      {ic:'H1',lb:'Heading 1',md:'# '},{ic:'H2',lb:'Heading 2',md:'## '},{ic:'H3',lb:'Heading 3',md:'### '},
+      {ic:'❝',lb:'Blockquote',md:'> '},{ic:'•',lb:'Bullet List',md:'- '},{ic:'1.',lb:'Numbered List',md:'1. '},
+      {ic:'—',lb:'Divider',md:'---'},{ic:'{}',lb:'Code Block',md:'```javascript\n\n```'},
+      {ic:'▦',lb:'Table',md:'| Col 1 | Col 2 |\n| --- | --- |\n| Cell | Cell |'},
+    ];
+    menu.innerHTML=items.map((it,i)=>`<div class="si" data-i="${i}"><span class="sic">${it.ic}</span><span>${it.lb}</span></div>`).join('');
+    menu.style.display='block';
+    const rect=ln.getBoundingClientRect(),wr=this._wrap.getBoundingClientRect();
+    menu.style.top=(rect.bottom-wr.top+2)+'px';menu.style.left=(rect.left-wr.left)+'px';
+    menu.querySelectorAll('.si').forEach((el,idx)=>{
+      el.addEventListener('mousedown',e=>{
+        e.preventDefault();menu.style.display='none';
+        const it=items[idx];
+        this._st(ln,it.md);this._sync();
+        if(it.md.includes('\n')){this._draw();}
+        else{ln.focus();this._ce(ln);}
+        this._emitChange();
+      });
+    });
+    const close=e=>{if(!menu.contains(e.target)){menu.style.display='none';document.removeEventListener('mousedown',close);}};
+    setTimeout(()=>document.addEventListener('mousedown',close),50);
+  }
+
+  /* ── Toolbar commands ── */
+  _cmd(c){
+    if(c==='undo'){this._undo();return;}
+    if(c==='redo'){this._redo();return;}
+    const f=this._live.querySelector('.ln.is-ed');
+    if(!f){
+      const snips={h1:'# Heading',h2:'## Heading',h3:'### Heading',bold:'**bold**',italic:'*italic*',strike:'~~text~~',link:'[text](https://)',image:'![alt](https://)',inlinecode:'`code`',codeblock:'```javascript\n// code here\n```',quote:'> Blockquote',ul:'- Item',ol:'1. Item',table:'| Col 1 | Col 2 |\n| --- | --- |\n| Cell | Cell |',hr:'---'};
+      if(snips[c]){this._md=this._md?this._md+'\n'+snips[c]:snips[c];this._draw();this._emitChange();}
+      return;
+    }
+    const sel=window.getSelection(),st=sel.rangeCount?sel.getRangeAt(0).toString():'';
+    switch(c){
+      case'h1':case'h2':case'h3':{const p={h1:'# ',h2:'## ',h3:'### '}[c],cu=f.textContent,cl=cu.replace(/^#+\s*/,'');this._st(f,cu.startsWith(p)?cl:p+cl);this._ce(f);break;}
+      case'bold':this._w2('**');break;
+      case'italic':this._w2('*');break;
+      case'strike':this._w2('~~');break;
+      case'inlinecode':this._w2('`');break;
+      case'link':{const u=prompt('URL:','https://');if(u)document.execCommand('insertText',false,'['+(st||'text')+']('+ u+')');break;}
+      case'image':{const u=prompt('Image URL:','https://');if(u)document.execCommand('insertText',false,'!['+(st||'alt')+']('+ u+')');break;}
+      case'codeblock':{
+        const lang=prompt('Language (e.g. javascript, python):','javascript')||'';
+        this._blurLn(f);
+        const cb=makeCodeBlock(lang,'',this);
+        this._after(f,cb);
+        this._sync();this._emitChange();
+        setTimeout(()=>{const ta=cb.querySelector('.cb-ta');if(ta)ta.focus();},0);
+        return;
+      }
+      case'quote':this._tp(f,'> ');break;
+      case'ul':this._tp(f,'- ');break;
+      case'ol':this._tp(f,'1. ');break;
+      case'hr':{this._blurLn(f);const nl=this._mkLn('---');this._after(f,nl);this._sync();this._emitChange();return;}
+      case'table':{['| Column 1 | Column 2 |','| --- | --- |','| Cell | Cell |'].forEach(r=>{this._live.appendChild(this._mkLn(r));});this._sync();this._emitChange();return;}
+    }
+    if(f)f.dataset.md=f.textContent;
+    this._sync();this._emitChange();
+  }
+  _w2(m){
+    const sel=window.getSelection(),st=sel.rangeCount?sel.getRangeAt(0).toString():'';
+    if(st){document.execCommand('insertText',false,m+st+m);}
+    else{document.execCommand('insertText',false,m+m);const s2=window.getSelection();if(s2.rangeCount){const r=s2.getRangeAt(0).cloneRange();r.setStart(r.startContainer,r.startOffset-m.length);r.collapse(true);s2.removeAllRanges();s2.addRange(r);}}
+    const f=this._live.querySelector('.is-ed');if(f)f.dataset.md=f.textContent;
+  }
+  _tp(el,pfx){const c=el.textContent,cl=c.replace(/^#+\s*|^> ?|^[-*+] |\d+\. /,''),nt=c.startsWith(pfx)?cl:pfx+cl;this._st(el,nt);this._ce(el);}
+
+  /* ── Undo/Redo ── */
+  _push(s){if(!s||s===this._undos[this._undos.length-1])return;this._undos.push(s);if(this._undos.length>150)this._undos.shift();this._redos=[];}
+  _undo(){if(!this._undos.length)return;this._redos.push(this._md);this._md=this._undos.pop();this._draw();this._emitChange();}
+  _redo(){if(!this._redos.length)return;this._undos.push(this._md);this._md=this._redos.pop();this._draw();this._emitChange();}
+
+  /* ── Mode ── */
+  _setMode(mode){
+    this._mode=mode;
+    const f=this._live&&this._live.querySelector('.ln.is-ed');if(f)this._blurLn(f);
+    const lv=this._wrap.querySelector('.mde-live'),sw=this._wrap.querySelector('.mde-src-wrap'),pf=this._wrap.querySelector('.mde-pf');
+    lv.style.display=mode==='live'?'':'none';
+    if(sw)sw.style.display=mode==='source'?'flex':'none';
+    if(pf)pf.style.display=mode==='preview'?'':'none';
+    this._wrap.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
+    this._wrap.querySelector('.mde-sm').textContent={live:'Live Preview',source:'Source / Preview',preview:'Read Mode'}[mode]||mode;
+    if(mode==='source'){const ta=this._wrap.querySelector('.mde-st');if(ta){ta.value=this._md;this._srcPrv();}}
+    if(mode==='preview'){const pv=this._wrap.querySelector('.mde-pf');if(pv)pv.innerHTML=toHtml(this._md);}
+  }
+  _srcPrv(){const p=this._wrap.querySelector('.mde-pp');if(p)p.innerHTML=toHtml(this._md);}
+
+  /* ── Misc ── */
+  _emitChange(){const h=this.getValue();this._emit('change',h,this._md);this._hidden();this._wc();clearTimeout(this._saveT);this._saveT=setTimeout(()=>this._emit('autosave',h,this._md),2000);}
+  _save(){const h=this.getValue();this._hidden();this._emit('save',h,this._md);const sr=this._wrap.querySelector('.mde-st-r');if(sr){const o=sr.textContent;sr.innerHTML='<span class="ok">✓ Saved</span>';setTimeout(()=>sr.textContent=o,1800);}}
+  _hidden(){if(this._o.bindTo){const el=document.querySelector(this._o.bindTo);if(el)el.value=this.getValue();}const nx=this._el.nextElementSibling;if(nx&&(nx.type==='hidden'||nx.tagName==='INPUT'))nx.value=this.getValue();}
+  _wc(){const txt=this._md.replace(/```[\s\S]*?```/g,' ').replace(/[#*`>_~\[\]!|]/g,' ').trim();const n=txt?txt.split(/\s+/).filter(Boolean).length:0;const w=this._wrap&&this._wrap.querySelector('.mde-wc');if(w)w.textContent=n+' word'+(n!==1?'s':'');}
+  _phCheck(){this._live.classList.toggle('ph',this._live.querySelectorAll('.ln,.cb').length===1&&!this._md.trim());}
+}
+
+G.MarkdownEditor=MarkdownEditor;
+})(window);
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const DEMO=`# Welcome to the Editor
+
+This is an **Obsidian-style** live markdown editor. Click any text to edit inline — click away to render.
+
+## Code blocks stay as code blocks
+
+Click directly inside the code block below and start typing. The block always looks like a code block — syntax highlighting updates live as you type.
+
+\`\`\`javascript
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+const save = debounce((content) => {
+  fetch('/api/save', {
+    method: 'POST',
+    body: JSON.stringify({ content })
+  });
+}, 500);
+\`\`\`
+
+Click inside the block above. Press **Enter** to add new lines, **Tab** to indent. Use the **arrow keys** to navigate out.
+
+## Python
+
+\`\`\`python
+def fibonacci(n):
+    a, b = 0, 1
+    for _ in range(n):
+        yield a
+        a, b = b, a + b
+
+for num in fibonacci(10):
+    print(num, end=' ')
+\`\`\`
+
+## Inline Formatting
+
+Write **bold**, *italic*, ~~strikethrough~~, \`inline code\`, and [links](https://example.com) naturally.
+
+> Blockquotes work great for callouts.
+
+---
+
+Type **/** on an empty line for the block menu. **Ctrl+B** / **Ctrl+I** for formatting. **Ctrl+S** to save.`;
+
+  const e1=new MarkdownEditor('#editor1',{placeholder:'Start writing…',initialValue:DEMO});
+  e1.init();
+  e1.on('change',html=>{document.querySelector('#content1').value=html;});
+  e1.on('save',html=>console.log('[E1] saved',html.length,'bytes'));
+
+  const e2=new MarkdownEditor('#editor2',{
+    placeholder:'Write something…',
+    initialValue:'## Quick Note\n\nSecond **independent** editor.\n\n```bash\nnpm install\nnpm run dev\n```\n\nEach editor has its own state.',
+  });
+  e2.init();
+  e2.on('change',html=>{document.querySelector('#content2').value=html;});
+
+  window._e1=e1;window._e2=e2;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Editor</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f5f4ef;
+  --surface:#faf9f6;
+  --surface2:#f0efe8;
+  --border:#dddbd0;
+  --border-light:#e8e6dd;
+  --text:#1a1a1a;
+  --text-muted:#6b6860;
+  --text-faint:#a09d94;
+  --accent:#5c6bc0;
+  --accent-light:#e8eaf6;
+  --link:#4a6fa5;
+  --code-bg:#eceae0;
+  --toolbar-bg:#f0efe8;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.05);
+  --radius:6px;
+  --font-body:'Lora',Georgia,serif;
+  --font-ui:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','Fira Code',monospace;
+}
+
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);line-height:1.6}
+
+/* ── Wrapper ── */
+.mde-wrap{
+  display:flex;flex-direction:column;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-md);
+  overflow:hidden;position:relative;
+}
+
+/* ── Toolbar ── */
+.mde-toolbar{
+  display:flex;align-items:center;gap:2px;
+  padding:5px 10px;background:var(--toolbar-bg);
+  border-bottom:1px solid var(--border);
+  flex-wrap:wrap;user-select:none;flex-shrink:0;
+}
+.mde-tb-group{display:flex;align-items:center;gap:1px}
+.mde-sep{width:1px;height:18px;background:var(--border);margin:0 5px}
+.mde-btn{
+  display:flex;align-items:center;justify-content:center;
+  min-width:28px;height:26px;padding:0 5px;
+  border:none;background:transparent;border-radius:4px;
+  cursor:pointer;color:var(--text-muted);font-size:12px;
+  font-family:var(--font-ui);transition:background .12s,color .12s;
+  position:relative;white-space:nowrap;
+}
+.mde-btn:hover{background:var(--border-light);color:var(--text)}
+.mde-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.mde-btn-lbl{font-size:11px;font-weight:600;font-family:var(--font-mono)}
+.mde-mode-pill{
+  margin-left:auto;display:flex;align-items:center;
+  background:var(--surface2);border-radius:20px;padding:2px;
+  border:1px solid var(--border);gap:1px;
+}
+.mde-mode-btn{
+  padding:2px 10px;border:none;background:transparent;border-radius:16px;
+  cursor:pointer;font-size:11px;font-weight:500;font-family:var(--font-ui);
+  color:var(--text-muted);transition:all .15s;white-space:nowrap;
+}
+.mde-mode-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+.mde-btn[title]:hover::after{
+  content:attr(title);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:#222;color:#fff;padding:3px 7px;border-radius:4px;font-size:11px;
+  white-space:nowrap;pointer-events:none;z-index:9999;font-family:var(--font-ui);
+}
+
+/* ── Body ── */
+.mde-body{display:flex;flex:1;overflow:hidden;position:relative;min-height:0}
+
+/* ── Live editor ── */
+.mde-live{
+  flex:1;overflow-y:auto;
+  padding:24px 40px 60px;
+  outline:none;cursor:text;
+  background:var(--surface);
+  word-break:break-word;
+}
+.mde-live:empty::before{
+  content:attr(data-placeholder);
+  color:var(--text-faint);pointer-events:none;font-style:italic;
+  display:block;
+}
+
+/* Each content line */
+.mde-line{
+  position:relative;min-height:1.5em;
+  font-family:var(--font-body);font-size:16px;line-height:1.8;
+  color:var(--text);outline:none;
+  /* NO margin/padding by default — each type sets its own */
+}
+/* Focused line = plain text editing */
+.mde-line.is-focused{
+  font-family:var(--font-mono);
+  font-size:14px;
+  line-height:1.75;
+  color:#333;
+  background:rgba(92,107,192,.04);
+  border-radius:3px;
+  padding:1px 3px;
+  margin:0 -3px;
+  white-space:pre-wrap;
+}
+
+/* ── Rendered line types ── */
+.mde-line.t-h1{font-size:2em;font-weight:700;line-height:1.25;border-bottom:2px solid var(--border);padding-bottom:.12em;margin-bottom:.05em}
+.mde-line.t-h2{font-size:1.5em;font-weight:600;line-height:1.3}
+.mde-line.t-h3{font-size:1.2em;font-weight:600;line-height:1.35}
+.mde-line.t-h4{font-size:1.05em;font-weight:600}
+.mde-line.t-h5{font-size:1em;font-weight:600;color:var(--text-muted)}
+.mde-line.t-h6{font-size:.9em;font-weight:600;color:var(--text-faint)}
+.mde-line.t-hr{
+  border:none;border-top:2px solid var(--border);
+  height:2px;overflow:hidden;
+  font-size:0;color:transparent;
+  min-height:0;padding:0;margin:6px 0;
+}
+.mde-line.t-blockquote{
+  border-left:3px solid var(--accent);
+  padding-left:.9em;
+  color:var(--text-muted);
+  font-style:italic;
+  background:var(--accent-light);
+  border-radius:0 3px 3px 0;
+}
+.mde-line.t-ul,.mde-line.t-ol{padding-left:1.4em}
+.mde-line.t-empty{min-height:1.5em}
+
+/* Rendered inline content */
+.mde-line strong{font-weight:700}
+.mde-line em{font-style:italic}
+.mde-line del{text-decoration:line-through;color:var(--text-muted)}
+.mde-line a{color:var(--link);text-decoration:underline;text-decoration-color:transparent}
+.mde-line a:hover{text-decoration-color:currentColor}
+.mde-line .ic{font-family:var(--font-mono);font-size:.83em;background:var(--code-bg);padding:1px 5px;border-radius:3px;color:#c7254e}
+.mde-line img{max-width:100%;border-radius:4px;display:block;margin:2px 0}
+
+/* ── Code widget — the rendered code block ── */
+.mde-code-widget{
+  margin:6px 0;border-radius:var(--radius);overflow:hidden;
+  background:#282c34;border:1px solid rgba(0,0,0,.18);
+  /* not a .mde-line — sits between lines */
+}
+.mde-code-widget-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px;background:rgba(0,0,0,.25);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.mde-code-lang{font-family:var(--font-mono);font-size:11px;color:#abb2bf;text-transform:uppercase;letter-spacing:.06em}
+.mde-code-actions{display:flex;gap:6px;align-items:center}
+.mde-code-edit-btn,.mde-code-copy-btn{
+  font-size:11px;padding:2px 9px;
+  border:1px solid rgba(255,255,255,.18);
+  background:transparent;border-radius:3px;color:#abb2bf;
+  cursor:pointer;font-family:var(--font-ui);transition:all .15s;
+}
+.mde-code-edit-btn:hover,.mde-code-copy-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.mde-code-widget pre{
+  margin:0;overflow-x:auto;
+  /* IMPORTANT: exact padding, no extra space */
+  padding:14px 16px 14px;
+}
+.mde-code-widget pre code{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:13px;line-height:1.6;
+  background:transparent;color:#abb2bf;
+  padding:0;border-radius:0;
+  white-space:pre;    /* preserve code indentation exactly */
+  tab-size:2;
+  /* critical: override hljs defaults that add margins */
+  -webkit-text-size-adjust:none;
+}
+/* Kill atom-one-light overrides inside our dark widget */
+.mde-code-widget .hljs{background:transparent;padding:0}
+
+/* Code edit overlay */
+.mde-code-edit-wrap{
+  margin:6px 0;border-radius:var(--radius);overflow:hidden;
+  background:#1e1e2e;border:1px solid rgba(255,255,255,.08);
+}
+.mde-code-edit-header{
+  display:flex;align-items:center;gap:8px;padding:7px 12px;
+  background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.06);
+}
+.mde-code-lang-input{
+  flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);
+  border-radius:3px;padding:2px 8px;color:#abb2bf;
+  font-family:var(--font-mono);font-size:11px;outline:none;
+  text-transform:lowercase;
+}
+.mde-code-lang-input::placeholder{color:rgba(255,255,255,.2)}
+.mde-code-lang-input:focus{border-color:rgba(255,255,255,.3)}
+.mde-code-done-btn{
+  padding:3px 12px;border:1px solid rgba(255,255,255,.2);
+  background:transparent;border-radius:3px;color:#abb2bf;
+  cursor:pointer;font-family:var(--font-ui);font-size:11px;transition:all .15s;
+}
+.mde-code-done-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.mde-code-textarea{
+  width:100%;background:#282c34;color:#abb2bf;
+  border:none;outline:none;
+  padding:14px 16px;
+  font-family:var(--font-mono);font-size:13px;line-height:1.6;
+  resize:vertical;min-height:90px;
+  tab-size:2;display:block;
+  white-space:pre;overflow-x:auto;
+}
+
+/* ── Source/Split view ── */
+.mde-source-wrap{flex:1;display:flex;min-height:0}
+.mde-source-pane,.mde-preview-pane{flex:1;overflow-y:auto;padding:24px 36px 60px}
+.mde-source-pane{border-right:1px solid var(--border)}
+.mde-source-ta{
+  width:100%;height:100%;min-height:380px;border:none;background:transparent;
+  resize:none;outline:none;font-family:var(--font-mono);font-size:13px;
+  line-height:1.75;color:var(--text);tab-size:2;
+}
+.mde-preview-pane{font-family:var(--font-body);font-size:16px;line-height:1.8}
+
+/* ── Preview full ── */
+.mde-preview-full{
+  flex:1;overflow-y:auto;padding:36px 56px 80px;
+  font-family:var(--font-body);font-size:17px;line-height:1.85;
+  background:var(--surface);
+}
+
+/* ── Shared rendered output styles ── */
+.mde-rendered h1,.mde-preview-pane h1,.mde-preview-full h1{font-size:2em;font-weight:700;margin:.2em 0 .1em;border-bottom:2px solid var(--border);padding-bottom:.2em;line-height:1.25}
+.mde-rendered h2,.mde-preview-pane h2,.mde-preview-full h2{font-size:1.5em;font-weight:600;margin:.2em 0 .1em;line-height:1.3}
+.mde-rendered h3,.mde-preview-pane h3,.mde-preview-full h3{font-size:1.2em;font-weight:600;margin:.15em 0}
+.mde-rendered h4,.mde-preview-pane h4,.mde-preview-full h4{font-size:1.05em;font-weight:600}
+.mde-rendered p,.mde-preview-pane p,.mde-preview-full p{margin:.4em 0}
+.mde-rendered ul,.mde-rendered ol,.mde-preview-pane ul,.mde-preview-pane ol,.mde-preview-full ul,.mde-preview-full ol{padding-left:1.6em;margin:.3em 0}
+.mde-rendered li,.mde-preview-pane li,.mde-preview-full li{margin:.1em 0}
+.mde-rendered blockquote,.mde-preview-pane blockquote,.mde-preview-full blockquote{border-left:3px solid var(--accent);margin:.4em 0;padding:.2em 0 .2em 1em;color:var(--text-muted);font-style:italic;background:var(--accent-light);border-radius:0 4px 4px 0}
+.mde-rendered hr,.mde-preview-pane hr,.mde-preview-full hr{border:none;border-top:1px solid var(--border);margin:.8em 0}
+.mde-rendered a,.mde-preview-pane a,.mde-preview-full a{color:var(--link)}
+.mde-rendered img,.mde-preview-pane img,.mde-preview-full img{max-width:100%;border-radius:var(--radius);display:block;margin:.4em 0}
+.mde-rendered table,.mde-preview-pane table,.mde-preview-full table{border-collapse:collapse;width:100%;margin:.4em 0;font-size:14px}
+.mde-rendered th,.mde-rendered td,.mde-preview-pane th,.mde-preview-pane td,.mde-preview-full th,.mde-preview-full td{border:1px solid var(--border);padding:6px 12px;text-align:left}
+.mde-rendered th,.mde-preview-pane th,.mde-preview-full th{background:var(--surface2);font-weight:600;font-family:var(--font-ui);font-size:13px}
+.mde-rendered tr:nth-child(even),.mde-preview-pane tr:nth-child(even),.mde-preview-full tr:nth-child(even){background:var(--surface2)}
+.mde-rendered code,.mde-preview-pane code,.mde-preview-full code{font-family:var(--font-mono);font-size:.84em;background:var(--code-bg);padding:1px 5px;border-radius:3px;color:#c7254e}
+.mde-rendered strong,.mde-preview-pane strong,.mde-preview-full strong{font-weight:700}
+.mde-rendered em,.mde-preview-pane em,.mde-preview-full em{font-style:italic}
+.mde-rendered del,.mde-preview-pane del,.mde-preview-full del{text-decoration:line-through;color:var(--text-muted)}
+/* Code block in preview */
+.mde-preview-pane pre,.mde-preview-full pre,.mde-rendered pre{margin:.4em 0;border-radius:var(--radius);overflow:hidden}
+.mde-preview-pane pre code,.mde-preview-full pre code,.mde-rendered pre code{
+  display:block;padding:14px 16px;font-family:var(--font-mono);font-size:13px;
+  line-height:1.6;background:#282c34;color:#abb2bf;border-radius:0;
+  white-space:pre;font-size:13px;
+}
+.mde-preview-pane .hljs,.mde-preview-full .hljs,.mde-rendered .hljs{padding:14px 16px;background:#282c34}
+
+/* Code block in preview with header */
+.mde-preview-code-wrap{background:#282c34;border-radius:var(--radius);overflow:hidden;margin:.4em 0;border:1px solid rgba(0,0,0,.15)}
+.mde-preview-code-wrap .mde-code-widget-head{background:rgba(0,0,0,.2);padding:6px 14px}
+.mde-preview-code-wrap pre{margin:0}
+.mde-preview-code-wrap pre code{display:block;padding:14px 16px;font-family:var(--font-mono);font-size:13px;line-height:1.6;background:transparent;color:#abb2bf;white-space:pre}
+.mde-preview-code-wrap .hljs{background:transparent;padding:0}
+
+/* ── Status bar ── */
+.mde-status{
+  display:flex;align-items:center;gap:12px;padding:4px 12px;
+  background:var(--toolbar-bg);border-top:1px solid var(--border);
+  font-size:11px;color:var(--text-faint);font-family:var(--font-ui);
+  user-select:none;flex-shrink:0;
+}
+.mde-status-right{margin-left:auto}
+.saved-ok{color:#4caf50;font-weight:600}
+
+/* ── Scrollbars ── */
+.mde-live::-webkit-scrollbar,.mde-source-pane::-webkit-scrollbar,
+.mde-preview-pane::-webkit-scrollbar,.mde-preview-full::-webkit-scrollbar{width:5px}
+.mde-live::-webkit-scrollbar-track,.mde-source-pane::-webkit-scrollbar-track,
+.mde-preview-pane::-webkit-scrollbar-track,.mde-preview-full::-webkit-scrollbar-track{background:transparent}
+.mde-live::-webkit-scrollbar-thumb,.mde-source-pane::-webkit-scrollbar-thumb,
+.mde-preview-pane::-webkit-scrollbar-thumb,.mde-preview-full::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── Misc ── */
+.mde-paste-hint{
+  position:absolute;bottom:14px;right:14px;background:var(--accent);color:#fff;
+  padding:5px 12px;border-radius:20px;font-size:12px;font-family:var(--font-ui);
+  opacity:0;transform:translateY(4px);transition:all .2s;pointer-events:none;z-index:10;
+}
+.mde-paste-hint.show{opacity:1;transform:translateY(0)}
+.mde-slash-menu{
+  position:absolute;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow-md);width:210px;
+  overflow:hidden;z-index:200;display:none;
+}
+.mde-slash-item{
+  display:flex;align-items:center;gap:10px;padding:7px 12px;
+  cursor:pointer;font-size:13px;font-family:var(--font-ui);transition:background .1s;
+}
+.mde-slash-item:hover,.mde-slash-item.sel{background:var(--accent-light);color:var(--accent)}
+.mde-slash-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:4px;font-size:11px;font-weight:700;font-family:var(--font-mono);flex-shrink:0}
+.mde-live.drag-over{outline:2px dashed var(--accent);outline-offset:-3px;background:var(--accent-light)}
+
+/* ── Demo page ── */
+.demo-page{max-width:900px;margin:36px auto;padding:0 20px 60px}
+.demo-title{font-family:var(--font-body);font-size:26px;font-weight:600;margin-bottom:6px}
+.demo-sub{font-size:13px;color:var(--text-muted);margin-bottom:30px;font-family:var(--font-ui)}
+.demo-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;font-family:var(--font-ui)}
+.demo-section{margin-bottom:36px}
+.demo-api{background:#1e1e2e;color:#cdd6f4;border-radius:var(--radius);padding:16px 20px;font-family:var(--font-mono);font-size:13px;line-height:1.7;margin-top:10px}
+.demo-api .kw{color:#cba6f7}.demo-api .fn{color:#89b4fa}.demo-api .str{color:#a6e3a1}.demo-api .cm{color:#6c7086}
+</style>
+</head>
+<body>
+
+<div class="demo-page">
+  <div class="demo-title">✦ Markdown Editor</div>
+  <div class="demo-sub">Obsidian-style live editor · paste images · syntax-highlighted code · HTML in/out</div>
+
+  <div class="demo-section">
+    <div class="demo-label">Editor 1</div>
+    <div id="editor1" style="height:520px"></div>
+    <input type="hidden" name="content1" id="content1">
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">Editor 2</div>
+    <div id="editor2" style="height:300px"></div>
+    <input type="hidden" name="content2" id="content2">
+  </div>
+
+  <div class="demo-section">
+    <div class="demo-label">API Reference</div>
+    <div class="demo-api">
+<span class="kw">const</span> editor = <span class="kw">new</span> <span class="fn">MarkdownEditor</span>(<span class="str">'#editor1'</span>, {<br>
+&nbsp;&nbsp;placeholder: <span class="str">'Start writing…'</span>,<br>
+&nbsp;&nbsp;initialValue: <span class="str">'&lt;p&gt;HTML or markdown&lt;/p&gt;'</span>,<br>
+});<br>
+editor.<span class="fn">init</span>();<br><br>
+editor.<span class="fn">on</span>(<span class="str">'change'</span>, (html, md) => {});&nbsp;<span class="cm">// fires on every edit</span><br>
+editor.<span class="fn">on</span>(<span class="str">'save'</span>, (html, md) => {});&nbsp;&nbsp;&nbsp;<span class="cm">// fires on Ctrl+S</span><br>
+editor.<span class="fn">on</span>(<span class="str">'autosave'</span>, (html, md) => {}); <span class="cm">// debounced 2s</span><br><br>
+editor.<span class="fn">getValue</span>();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// → HTML string for backend</span><br>
+editor.<span class="fn">getMarkdown</span>();&nbsp;&nbsp;<span class="cm">// → raw Markdown string</span><br>
+editor.<span class="fn">loadValue</span>(str); <span class="cm">// load HTML or Markdown</span><br>
+editor.<span class="fn">clear</span>();<br>
+editor.<span class="fn">focus</span>();<br>
+editor.<span class="fn">destroy</span>();
+    </div>
+  </div>
+</div>
+
+<script>
+/* =============================================================================
+   MarkdownEditor v2 — clean Obsidian-style live editor
+   
+   Key architecture decisions:
+   - One contenteditable div per logical LINE (not per char/block)
+   - Code fences are grouped and rendered as non-editable widgets
+   - Each line: when focused → raw markdown text | when blurred → rendered HTML
+   - No block-splitting mess — clean line-level model
+============================================================================= */
+(function(G){ 'use strict';
+
+/* ─── utils ─────────────────────────────────────────────────────────── */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const uid = () => 'mde_' + Math.random().toString(36).slice(2,9);
+
+/* ─── HTML → Markdown ────────────────────────────────────────────────── */
+function htmlToMd(html) {
+  if (!html || !html.trim()) return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  function walk(node, depth) {
+    depth = depth || 0;
+    if (node.nodeType === 3) return node.textContent;
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    const ch = () => Array.from(node.childNodes).map(n => walk(n, depth)).join('');
+    switch(tag) {
+      case 'h1': return '# ' + ch().trim() + '\n';
+      case 'h2': return '## ' + ch().trim() + '\n';
+      case 'h3': return '### ' + ch().trim() + '\n';
+      case 'h4': return '#### ' + ch().trim() + '\n';
+      case 'h5': return '##### ' + ch().trim() + '\n';
+      case 'h6': return '###### ' + ch().trim() + '\n';
+      case 'p':  { const c = ch().trim(); return c ? c + '\n' : ''; }
+      case 'strong': case 'b': return '**' + ch() + '**';
+      case 'em':  case 'i': return '*' + ch() + '*';
+      case 'del': case 's': return '~~' + ch() + '~~';
+      case 'a': return '[' + ch() + '](' + (node.getAttribute('href')||'') + ')';
+      case 'img': return '!['+(node.getAttribute('alt')||'')+']('+(node.getAttribute('src')||'')+')';
+      case 'br': return '\n';
+      case 'hr': return '---\n';
+      case 'blockquote': return ch().trim().split('\n').map(l => '> ' + l).join('\n') + '\n';
+      case 'code': {
+        const inPre = node.parentElement && node.parentElement.tagName.toLowerCase() === 'pre';
+        return inPre ? node.textContent : '`' + node.textContent + '`';
+      }
+      case 'pre': {
+        const ce = node.querySelector('code');
+        const m = ce && ce.className.match(/language-(\w+)/);
+        const lang = m ? m[1] : '';
+        const code = (ce ? ce.textContent : node.textContent).replace(/\n$/, '');
+        return '```' + lang + '\n' + code + '\n```\n';
+      }
+      case 'ul': return Array.from(node.children).map(li => '- ' + walk(li, depth+1).trim()).join('\n') + '\n';
+      case 'ol': return Array.from(node.children).map((li,i) => (i+1)+'. ' + walk(li, depth+1).trim()).join('\n') + '\n';
+      case 'li': return ch().trim();
+      case 'table': {
+        const rows = Array.from(node.querySelectorAll('tr'));
+        if (!rows.length) return '';
+        const heads = Array.from(rows[0].querySelectorAll('th,td')).map(c => c.textContent.trim());
+        let md = '| ' + heads.join(' | ') + ' |\n| ' + heads.map(() => '---').join(' | ') + ' |\n';
+        rows.slice(1).forEach(r => {
+          md += '| ' + Array.from(r.querySelectorAll('td')).map(c => c.textContent.trim()).join(' | ') + ' |\n';
+        });
+        return md;
+      }
+      default: return ch();
+    }
+  }
+  return walk(doc.body).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function isHtml(s) { return /<[a-z][\s\S]*>/i.test(s); }
+
+/* ─── Inline markdown → HTML (for rendered lines) ───────────────────── */
+function inlineRender(raw) {
+  let s = esc(raw);
+  // inline code first (protect inner content)
+  s = s.replace(/`([^`\n]+)`/g, '<span class="ic">$1</span>');
+  // bold+italic
+  s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // bold
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  // italic
+  s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  s = s.replace(/_([^_\n]+)_/g, '<em>$1</em>');
+  // strikethrough
+  s = s.replace(/~~(.+?)~~/g, '<del>$1</del>');
+  // images (before links)
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">');
+  // links
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+
+/* ─── Line classifier ────────────────────────────────────────────────── */
+function classLine(text) {
+  if (/^#{6} /.test(text)) return { type:'h6', depth:6 };
+  if (/^#{5} /.test(text)) return { type:'h5', depth:5 };
+  if (/^#{4} /.test(text)) return { type:'h4', depth:4 };
+  if (/^#{3} /.test(text)) return { type:'h3', depth:3 };
+  if (/^#{2} /.test(text)) return { type:'h2', depth:2 };
+  if (/^# /.test(text))    return { type:'h1', depth:1 };
+  if (/^(---+|\*\*\*+)\s*$/.test(text)) return { type:'hr' };
+  if (/^> ?/.test(text))   return { type:'blockquote' };
+  if (/^[-*+] /.test(text)) return { type:'ul' };
+  if (/^\d+\. /.test(text)) return { type:'ol' };
+  if (/^(`{3,}|~{3,})/.test(text)) {
+    const m = text.match(/^(`{3,}|~{3,})(.*)/);
+    return { type:'fence-open', lang: (m[2]||'').trim() };
+  }
+  if (/^(`{3,}|~{3,})\s*$/.test(text)) return { type:'fence-close' };
+  if (text.trim() === '') return { type:'empty' };
+  return { type:'paragraph' };
+}
+
+/* ─── Build rendered HTML content for a non-focused line ─────────────── */
+function applyRendered(el, text) {
+  const info = classLine(text);
+  // Remove all type classes
+  el.className = 'mde-line';
+  el.contentEditable = 'false';
+
+  switch (info.type) {
+    case 'h1': case 'h2': case 'h3': case 'h4': case 'h5': case 'h6': {
+      el.classList.add('t-' + info.type);
+      const content = text.replace(/^#+\s/, '');
+      el.innerHTML = inlineRender(content) || '<br>';
+      break;
+    }
+    case 'hr': {
+      el.classList.add('t-hr');
+      el.textContent = '';
+      break;
+    }
+    case 'blockquote': {
+      el.classList.add('t-blockquote');
+      const content = text.replace(/^> ?/, '');
+      el.innerHTML = inlineRender(content) || '<br>';
+      break;
+    }
+    case 'ul': {
+      el.classList.add('t-ul');
+      const content = text.replace(/^[-*+] /, '');
+      el.innerHTML = '• ' + inlineRender(content);
+      break;
+    }
+    case 'ol': {
+      el.classList.add('t-ol');
+      const m = text.match(/^(\d+)\. (.*)/);
+      el.innerHTML = (m ? m[1]+'. ' : '') + inlineRender(m ? m[2] : text);
+      break;
+    }
+    case 'empty': {
+      el.classList.add('t-empty');
+      el.innerHTML = '<br>';
+      break;
+    }
+    case 'fence-open': case 'fence-close': {
+      // These lines should not appear — fence is replaced by a widget
+      el.style.display = 'none';
+      el.innerHTML = '';
+      break;
+    }
+    default: {
+      const rendered = inlineRender(text);
+      el.innerHTML = rendered || '<br>';
+      break;
+    }
+  }
+}
+
+/* ─── Activate editing on a line (show raw markdown) ─────────────────── */
+function applyEditing(el, text) {
+  el.className = 'mde-line is-focused';
+  el.contentEditable = 'true';
+  el.textContent = text;
+}
+
+/* ─── Build markdown → HTML for output / preview ─────────────────────── */
+function mdToOutputHtml(md) {
+  if (!md) return '';
+  if (typeof marked === 'undefined') return '<p>' + esc(md) + '</p>';
+  const renderer = new marked.Renderer();
+  renderer.code = function(code, lang) {
+    const vl = lang && typeof hljs !== 'undefined' && hljs.getLanguage(lang) ? lang : 'plaintext';
+    let hi;
+    try {
+      hi = (vl !== 'plaintext') ? hljs.highlight(code, { language: vl }).value : esc(code);
+    } catch(e) { hi = esc(code); }
+    return `<div class="mde-preview-code-wrap"><div class="mde-code-widget-head"><span class="mde-code-lang">${esc(vl)}</span></div><pre><code class="hljs language-${esc(vl)}">${hi}</code></pre></div>`;
+  };
+  renderer.link = (href, title, text) =>
+    `<a href="${href}"${title ? ` title="${esc(title)}"` : ''} target="_blank" rel="noopener">${text}</a>`;
+  renderer.image = (href, title, alt) =>
+    `<img src="${href}"${alt ? ` alt="${esc(alt)}"` : ''} loading="lazy">`;
+  try {
+    marked.setOptions({ renderer, gfm: true, breaks: true, headerIds: false, mangle: false });
+    return marked.parse(md);
+  } catch(e) {
+    return '<p>' + esc(md) + '</p>';
+  }
+}
+
+/* ─── Build a live-editor code widget ────────────────────────────────── */
+function makeCodeWidget(lang, codeText, editor) {
+  const vl = lang && typeof hljs !== 'undefined' && hljs.getLanguage(lang) ? lang : 'plaintext';
+  let hi;
+  try {
+    hi = (vl !== 'plaintext') ? hljs.highlight(codeText, { language: vl }).value : esc(codeText);
+  } catch(e) { hi = esc(codeText); }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'mde-code-widget';
+  wrap.dataset.widget = '1';
+  wrap.dataset.lang = lang || '';
+  wrap.dataset.code = codeText;
+
+  wrap.innerHTML = `<div class="mde-code-widget-head">
+    <span class="mde-code-lang">${esc(vl || 'code')}</span>
+    <div class="mde-code-actions">
+      <button class="mde-code-edit-btn">Edit</button>
+      <button class="mde-code-copy-btn">Copy</button>
+    </div>
+  </div>
+  <pre><code class="hljs${vl ? ' language-'+esc(vl) : ''}">${hi}</code></pre>`;
+
+  wrap.querySelector('.mde-code-copy-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    const btn = wrap.querySelector('.mde-code-copy-btn');
+    const text = wrap.dataset.code;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓ Copied';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = '✓ Copied';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    }
+  });
+
+  wrap.querySelector('.mde-code-edit-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    editor._openCodeEditor(wrap);
+  });
+
+  return wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MarkdownEditor Class
+═══════════════════════════════════════════════════════════════════════ */
+class MarkdownEditor {
+  constructor(sel, opts) {
+    this._sel = sel;
+    this._opts = Object.assign({
+      placeholder: 'Start writing… type / for commands',
+      initialValue: '',
+    }, opts || {});
+    this._id = uid();
+    this._container = null;
+    this._wrap = null;
+    this._live = null;
+    this._mode = 'live';
+    this._md = '';
+    this._events = {};
+    this._saveTimer = null;
+    this._undoStack = [];
+    this._redoStack = [];
+    this._composing = false;
+    this._inputDebounce = null;
+  }
+
+  /* ─ public API ─ */
+  init() {
+    this._container = typeof this._sel === 'string'
+      ? document.querySelector(this._sel)
+      : this._sel;
+    if (!this._container) { console.error('[MDE] not found:', this._sel); return this; }
+    this._buildDOM();
+    this._attachEvents();
+    if (this._opts.initialValue) this.loadValue(this._opts.initialValue);
+    else this._renderLive();
+    return this;
+  }
+
+  on(ev, fn) { (this._events[ev] = this._events[ev] || []).push(fn); return this; }
+  off(ev, fn) { if (this._events[ev]) this._events[ev] = this._events[ev].filter(h => h !== fn); return this; }
+
+  getValue()    { return mdToOutputHtml(this._md); }
+  getMarkdown() { return this._md; }
+
+  loadValue(val) {
+    if (!val) { this._md = ''; }
+    else if (isHtml(val)) { this._md = htmlToMd(val); }
+    else { this._md = val; }
+    this._md = this._md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (this._live) this._renderLive();
+    this._updateHidden();
+    return this;
+  }
+
+  clear() {
+    this._md = '';
+    this._undoStack = [];
+    this._redoStack = [];
+    if (this._live) this._renderLive();
+    this._updateHidden();
+    return this;
+  }
+
+  focus() { if (this._live) this._live.focus(); return this; }
+  destroy() { if (this._wrap) this._wrap.remove(); this._events = {}; }
+
+  /* ─ emit ─ */
+  _emit(ev, ...args) { (this._events[ev] || []).forEach(h => h(...args)); }
+
+  /* ─ build DOM ─ */
+  _buildDOM() {
+    this._wrap = document.createElement('div');
+    this._wrap.className = 'mde-wrap';
+    this._wrap.id = this._id;
+    const h = this._container.style.height;
+    if (h) { this._wrap.style.height = h; this._container.style.height = ''; }
+    this._wrap.innerHTML = this._tbHtml() + this._bodyHtml() + this._statusHtml();
+    this._container.appendChild(this._wrap);
+    this._live = this._wrap.querySelector('.mde-live');
+  }
+
+  _tbHtml() {
+    const SVG = {
+      bold: `<svg viewBox="0 0 24 24"><path d="M6 4h8a4 4 0 010 8H6z"/><path d="M6 12h9a4 4 0 010 8H6z"/></svg>`,
+      italic: `<svg viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
+      strike: `<svg viewBox="0 0 24 24"><path d="M16 4H9a3 3 0 000 6h6a3 3 0 010 6H6"/><line x1="4" y1="12" x2="20" y2="12"/></svg>`,
+      link: `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+      image: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
+      code: `<svg viewBox="0 0 24 24"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>`,
+      codeblock: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><path d="M9 16l-2-2 2-2"/><path d="M15 12l2 2-2 2"/></svg>`,
+      quote: `<svg viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>`,
+      ul: `<svg viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>`,
+      ol: `<svg viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>`,
+      table: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>`,
+      hr: `<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+      undo: `<svg viewBox="0 0 24 24"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>`,
+      redo: `<svg viewBox="0 0 24 24"><polyline points="15,14 20,9 15,4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>`,
+    };
+    const b = (cmd, icon, tip) => `<button class="mde-btn" data-cmd="${cmd}" title="${tip}">${icon}</button>`;
+    const bl = (cmd, lbl, tip) => `<button class="mde-btn mde-btn-lbl" data-cmd="${cmd}" title="${tip}">${lbl}</button>`;
+    return `<div class="mde-toolbar">
+      <div class="mde-tb-group">${bl('h1','H1','Heading 1')}${bl('h2','H2','Heading 2')}${bl('h3','H3','Heading 3')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-tb-group">${b('bold',SVG.bold,'Bold (Ctrl+B)')}${b('italic',SVG.italic,'Italic (Ctrl+I)')}${b('strike',SVG.strike,'Strikethrough')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-tb-group">${b('link',SVG.link,'Link')}${b('image',SVG.image,'Image')}${b('inlinecode',SVG.code,'Inline Code')}${b('codeblock',SVG.codeblock,'Code Block')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-tb-group">${b('quote',SVG.quote,'Blockquote')}${b('ul',SVG.ul,'Bullet List')}${b('ol',SVG.ol,'Numbered List')}${b('table',SVG.table,'Table')}${b('hr',SVG.hr,'Divider')}</div>
+      <div class="mde-sep"></div>
+      <div class="mde-tb-group">${b('undo',SVG.undo,'Undo (Ctrl+Z)')}${b('redo',SVG.redo,'Redo (Ctrl+Y)')}</div>
+      <div class="mde-mode-pill">
+        <button class="mde-mode-btn active" data-mode="live">Live</button>
+        <button class="mde-mode-btn" data-mode="source">Source</button>
+        <button class="mde-mode-btn" data-mode="preview">Preview</button>
+      </div>
+    </div>`;
+  }
+
+  _bodyHtml() {
+    return `<div class="mde-body">
+      <div class="mde-live" data-placeholder="${this._opts.placeholder}" spellcheck="true" tabindex="0"></div>
+      <div class="mde-source-wrap" style="display:none">
+        <div class="mde-source-pane"><textarea class="mde-source-ta" spellcheck="false"></textarea></div>
+        <div class="mde-preview-pane"></div>
+      </div>
+      <div class="mde-preview-full" style="display:none"></div>
+      <div class="mde-paste-hint">📎 Image pasted!</div>
+      <div class="mde-slash-menu"></div>
+    </div>`;
+  }
+
+  _statusHtml() {
+    return `<div class="mde-status">
+      <span class="mde-status-mode">Live Preview</span>
+      <span class="mde-wc">0 words</span>
+      <span class="mde-status-right">Ctrl+S to save · / for commands</span>
+    </div>`;
+  }
+
+  /* ─ events ─ */
+  _attachEvents() {
+    const w = this._wrap;
+    const live = this._live;
+
+    // Toolbar
+    w.querySelectorAll('[data-cmd]').forEach(btn => {
+      btn.addEventListener('mousedown', e => { e.preventDefault(); this._cmd(btn.dataset.cmd); });
+    });
+    // Mode
+    w.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => this._setMode(btn.dataset.mode));
+    });
+
+    // Live editor
+    live.addEventListener('click', e => this._onClick(e));
+    live.addEventListener('keydown', e => this._onKeydown(e));
+    live.addEventListener('input', () => this._onInput());
+    live.addEventListener('paste', e => this._onPaste(e));
+    live.addEventListener('drop', e => this._onDrop(e));
+    live.addEventListener('dragover', e => { e.preventDefault(); live.classList.add('drag-over'); });
+    live.addEventListener('dragleave', () => live.classList.remove('drag-over'));
+    live.addEventListener('compositionstart', () => this._composing = true);
+    live.addEventListener('compositionend', () => { this._composing = false; this._onInput(); });
+
+    // Source textarea
+    const ta = w.querySelector('.mde-source-ta');
+    if (ta) {
+      ta.addEventListener('input', () => {
+        this._md = ta.value;
+        this._updateSourcePreview();
+        this._emitChange();
+      });
+      ta.addEventListener('keydown', e => {
+        if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this._save(); }
+        if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '  '); }
+      });
+    }
+  }
+
+  /* ─ click handler ─ */
+  _onClick(e) {
+    if (e.target.closest('[data-widget]')) return; // code widget handles itself
+    let lineEl = e.target;
+    while (lineEl && lineEl !== this._live) {
+      if (lineEl.classList && lineEl.classList.contains('mde-line')) break;
+      lineEl = lineEl.parentElement;
+    }
+    if (lineEl && lineEl.classList.contains('mde-line') && !lineEl.classList.contains('is-focused')) {
+      this._focusLine(lineEl);
+    } else if (!lineEl || lineEl === this._live) {
+      // clicked empty area — focus last line
+      const lines = this._live.querySelectorAll('.mde-line');
+      if (lines.length) this._focusLine(lines[lines.length - 1]);
+      else {
+        // editor is empty, create first line
+        const d = this._makeLine('');
+        this._live.appendChild(d);
+        this._focusLine(d);
+      }
+    }
+  }
+
+  /* ─ keydown ─ */
+  _onKeydown(e) {
+    const live = this._live;
+
+    if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this._save(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); this._wrapSel('**'); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); this._wrapSel('*'); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); this._undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); this._redo(); return; }
+
+    const focused = live.querySelector('.mde-line.is-focused');
+    if (!focused) return;
+
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this._handleEnter(focused); return; }
+    if (e.key === 'Backspace') { this._handleBackspace(e, focused); return; }
+    if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '  '); return; }
+    if (e.key === 'Escape') { this._blurLine(focused); return; }
+
+    if (e.key === 'ArrowUp') {
+      const prev = focused.previousElementSibling;
+      if (prev && prev.classList.contains('mde-line')) {
+        const sel = window.getSelection();
+        const atTop = !sel.rangeCount || sel.getRangeAt(0).startOffset <= 1;
+        if (atTop) {
+          e.preventDefault();
+          this._blurLine(focused);
+          this._focusLine(prev, false);
+          return;
+        }
+      }
+    }
+    if (e.key === 'ArrowDown') {
+      let next = focused.nextElementSibling;
+      // skip widgets
+      while (next && next.dataset.widget) next = next.nextElementSibling;
+      if (next && next.classList.contains('mde-line')) {
+        const text = focused.textContent;
+        const sel = window.getSelection();
+        const atBottom = !sel.rangeCount || sel.getRangeAt(0).endOffset >= text.length - 1;
+        if (atBottom) {
+          e.preventDefault();
+          this._blurLine(focused);
+          this._focusLine(next, true);
+          return;
+        }
+      }
+    }
+
+    if (e.key === '/' && focused.textContent.trim() === '') {
+      setTimeout(() => this._showSlash(focused), 0);
+    }
+  }
+
+  /* ─ input ─ */
+  _onInput() {
+    if (this._composing) return;
+    const focused = this._live.querySelector('.mde-line.is-focused');
+    if (!focused) return;
+    focused.dataset.md = focused.textContent;
+
+    clearTimeout(this._inputDebounce);
+    this._inputDebounce = setTimeout(() => {
+      this._syncMdFromDom();
+      this._emitChange();
+    }, 60);
+  }
+
+  /* ─ Enter handling ─ */
+  _handleEnter(focused) {
+    const text = focused.textContent;
+    const info = classLine(text);
+
+    // Empty list / blockquote — break out
+    if (info.type === 'ul' && text.trim() === text.match(/^[-*+] /)[0].trim()) {
+      focused.dataset.md = '';
+      this._blurLine(focused);
+      const newLine = this._makeLine('');
+      this._insertAfter(focused, newLine);
+      this._focusLine(newLine);
+      this._syncMdFromDom(); this._emitChange();
+      return;
+    }
+    if (info.type === 'ol' && text.trim() === text.match(/^\d+\. /)[0].trim()) {
+      focused.dataset.md = '';
+      this._blurLine(focused);
+      const newLine = this._makeLine('');
+      this._insertAfter(focused, newLine);
+      this._focusLine(newLine);
+      this._syncMdFromDom(); this._emitChange();
+      return;
+    }
+
+    // Get caret position
+    const caretPos = this._getCaretPos(focused);
+    const before = text.slice(0, caretPos);
+    const after = text.slice(caretPos);
+
+    // Continuation prefix
+    let prefix = '';
+    if (info.type === 'ul') prefix = text.match(/^[-*+] /)[0];
+    if (info.type === 'ol') {
+      const n = parseInt(text.match(/^(\d+)/)[1]);
+      prefix = (n + 1) + '. ';
+    }
+    if (info.type === 'blockquote') prefix = text.match(/^> ?/)[0];
+
+    focused.textContent = before;
+    focused.dataset.md = before;
+
+    const newText = prefix + after;
+    const newLine = this._makeLine(newText);
+    this._insertAfter(focused, newLine);
+    this._blurLine(focused);
+    this._focusLine(newLine);
+    // cursor after prefix
+    const node = newLine.firstChild || newLine;
+    const r = document.createRange(), s = window.getSelection();
+    r.setStart(node, Math.min(prefix.length, node.length || 0));
+    r.collapse(true); s.removeAllRanges(); s.addRange(r);
+
+    this._syncMdFromDom(); this._emitChange();
+  }
+
+  /* ─ Backspace handling ─ */
+  _handleBackspace(e, focused) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const text = focused.textContent;
+    const atStart = range.collapsed && range.startOffset === 0;
+
+    if (atStart && text === '') {
+      // Delete empty line
+      e.preventDefault();
+      const prev = this._prevLine(focused);
+      focused.remove();
+      this._syncMdFromDom();
+      if (prev) {
+        const prevMd = prev.dataset.md || '';
+        this._blurLine(this._live.querySelector('.is-focused'));
+        applyEditing(prev, prevMd);
+        prev.focus();
+        this._setCaretEnd(prev);
+      }
+      this._emitChange();
+      return;
+    }
+    if (atStart && text) {
+      // Merge with previous line
+      const prev = this._prevLine(focused);
+      if (prev) {
+        e.preventDefault();
+        const prevMd = prev.dataset.md || '';
+        const merged = prevMd + text;
+        focused.remove();
+        applyEditing(prev, merged);
+        prev.dataset.md = merged;
+        prev.focus();
+        // cursor at junction
+        const node = prev.firstChild || prev;
+        const r = document.createRange(), s = window.getSelection();
+        r.setStart(node, Math.min(prevMd.length, node.length || 0));
+        r.collapse(true); s.removeAllRanges(); s.addRange(r);
+        this._syncMdFromDom(); this._emitChange();
+      }
+    }
+  }
+
+  /* ─ line focus/blur ─ */
+  _focusLine(lineEl, atStart) {
+    // blur any currently focused line
+    const cur = this._live.querySelector('.mde-line.is-focused');
+    if (cur && cur !== lineEl) this._blurLine(cur);
+
+    const md = lineEl.dataset.md || '';
+    applyEditing(lineEl, md);
+    lineEl.focus();
+
+    const node = lineEl.firstChild || lineEl;
+    const r = document.createRange(), s = window.getSelection();
+    if (atStart) {
+      r.setStart(node, 0);
+    } else {
+      r.setStart(node, node.length || node.textContent.length || 0);
+    }
+    r.collapse(true); s.removeAllRanges(); s.addRange(r);
+  }
+
+  _blurLine(lineEl) {
+    if (!lineEl) return;
+    const md = lineEl.textContent;
+    lineEl.dataset.md = md;
+    applyRendered(lineEl, md);
+  }
+
+  /* ─ helpers ─ */
+  _makeLine(text) {
+    const d = document.createElement('div');
+    d.className = 'mde-line';
+    d.dataset.md = text;
+    applyRendered(d, text);
+    return d;
+  }
+
+  _insertAfter(ref, newEl) {
+    if (ref.nextSibling) this._live.insertBefore(newEl, ref.nextSibling);
+    else this._live.appendChild(newEl);
+  }
+
+  _prevLine(el) {
+    let prev = el.previousElementSibling;
+    while (prev && prev.dataset.widget) prev = prev.previousElementSibling;
+    return prev && prev.classList.contains('mde-line') ? prev : null;
+  }
+
+  _getCaretPos(el) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return el.textContent.length;
+    const r = sel.getRangeAt(0).cloneRange();
+    const before = document.createRange();
+    before.setStart(el.firstChild || el, 0);
+    before.setEnd(r.startContainer, r.startOffset);
+    return before.toString().length;
+  }
+
+  _setCaretEnd(el) {
+    const node = el.firstChild || el;
+    const r = document.createRange(), s = window.getSelection();
+    r.setStart(node, node.length || node.textContent.length || 0);
+    r.collapse(true); s.removeAllRanges(); s.addRange(r);
+  }
+
+  /* ─ Render live editor from _md ─ */
+  _renderLive() {
+    const live = this._live;
+    live.innerHTML = '';
+
+    if (!this._md) {
+      live.appendChild(this._makeLine(''));
+      this._updateWordCount();
+      return;
+    }
+
+    const rawLines = this._md.split('\n');
+    let i = 0;
+    while (i < rawLines.length) {
+      const line = rawLines[i];
+      const info = classLine(line);
+
+      if (info.type === 'fence-open') {
+        const lang = info.lang || '';
+        const codeLines = [];
+        i++;
+        while (i < rawLines.length) {
+          if (classLine(rawLines[i]).type === 'fence-close') { i++; break; }
+          codeLines.push(rawLines[i]);
+          i++;
+        }
+        const codeText = codeLines.join('\n');
+        const widget = makeCodeWidget(lang, codeText, this);
+        live.appendChild(widget);
+      } else {
+        live.appendChild(this._makeLine(line));
+        i++;
+      }
+    }
+    this._updateWordCount();
+  }
+
+  /* ─ Sync DOM → _md ─ */
+  _syncMdFromDom() {
+    const lines = [];
+    Array.from(this._live.childNodes).forEach(node => {
+      if (node.nodeType === 3) return;
+      if (node.dataset && node.dataset.widget) {
+        const lang = node.dataset.lang || '';
+        const code = node.dataset.code || '';
+        lines.push('```' + lang);
+        code.split('\n').forEach(l => lines.push(l));
+        lines.push('```');
+      } else if (node.classList && node.classList.contains('mde-line')) {
+        // Sync focused line's current text
+        if (node.classList.contains('is-focused')) {
+          node.dataset.md = node.textContent;
+        }
+        lines.push(node.dataset.md || '');
+      }
+    });
+    const newMd = lines.join('\n');
+    if (newMd !== this._md) {
+      this._pushUndo(this._md);
+      this._md = newMd;
+    }
+    this._updateWordCount();
+    this._updateHidden();
+  }
+
+  /* ─ Code editor overlay ─ */
+  _openCodeEditor(widget) {
+    const lang = widget.dataset.lang || '';
+    const code = widget.dataset.code || '';
+
+    const editWrap = document.createElement('div');
+    editWrap.className = 'mde-code-edit-wrap';
+
+    const header = document.createElement('div');
+    header.className = 'mde-code-edit-header';
+
+    const langInput = document.createElement('input');
+    langInput.className = 'mde-code-lang-input';
+    langInput.value = lang;
+    langInput.placeholder = 'language (e.g. javascript)';
+
+    const doneBtn = document.createElement('button');
+    doneBtn.className = 'mde-code-done-btn';
+    doneBtn.textContent = 'Done';
+
+    header.appendChild(langInput);
+    header.appendChild(doneBtn);
+
+    const ta = document.createElement('textarea');
+    ta.className = 'mde-code-textarea';
+    ta.value = code;
+    ta.spellcheck = false;
+    ta.placeholder = '// write your code here';
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = ta.selectionStart, end = ta.selectionEnd;
+        ta.value = ta.value.slice(0, s) + '  ' + ta.value.slice(end);
+        ta.selectionStart = ta.selectionEnd = s + 2;
+      }
+    });
+
+    editWrap.appendChild(header);
+    editWrap.appendChild(ta);
+
+    widget.replaceWith(editWrap);
+
+    const finish = () => {
+      const newLang = langInput.value.trim();
+      const newCode = ta.value;
+      const newWidget = makeCodeWidget(newLang, newCode, this);
+      newWidget.dataset.code = newCode;
+      editWrap.replaceWith(newWidget);
+      this._syncMdFromDom();
+      this._emitChange();
+    };
+
+    doneBtn.addEventListener('click', finish);
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Escape') finish();
+    });
+
+    // auto-finish when clicking outside
+    const outsideClick = e => {
+      if (!editWrap.contains(e.target)) {
+        finish();
+        document.removeEventListener('mousedown', outsideClick);
+      }
+    };
+    setTimeout(() => document.addEventListener('mousedown', outsideClick), 100);
+
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+  }
+
+  /* ─ Paste / Drop ─ */
+  _onPaste(e) {
+    const cd = e.clipboardData || window.clipboardData;
+    const items = Array.from(cd.items || []);
+    const imgItem = items.find(it => it.type.startsWith('image/'));
+    if (imgItem) {
+      e.preventDefault();
+      this._insertImageFile(imgItem.getAsFile());
+      return;
+    }
+    const html = cd.getData('text/html');
+    if (html && isHtml(html)) {
+      e.preventDefault();
+      this._insertText(htmlToMd(html));
+      return;
+    }
+    const text = cd.getData('text/plain');
+    if (text && text.includes('\n')) {
+      e.preventDefault();
+      this._insertText(text);
+    }
+  }
+
+  _onDrop(e) {
+    e.preventDefault();
+    this._live.classList.remove('drag-over');
+    const f = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+    if (f) this._insertImageFile(f);
+  }
+
+  _insertImageFile(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const md = `![${file.name || 'image'}](${ev.target.result})`;
+      this._insertText(md);
+      const hint = this._wrap.querySelector('.mde-paste-hint');
+      if (hint) { hint.classList.add('show'); setTimeout(() => hint.classList.remove('show'), 2000); }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  _insertText(text) {
+    const focused = this._live.querySelector('.mde-line.is-focused');
+    const lines = text.split('\n');
+
+    if (!focused) {
+      lines.forEach(l => this._live.appendChild(this._makeLine(l)));
+      this._syncMdFromDom(); this._emitChange();
+      return;
+    }
+
+    if (lines.length === 1) {
+      document.execCommand('insertText', false, text);
+      focused.dataset.md = focused.textContent;
+    } else {
+      const caretPos = this._getCaretPos(focused);
+      const curText = focused.textContent;
+      const beforeCursor = curText.slice(0, caretPos);
+      const afterCursor = curText.slice(caretPos);
+
+      const allLines = [beforeCursor + lines[0], ...lines.slice(1, -1), lines[lines.length - 1] + afterCursor];
+
+      focused.dataset.md = allLines[0];
+      this._blurLine(focused);
+
+      let ref = focused;
+      for (let i = 1; i < allLines.length; i++) {
+        const newLine = this._makeLine(allLines[i]);
+        this._insertAfter(ref, newLine);
+        ref = newLine;
+      }
+      this._focusLine(ref);
+    }
+    this._syncMdFromDom(); this._emitChange();
+  }
+
+  /* ─ Slash menu ─ */
+  _showSlash(lineEl) {
+    const menu = this._wrap.querySelector('.mde-slash-menu');
+    const items = [
+      { icon:'H1', label:'Heading 1',     md:'# ' },
+      { icon:'H2', label:'Heading 2',     md:'## ' },
+      { icon:'H3', label:'Heading 3',     md:'### ' },
+      { icon:'❝',  label:'Blockquote',    md:'> ' },
+      { icon:'•',  label:'Bullet List',   md:'- ' },
+      { icon:'1.', label:'Numbered List', md:'1. ' },
+      { icon:'—',  label:'Divider',       md:'---' },
+      { icon:'{}', label:'Code Block',    md:'```javascript\n\n```' },
+      { icon:'▦',  label:'Table',         md:'| Col 1 | Col 2 |\n| --- | --- |\n| Cell | Cell |' },
+    ];
+
+    menu.innerHTML = items.map((it, i) =>
+      `<div class="mde-slash-item" data-i="${i}"><span class="mde-slash-icon">${it.icon}</span><span>${it.label}</span></div>`
+    ).join('');
+    menu.style.display = 'block';
+
+    const rect = lineEl.getBoundingClientRect();
+    const wRect = this._wrap.getBoundingClientRect();
+    menu.style.top = (rect.bottom - wRect.top + 2) + 'px';
+    menu.style.left = (rect.left - wRect.left) + 'px';
+
+    menu.querySelectorAll('.mde-slash-item').forEach((el, idx) => {
+      el.addEventListener('mousedown', e => {
+        e.preventDefault();
+        menu.style.display = 'none';
+        const it = items[idx];
+        lineEl.textContent = it.md;
+        lineEl.dataset.md = it.md;
+
+        if (it.md.includes('\n')) {
+          this._blurLine(lineEl);
+          this._syncMdFromDom();
+          this._renderLive();
+        } else {
+          lineEl.focus();
+          this._setCaretEnd(lineEl);
+        }
+        this._syncMdFromDom(); this._emitChange();
+      });
+    });
+
+    const close = e => {
+      if (!menu.contains(e.target)) { menu.style.display = 'none'; document.removeEventListener('mousedown', close); }
+    };
+    setTimeout(() => document.addEventListener('mousedown', close), 50);
+  }
+
+  /* ─ Toolbar commands ─ */
+  _cmd(cmd) {
+    if (cmd === 'undo') { this._undo(); return; }
+    if (cmd === 'redo') { this._redo(); return; }
+
+    const focused = this._live.querySelector('.mde-line.is-focused');
+
+    if (!focused) {
+      // Append at end
+      const snippets = {
+        h1:'# Heading', h2:'## Heading', h3:'### Heading',
+        bold:'**bold**', italic:'*italic*', strike:'~~strikethrough~~',
+        link:'[text](https://)', image:'![alt](https://)', inlinecode:'`code`',
+        codeblock:'```javascript\n// code here\n```',
+        quote:'> Blockquote', ul:'- Item', ol:'1. Item',
+        table:'| Col 1 | Col 2 |\n| --- | --- |\n| Cell | Cell |',
+        hr:'---',
+      };
+      if (snippets[cmd]) {
+        snippets[cmd].split('\n').forEach(l => this._live.appendChild(this._makeLine(l)));
+        this._syncMdFromDom(); this._emitChange();
+        const all = this._live.querySelectorAll('.mde-line');
+        if (all.length) this._focusLine(all[all.length - 1]);
+      }
+      return;
+    }
+
+    const sel = window.getSelection();
+    const selectedText = sel.rangeCount ? sel.getRangeAt(0).toString() : '';
+
+    switch(cmd) {
+      case 'h1': case 'h2': case 'h3': {
+        const pfx = { h1:'# ', h2:'## ', h3:'### ' }[cmd];
+        const cur = focused.textContent;
+        const clean = cur.replace(/^#+\s*/, '');
+        const newT = cur.startsWith(pfx) ? clean : pfx + clean;
+        focused.textContent = newT; focused.dataset.md = newT;
+        this._setCaretEnd(focused);
+        break;
+      }
+      case 'bold': this._wrapSel('**'); break;
+      case 'italic': this._wrapSel('*'); break;
+      case 'strike': this._wrapSel('~~'); break;
+      case 'inlinecode': this._wrapSel('`'); break;
+      case 'link': {
+        const url = prompt('URL:', 'https://');
+        if (url) document.execCommand('insertText', false, '[' + (selectedText || 'text') + '](' + url + ')');
+        break;
+      }
+      case 'image': {
+        const url = prompt('Image URL:', 'https://');
+        if (url) document.execCommand('insertText', false, '![' + (selectedText || 'alt') + '](' + url + ')');
+        break;
+      }
+      case 'codeblock': {
+        const lang = prompt('Language (e.g. javascript, python, css):', 'javascript') || '';
+        this._blurLine(focused);
+        const widget = makeCodeWidget(lang, '// code here', this);
+        widget.dataset.code = '// code here';
+        this._insertAfter(focused, widget);
+        this._syncMdFromDom(); this._emitChange();
+        this._openCodeEditor(widget);
+        return;
+      }
+      case 'quote': this._togglePrefix(focused, '> '); break;
+      case 'ul': this._togglePrefix(focused, '- '); break;
+      case 'ol': this._togglePrefix(focused, '1. '); break;
+      case 'hr': {
+        this._blurLine(focused);
+        const newLine = this._makeLine('---');
+        this._insertAfter(focused, newLine);
+        this._syncMdFromDom(); this._emitChange();
+        return;
+      }
+      case 'table': {
+        const rows = ['| Column 1 | Column 2 |', '| --- | --- |', '| Cell | Cell |'];
+        this._blurLine(focused);
+        rows.forEach(r => {
+          const nl = this._makeLine(r);
+          this._live.appendChild(nl);
+        });
+        this._syncMdFromDom(); this._emitChange();
+        return;
+      }
+    }
+    if (focused) focused.dataset.md = focused.textContent;
+    this._syncMdFromDom(); this._emitChange();
+  }
+
+  _wrapSel(marker) {
+    const sel = window.getSelection();
+    const selected = sel.rangeCount ? sel.getRangeAt(0).toString() : '';
+    if (selected) {
+      document.execCommand('insertText', false, marker + selected + marker);
+    } else {
+      document.execCommand('insertText', false, marker + marker);
+      // move cursor between markers
+      const s2 = window.getSelection();
+      if (s2.rangeCount) {
+        const r = s2.getRangeAt(0).cloneRange();
+        r.setStart(r.startContainer, r.startOffset - marker.length);
+        r.collapse(true); s2.removeAllRanges(); s2.addRange(r);
+      }
+    }
+    const f = this._live.querySelector('.is-focused');
+    if (f) f.dataset.md = f.textContent;
+  }
+
+  _togglePrefix(lineEl, prefix) {
+    const cur = lineEl.textContent;
+    const clean = cur.replace(/^#+\s*|^> ?|^[-*+] |\d+\. /, '');
+    const newT = cur.startsWith(prefix) ? clean : prefix + clean;
+    lineEl.textContent = newT;
+    lineEl.dataset.md = newT;
+    this._setCaretEnd(lineEl);
+  }
+
+  /* ─ Undo/Redo ─ */
+  _pushUndo(state) {
+    if (!state || state === this._undoStack[this._undoStack.length - 1]) return;
+    this._undoStack.push(state);
+    if (this._undoStack.length > 150) this._undoStack.shift();
+    this._redoStack = [];
+  }
+  _undo() {
+    if (!this._undoStack.length) return;
+    this._redoStack.push(this._md);
+    this._md = this._undoStack.pop();
+    this._renderLive(); this._emitChange();
+  }
+  _redo() {
+    if (!this._redoStack.length) return;
+    this._undoStack.push(this._md);
+    this._md = this._redoStack.pop();
+    this._renderLive(); this._emitChange();
+  }
+
+  /* ─ Mode ─ */
+  _setMode(mode) {
+    this._mode = mode;
+    const f = this._live && this._live.querySelector('.is-focused');
+    if (f) this._blurLine(f);
+
+    const live = this._wrap.querySelector('.mde-live');
+    const srcWrap = this._wrap.querySelector('.mde-source-wrap');
+    const prvFull = this._wrap.querySelector('.mde-preview-full');
+
+    live.style.display = mode === 'live' ? '' : 'none';
+    if (srcWrap) srcWrap.style.display = mode === 'source' ? 'flex' : 'none';
+    if (prvFull) prvFull.style.display = mode === 'preview' ? '' : 'none';
+
+    this._wrap.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    this._wrap.querySelector('.mde-status-mode').textContent =
+      { live:'Live Preview', source:'Source / Preview', preview:'Read Mode' }[mode] || mode;
+
+    if (mode === 'source') {
+      const ta = this._wrap.querySelector('.mde-source-ta');
+      if (ta) { ta.value = this._md; this._updateSourcePreview(); }
+    }
+    if (mode === 'preview') {
+      const pv = this._wrap.querySelector('.mde-preview-full');
+      if (pv) pv.innerHTML = mdToOutputHtml(this._md);
+    }
+  }
+
+  _updateSourcePreview() {
+    const pv = this._wrap.querySelector('.mde-preview-pane');
+    if (pv) pv.innerHTML = mdToOutputHtml(this._md);
+  }
+
+  /* ─ Change/Save ─ */
+  _emitChange() {
+    const html = this.getValue();
+    this._emit('change', html, this._md);
+    this._updateHidden();
+    this._updateWordCount();
+    clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => this._emit('autosave', html, this._md), 2000);
+  }
+
+  _save() {
+    const html = this.getValue();
+    this._updateHidden();
+    this._emit('save', html, this._md);
+    const sr = this._wrap.querySelector('.mde-status-right');
+    if (sr) {
+      const orig = sr.textContent;
+      sr.innerHTML = '<span class="saved-ok">✓ Saved</span>';
+      setTimeout(() => sr.textContent = orig, 1800);
+    }
+  }
+
+  _updateHidden() {
+    if (this._opts.bindTo) {
+      const el = document.querySelector(this._opts.bindTo);
+      if (el) el.value = this.getValue();
+    }
+    const next = this._container.nextElementSibling;
+    if (next && (next.type === 'hidden' || next.tagName === 'INPUT')) next.value = this.getValue();
+  }
+
+  _updateWordCount() {
+    const txt = this._md
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/[#*`>_~\[\]!|]/g, ' ')
+      .trim();
+    const n = txt ? txt.split(/\s+/).filter(Boolean).length : 0;
+    const wc = this._wrap && this._wrap.querySelector('.mde-wc');
+    if (wc) wc.textContent = n + ' word' + (n !== 1 ? 's' : '');
+  }
+}
+
+G.MarkdownEditor = MarkdownEditor;
+})(window);
+
+/* ── Demo ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const DEMO_MD = `# Welcome to the Editor
+
+This is an **Obsidian-style** live markdown editor. Click any line to edit it — it shows raw markdown. Click away and it renders back to beautiful output.
+
+## Features
+
+- Live line-by-line rendering, exactly like Obsidian
+- Paste images from clipboard — they embed as base64
+- Syntax-highlighted code blocks with a **copy** and **edit** button
+- Loads and saves as **HTML** for your backend database
+- Multiple independent editor instances on one page
+- Slash command menu — type **/** on an empty line
+
+## Code Example
+
+\`\`\`javascript
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+const save = debounce((content) => {
+  fetch('/api/save', {
+    method: 'POST',
+    body: JSON.stringify({ content })
+  });
+}, 500);
+\`\`\`
+
+## Python Example
+
+\`\`\`python
+def fibonacci(n):
+    a, b = 0, 1
+    for _ in range(n):
+        yield a
+        a, b = b, a + b
+
+# Print first 10 Fibonacci numbers
+for num in fibonacci(10):
+    print(num, end=' ')
+\`\`\`
+
+## Inline Formatting
+
+You can write **bold**, *italic*, ~~strikethrough~~, and \`inline code\` naturally in any line.
+
+> **Tip:** Blockquotes work great for callouts. Type \`>\` at the start of a line.
+
+---
+
+Type **/** on an empty line to open the block insert menu. Use **Ctrl+B** / **Ctrl+I** for bold/italic shortcuts. Press **Ctrl+S** to save.`;
+
+  const editor1 = new MarkdownEditor('#editor1', {
+    placeholder: 'Start writing your blog post…',
+    initialValue: DEMO_MD,
+  });
+  editor1.init();
+  editor1.on('change', html => { document.querySelector('#content1').value = html; });
+  editor1.on('save', html => { console.log('[Editor1] saved, html bytes:', html.length); });
+
+  const editor2 = new MarkdownEditor('#editor2', {
+    placeholder: 'Write something…',
+    initialValue: '## Quick Note\n\nThis is a **second independent** editor instance.\n\nEach has its own state, undo stack, and events.',
+  });
+  editor2.init();
+  editor2.on('change', html => { document.querySelector('#content2').value = html; });
+
+  window._editor1 = editor1;
+  window._editor2 = editor2;
+  console.log('✓ Editors ready — window._editor1 / window._editor2');
+});
+</script>
+</body>
+</html>
