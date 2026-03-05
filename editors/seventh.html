@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Editor</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;500;600&family=Source+Code+Pro&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f5f4f0;
+            font-family: 'Source Sans 3', sans-serif;
+            color: #1a1a1a;
+            min-height: 100vh;
+            padding: 40px 20px 100px;
+        }
+
+        header {
+            max-width: 680px;
+            margin: 0 auto 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #1a1a1a;
+        }
+
+        .logo span {
+            color: #d97706;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            font-family: 'Source Sans 3', sans-serif;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        .btn {
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1.5px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-outline:hover {
+            border-color: #9ca3af;
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #374151;
+        }
+
+        #canvas {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .block {
+            background: white;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            animation: slideIn 0.18s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .block:focus-within {
+            border-color: #d97706;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+        }
+
+        .block-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-bottom: 1.5px solid #e5e7eb;
+        }
+
+        .block-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #9ca3af;
+            flex: 1;
+        }
+
+        .block-del {
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .block-del:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .block-body {
+            padding: 14px 16px;
+        }
+
+        /* Heading */
+        .heading-levels {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .hlvl {
+            padding: 3px 9px;
+            border-radius: 5px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: white;
+            border: 1.5px solid #e5e7eb;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+
+        .hlvl:hover {
+            border-color: #d97706;
+            color: #d97706;
+        }
+
+        .hlvl.active {
+            background: #fef3c7;
+            border-color: #d97706;
+            color: #d97706;
+        }
+
+        .heading-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: #1a1a1a;
+            background: transparent;
+            caret-color: #d97706;
+        }
+
+        .heading-input.h1 {
+            font-size: 2rem;
+        }
+
+        .heading-input.h2 {
+            font-size: 1.6rem;
+        }
+
+        .heading-input.h3 {
+            font-size: 1.3rem;
+        }
+
+        .heading-input::placeholder {
+            color: #d1d5db;
+        }
+
+        /* Paragraph */
+        .para-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            min-height: 80px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #374151;
+            background: transparent;
+            caret-color: #d97706;
+        }
+
+        .para-input::placeholder {
+            color: #d1d5db;
+        }
+
+        /* Code */
+        .code-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 12px;
+            background: #f8fafc;
+            border-bottom: 1.5px solid #e5e7eb;
+        }
+
+        .lang-select {
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.75rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 3px 8px;
+            background: white;
+            color: #374151;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .copy-btn {
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 5px;
+            background: white;
+            border: 1.5px solid #e5e7eb;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+
+        .copy-btn:hover {
+            border-color: #6b7280;
+            color: #1a1a1a;
+        }
+
+        .code-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: vertical;
+            min-height: 110px;
+            padding: 14px 16px;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: #1e293b;
+            background: #f8fafc;
+            tab-size: 2;
+            caret-color: #d97706;
+        }
+
+        .code-input::placeholder {
+            color: #cbd5e1;
+        }
+
+        /* Quote */
+        .quote-wrap {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quote-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: #d97706;
+            flex-shrink: 0;
+        }
+
+        .quote-fields {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .quote-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            min-height: 60px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #374151;
+            font-style: italic;
+            background: transparent;
+            caret-color: #d97706;
+        }
+
+        .quote-input::placeholder {
+            color: #d1d5db;
+        }
+
+        .quote-author {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            background: transparent;
+            caret-color: #d97706;
+        }
+
+        .quote-author::placeholder {
+            color: #e5e7eb;
+        }
+
+        /* List */
+        .list-type-btns {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .list-type-btn {
+            padding: 3px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 5px;
+            border: 1.5px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            transition: all 0.15s;
+        }
+
+        .list-type-btn.active {
+            background: #fef3c7;
+            border-color: #d97706;
+            color: #d97706;
+        }
+
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .list-bullet {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            min-width: 18px;
+            text-align: right;
+        }
+
+        .list-item-input {
+            flex: 1;
+            border: none;
+            border-bottom: 1.5px solid #f3f4f6;
+            outline: none;
+            padding: 4px 0;
+            font-size: 0.95rem;
+            color: #374151;
+            background: transparent;
+            transition: border-color 0.15s;
+            caret-color: #d97706;
+        }
+
+        .list-item-input:focus {
+            border-bottom-color: #d97706;
+        }
+
+        .list-item-input::placeholder {
+            color: #d1d5db;
+        }
+
+        .list-row-del {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: transparent;
+            color: #d1d5db;
+            font-size: 0.75rem;
+            transition: all 0.15s;
+        }
+
+        .list-row-del:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .add-item-btn {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 5px;
+            background: #f9fafb;
+            border: 1.5px dashed #d1d5db;
+            color: #9ca3af;
+            transition: all 0.15s;
+            width: 100%;
+            text-align: left;
+        }
+
+        .add-item-btn:hover {
+            border-color: #d97706;
+            color: #d97706;
+            background: #fffbeb;
+        }
+
+        /* Empty */
+        #empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        #empty .ei {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        #empty p {
+            font-size: 0.9rem;
+        }
+
+        /* Add bar */
+        #add-bar {
+            max-width: 680px;
+            margin: 16px auto 0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .add-btn {
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: white;
+            border: 1.5px solid #e5e7eb;
+            color: #374151;
+            transition: all 0.15s;
+        }
+
+        .add-btn:hover {
+            border-color: #d97706;
+            color: #d97706;
+            background: #fffbeb;
+        }
+
+        /* Drag handle */
+        .drag-handle {
+            cursor: grab;
+            color: #d1d5db;
+            padding: 0 4px 0 0;
+            display: flex;
+            align-items: center;
+            transition: color 0.15s;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .drag-handle:hover {
+            color: #9ca3af;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .block.dragging {
+            opacity: 0.35;
+            transform: scale(0.98);
+        }
+
+        .block.drag-over {
+            border-color: #d97706 !important;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15) !important;
+        }
+
+        /* Save button */
+        .block-save {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 5px;
+            background: transparent;
+            border: 1.5px solid #e5e7eb;
+            color: #9ca3af;
+            transition: all 0.15s;
+        }
+
+        .block-save:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .block-save.is-saved {
+            border-color: #16a34a;
+            color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        /* Save bar */
+        #save-bar {
+            max-width: 680px;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            min-height: 28px;
+        }
+
+        .saved-all-note {
+            font-size: 0.75rem;
+            color: #16a34a;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .saved-all-note.show {
+            opacity: 1;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(12px);
+            background: #1a1a1a;
+            color: white;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.22s;
+            pointer-events: none;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Block<span>.</span>Editor</div>
+        <div class="header-btns">
+            <button class="btn btn-outline" onclick="saveAll()">&#10003; Save All</button>
+            <button class="btn btn-outline" onclick="exportHTML()">Export HTML</button>
+            <button class="btn btn-primary" onclick="copyAll()">Copy All</button>
+        </div>
+    </header>
+
+    <div id="save-bar">
+        <span class="saved-all-note" id="saved-note">&#10003; All blocks saved</span>
+    </div>
+
+    <div id="canvas">
+        <div id="empty">
+            <div class="ei">&#9783;</div>
+            <p>Add a block below to get started</p>
+        </div>
+    </div>
+
+    <div id="add-bar">
+        <button class="add-btn" onclick="addBlock('heading')">H Heading</button>
+        <button class="add-btn" onclick="addBlock('paragraph')">&#182; Paragraph</button>
+        <button class="add-btn" onclick="addBlock('code')">&lt;/&gt; Code</button>
+        <button class="add-btn" onclick="addBlock('quote')">" Quote</button>
+        <button class="add-btn" onclick="addBlock('list')">&#8801; List</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        let blockCount = 0;
+        let listCounters = {};
+        let dragSrc = null;
+        const STORAGE_KEY = 'block-editor-v1';
+
+        // ── DRAG & DROP ──
+        function initDrag(block) {
+            block.addEventListener('dragstart', e => {
+                dragSrc = block;
+                setTimeout(() => block.classList.add('dragging'), 0);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            block.addEventListener('dragend', () => {
+                block.classList.remove('dragging');
+                document.querySelectorAll('.block').forEach(b => b.classList.remove('drag-over'));
+                dragSrc = null;
+            });
+            block.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (block !== dragSrc) {
+                    document.querySelectorAll('.block').forEach(b => b.classList.remove('drag-over'));
+                    block.classList.add('drag-over');
+                }
+            });
+            block.addEventListener('dragleave', e => {
+                if (!block.contains(e.relatedTarget)) block.classList.remove('drag-over');
+            });
+            block.addEventListener('drop', e => {
+                e.preventDefault();
+                if (dragSrc && dragSrc !== block) {
+                    const canvas = document.getElementById('canvas');
+                    const all = [...canvas.querySelectorAll('.block')];
+                    const si = all.indexOf(dragSrc), di = all.indexOf(block);
+                    if (si < di) canvas.insertBefore(dragSrc, block.nextSibling);
+                    else canvas.insertBefore(dragSrc, block);
+                    toast('Reordered!');
+                }
+                block.classList.remove('drag-over');
+            });
+        }
+
+        // Only allow drag from the handle
+        document.getElementById('canvas').addEventListener('mousedown', e => {
+            const block = e.target.closest('.block');
+            if (!block) return;
+            block.draggable = !!e.target.closest('.drag-handle');
+        });
+
+        // ── SAVE / LOAD (localStorage) ──
+        function getBlockData(block) {
+            const id = block.id, type = block.dataset.type;
+            const d = { id, type };
+            if (type === 'heading') {
+                d.level = block.querySelector('.hlvl.active')?.textContent.toLowerCase() || 'h1';
+                d.text = document.getElementById(id + '-in')?.value || '';
+            } else if (type === 'paragraph') {
+                d.text = document.getElementById(id + '-in')?.value || '';
+            } else if (type === 'code') {
+                d.lang = document.getElementById(id + '-lang')?.value || 'javascript';
+                d.text = document.getElementById(id + '-in')?.value || '';
+            } else if (type === 'quote') {
+                d.text = document.getElementById(id + '-in')?.value || '';
+                d.author = document.getElementById(id + '-author')?.value || '';
+            } else if (type === 'list') {
+                d.listType = block.dataset.listType || 'ul';
+                d.items = [...block.querySelectorAll('.list-item-input')].map(i => i.value);
+            }
+            return d;
+        }
+
+        function markSaved(id) {
+            const btn = document.getElementById(id + '-savebtn');
+            if (btn) { btn.classList.add('is-saved'); btn.innerHTML = '&#10003; Saved'; }
+        }
+
+        function saveBlock(id) {
+            markSaved(id);
+            persistAll();
+            const note = document.getElementById('saved-note');
+            note.classList.add('show');
+            clearTimeout(note._t);
+            note._t = setTimeout(() => note.classList.remove('show'), 2200);
+        }
+
+        function saveAll() {
+            document.querySelectorAll('.block').forEach(b => markSaved(b.id));
+            persistAll();
+            const note = document.getElementById('saved-note');
+            note.classList.add('show');
+            clearTimeout(note._t);
+            note._t = setTimeout(() => note.classList.remove('show'), 2200);
+            toast('All blocks saved!');
+        }
+
+        function persistAll() {
+            const data = [...document.querySelectorAll('.block')].map(getBlockData);
+            console.log(data);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function loadSaved() {
+            let saved;
+            try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { }
+            if (!saved?.length) return false;
+            document.getElementById('empty')?.remove();
+            saved.forEach(d => restoreBlock(d));
+            return true;
+        }
+
+        function restoreBlock(d) {
+            const n = parseInt((d.id || '').replace('b', ''));
+            if (n > blockCount) blockCount = n;
+            const id = d.id || ('b' + (++blockCount));
+            const labels = { heading: 'Heading', paragraph: 'Paragraph', code: 'Code', quote: 'Blockquote', list: 'List' };
+            const div = document.createElement('div');
+            div.className = 'block'; div.id = id; div.dataset.type = d.type;
+            if (d.listType) div.dataset.listType = d.listType;
+            div.innerHTML = `
+      <div class="block-top">
+        <span class="drag-handle" title="Drag to reorder"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="7" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="7" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="7" cy="13" r="1.5"/></svg></span>
+        <span class="block-label">${labels[d.type]}</span>
+        <button class="block-save is-saved" id="${id}-savebtn" onclick="saveBlock('${id}')">&#10003; Saved</button>
+        <button class="block-del" onclick="deleteBlock('${id}')">&#10005;</button>
+      </div>
+      <div class="block-body">${getBody(id, d.type)}</div>
+    `;
+            document.getElementById('canvas').appendChild(div);
+            initDrag(div);
+            // Restore values
+            if (d.type === 'heading') {
+                const inp = document.getElementById(id + '-in');
+                if (inp) { inp.value = d.text || ''; inp.className = 'heading-input ' + (d.level || 'h1'); }
+                div.querySelectorAll('.hlvl').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === (d.level || 'h1')));
+            } else if (d.type === 'paragraph') {
+                const ta = document.getElementById(id + '-in');
+                if (ta) { ta.value = d.text || ''; ta.style.height = ta.scrollHeight + 'px'; }
+            } else if (d.type === 'code') {
+                const ta = document.getElementById(id + '-in'), sel = document.getElementById(id + '-lang');
+                if (ta) ta.value = d.text || '';
+                if (sel) sel.value = d.lang || 'javascript';
+            } else if (d.type === 'quote') {
+                const ta = document.getElementById(id + '-in'), auth = document.getElementById(id + '-author');
+                if (ta) { ta.value = d.text || ''; ta.style.height = ta.scrollHeight + 'px'; }
+                if (auth) auth.value = d.author || '';
+            } else if (d.type === 'list') {
+                listCounters[id] = 0;
+                (d.items || []).forEach(val => { addItem(id); const c = document.getElementById(id + '-items'); const last = c.lastElementChild?.querySelector('.list-item-input'); if (last) last.value = val; });
+                if (d.listType === 'ol') { const btn = div.querySelector('.list-type-btn:last-child'); if (btn) setListType(id, 'ol', btn); }
+            }
+        }
+
+        // ── BLOCKS ──
+        function addBlock(type) {
+            document.getElementById('empty')?.remove();
+            const id = 'b' + (++blockCount);
+            const div = document.createElement('div');
+            div.className = 'block'; div.id = id; div.dataset.type = type;
+            const labels = { heading: 'Heading', paragraph: 'Paragraph', code: 'Code', quote: 'Blockquote', list: 'List' };
+            div.innerHTML = `
+      <div class="block-top">
+        <span class="drag-handle" title="Drag to reorder"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="7" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="7" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="7" cy="13" r="1.5"/></svg></span>
+        <span class="block-label">${labels[type]}</span>
+        <button class="block-save" id="${id}-savebtn" onclick="saveBlock('${id}')">Save</button>
+        <button class="block-del" onclick="deleteBlock('${id}')">&#10005;</button>
+      </div>
+      <div class="block-body">${getBody(id, type)}</div>
+    `;
+            document.getElementById('canvas').appendChild(div);
+            initDrag(div);
+            div.querySelector('input, textarea')?.focus();
+        }
+
+        function getBody(id, type) {
+            if (type === 'heading') return `
+      <div class="heading-levels">
+        ${['H1', 'H2', 'H3'].map((h, i) => `<button class="hlvl${i === 0 ? ' active' : ''}" onclick="setHLevel('${id}',${i + 1},this)">${h}</button>`).join('')}
+      </div>
+      <input class="heading-input h1" id="${id}-in" placeholder="Your heading..." autocomplete="off">
+    `;
+            if (type === 'paragraph') return `
+      <textarea class="para-input" id="${id}-in" placeholder="Start writing..." rows="3"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    `;
+            if (type === 'code') return `
+      <div class="code-bar">
+        <select class="lang-select" id="${id}-lang">
+          <option>javascript</option><option>python</option><option>html</option>
+          <option>css</option><option>bash</option><option>sql</option><option>json</option>
+        </select>
+        <button class="copy-btn" onclick="copyCode('${id}')">Copy</button>
+      </div>
+      <textarea class="code-input" id="${id}-in" placeholder="// write your code here..." onkeydown="handleTab(event)"></textarea>
+    `;
+            if (type === 'quote') return `
+      <div class="quote-wrap">
+        <div class="quote-bar"></div>
+        <div class="quote-fields">
+          <textarea class="quote-input" id="${id}-in" placeholder="Enter quote..." rows="2"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <input class="quote-author" id="${id}-author" placeholder="&#8212; Author (optional)">
+        </div>
+      </div>
+    `;
+            if (type === 'list') {
+                listCounters[id] = 0;
+                return `
+        <div class="list-type-btns">
+          <button class="list-type-btn active" onclick="setListType('${id}','ul',this)">&#8226; Bullet</button>
+          <button class="list-type-btn" onclick="setListType('${id}','ol',this)">1. Numbered</button>
+        </div>
+        <div class="list-items" id="${id}-items"></div>
+        <button class="add-item-btn" onclick="addItem('${id}')">+ Add item</button>
+      `;
+            }
+            return '';
+        }
+
+        function setHLevel(id, n, btn) {
+            document.getElementById(id + '-in').className = 'heading-input h' + n;
+            btn.closest('.heading-levels').querySelectorAll('.hlvl').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setListType(id, type, btn) {
+            document.getElementById(id).dataset.listType = type;
+            btn.closest('.list-type-btns').querySelectorAll('.list-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('#' + id + '-items .list-bullet').forEach((b, i) => {
+                b.textContent = type === 'ol' ? (i + 1) + '.' : '\u2022';
+            });
+        }
+
+        function addItem(id) {
+            listCounters[id] = (listCounters[id] || 0) + 1;
+            const itemId = id + '-li' + listCounters[id];
+            const isOl = document.getElementById(id).dataset.listType === 'ol';
+            const container = document.getElementById(id + '-items');
+            const idx = container.children.length + 1;
+            const row = document.createElement('div');
+            row.className = 'list-row'; row.id = itemId;
+            row.innerHTML = `
+      <span class="list-bullet">${isOl ? idx + '.' : '\u2022'}</span>
+      <input class="list-item-input" placeholder="List item..."
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addItem('${id}')}">
+      <button class="list-row-del" onclick="document.getElementById('${itemId}').remove();renumber('${id}')">&#10005;</button>
+    `;
+            container.appendChild(row);
+            row.querySelector('input').focus();
+        }
+
+        function renumber(id) {
+            const isOl = document.getElementById(id).dataset.listType === 'ol';
+            document.querySelectorAll('#' + id + '-items .list-bullet').forEach((b, i) => {
+                b.textContent = isOl ? (i + 1) + '.' : '\u2022';
+            });
+        }
+
+        function handleTab(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const t = e.target, s = t.selectionStart;
+                t.value = t.value.substring(0, s) + '  ' + t.value.substring(t.selectionEnd);
+                t.selectionStart = t.selectionEnd = s + 2;
+            }
+        }
+
+        function copyCode(id) {
+            navigator.clipboard.writeText(document.getElementById(id + '-in')?.value || '').then(() => toast('Code copied!'));
+        }
+
+        function deleteBlock(id) {
+            document.getElementById(id)?.remove();
+            persistAll();
+            if (!document.querySelectorAll('.block').length) {
+                const e = document.createElement('div'); e.id = 'empty';
+                e.innerHTML = '<div class="ei">&#9783;</div><p>Add a block below to get started</p>';
+                document.getElementById('canvas').appendChild(e);
+            }
+        }
+
+        function getBlockHTML(block) {
+            const id = block.id, type = block.dataset.type;
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (type === 'heading') { const lvl = block.querySelector('.hlvl.active')?.textContent.toLowerCase() || 'h1'; return `<${lvl}>${esc(document.getElementById(id + '-in')?.value || '')}</${lvl}>`; }
+            if (type === 'paragraph') { return `<p>${esc(document.getElementById(id + '-in')?.value || '').replace(/\n/g, '<br>')}</p>`; }
+            if (type === 'code') { const lang = document.getElementById(id + '-lang')?.value || ''; return `<pre><code class="language-${lang}">${esc(document.getElementById(id + '-in')?.value || '')}</code></pre>`; }
+            if (type === 'quote') { const q = esc(document.getElementById(id + '-in')?.value || ''), a = esc(document.getElementById(id + '-author')?.value || ''); return a ? `<blockquote><p>${q}</p><cite>${a}</cite></blockquote>` : `<blockquote><p>${q}</p></blockquote>`; }
+            if (type === 'list') { const tag = block.dataset.listType === 'ol' ? 'ol' : 'ul'; const items = [...block.querySelectorAll('.list-item-input')].map(i => `  <li>${esc(i.value)}</li>`).join('\n'); return `<${tag}>\n${items}\n</${tag}>`; }
+            return '';
+        }
+
+        function getAllHTML() { return [...document.querySelectorAll('.block')].map(getBlockHTML).filter(Boolean).join('\n\n'); }
+
+        function copyAll() {
+            const html = getAllHTML();
+            if (!html) { toast('No blocks yet!'); return; }
+            navigator.clipboard.writeText(html).then(() => toast('HTML copied!'));
+        }
+
+        function exportHTML() {
+            const html = getAllHTML();
+            if (!html) { toast('No blocks yet!'); return; }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([`${html}`], { type: 'text/html' }));
+            a.download = 'export.html'; a.click(); toast('Exported!');
+        }
+
+        let toastTimer;
+        function toast(msg) {
+            clearTimeout(toastTimer);
+            const el = document.getElementById('toast');
+            el.textContent = msg; el.classList.add('show');
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+        }
+
+        // Init
+        if (!loadSaved()) addBlock('heading');
+    </script>
+</body>
+
+</html>

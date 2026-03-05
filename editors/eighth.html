@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;500;600&family=Source+Code+Pro&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* =========================================================
+       RESET & BASE
+    ========================================================= */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #f5f4f0;
+      font-family: 'Source Sans 3', sans-serif;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 40px 20px 100px;
+    }
+
+    button {
+      font-family: 'Source Sans 3', sans-serif;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    header {
+      max-width: 680px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: #1a1a1a;
+    }
+
+    .logo span {
+      color: #d97706;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+
+    /* =========================================================
+       SHARED BUTTON STYLES
+    ========================================================= */
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1.5px solid #d1d5db;
+      color: #374151;
+    }
+
+    .btn-outline:hover {
+      border-color: #9ca3af;
+      background: #f9fafb;
+    }
+
+    .btn-primary {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #374151;
+    }
+
+
+    /* =========================================================
+       SAVE STATUS BAR (below header)
+    ========================================================= */
+
+    #save-status-bar {
+      max-width: 680px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: flex-end;
+      min-height: 20px;
+    }
+
+    .save-status-note {
+      font-size: 0.75rem;
+      color: #16a34a;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .save-status-note.visible {
+      opacity: 1;
+    }
+
+
+    /* =========================================================
+       CANVAS (block list area)
+    ========================================================= */
+
+    #canvas {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    #empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+
+    #empty-state .empty-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    #empty-state p {
+      font-size: 0.9rem;
+    }
+
+
+    /* =========================================================
+       BLOCK CARD — shared wrapper for all block types
+    ========================================================= */
+
+    .block-card {
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      animation: blockSlideIn 0.18s ease;
+    }
+
+    @keyframes blockSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .block-card:focus-within {
+      border-color: #d97706;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+    }
+
+    /* Block header bar (shared across all types) */
+    .block-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fafafa;
+      border-bottom: 1.5px solid #e5e7eb;
+    }
+
+    .block-type-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      flex: 1;
+    }
+
+    /* Save button inside block header */
+    .block-save-btn {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 5px;
+      background: transparent;
+      border: 1.5px solid #e5e7eb;
+      color: #9ca3af;
+      transition: all 0.15s;
+    }
+
+    .block-save-btn:hover {
+      border-color: #16a34a;
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .block-save-btn.saved {
+      border-color: #16a34a;
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    /* Delete button inside block header */
+    .block-delete-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .block-delete-btn:hover {
+      background: #fee2e2;
+      color: #ef4444;
+    }
+
+    /* Block content area */
+    .block-content {
+      padding: 14px 16px;
+    }
+
+
+    /* =========================================================
+       DRAG HANDLE
+    ========================================================= */
+
+    .drag-handle {
+      cursor: grab;
+      color: #d1d5db;
+      padding: 0 4px 0 0;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      user-select: none;
+      transition: color 0.15s;
+    }
+
+    .drag-handle:hover {
+      color: #9ca3af;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    /* Visual state while this block is being dragged */
+    .block-card.is-dragging {
+      opacity: 0.35;
+      transform: scale(0.98);
+    }
+
+    /* Visual state on the block being hovered over as drop target */
+    .block-card.drag-target {
+      border-color: #d97706 !important;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15) !important;
+    }
+
+
+    /* =========================================================
+       HEADING BLOCK
+    ========================================================= */
+
+    .heading-level-selector {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .heading-level-btn {
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      color: #6b7280;
+      transition: all 0.15s;
+    }
+
+    .heading-level-btn:hover {
+      border-color: #d97706;
+      color: #d97706;
+    }
+
+    .heading-level-btn.active {
+      background: #fef3c7;
+      border-color: #d97706;
+      color: #d97706;
+    }
+
+    .heading-text-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      color: #1a1a1a;
+      background: transparent;
+      caret-color: #d97706;
+    }
+
+    .heading-text-input.h1 { font-size: 2rem; }
+    .heading-text-input.h2 { font-size: 1.6rem; }
+    .heading-text-input.h3 { font-size: 1.3rem; }
+
+    .heading-text-input::placeholder {
+      color: #d1d5db;
+    }
+
+
+    /* =========================================================
+       PARAGRAPH BLOCK
+    ========================================================= */
+
+    .paragraph-textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      min-height: 80px;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: #374151;
+      background: transparent;
+      caret-color: #d97706;
+    }
+
+    .paragraph-textarea::placeholder {
+      color: #d1d5db;
+    }
+
+
+    /* =========================================================
+       CODE BLOCK
+    ========================================================= */
+
+    .code-language-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      background: #f8fafc;
+      border-bottom: 1.5px solid #e5e7eb;
+    }
+
+    .code-language-select {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.75rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 5px;
+      padding: 3px 8px;
+      background: white;
+      color: #374151;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .code-copy-btn {
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 5px;
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      color: #6b7280;
+      transition: all 0.15s;
+    }
+
+    .code-copy-btn:hover {
+      border-color: #6b7280;
+      color: #1a1a1a;
+    }
+
+    .code-textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: vertical;
+      min-height: 110px;
+      padding: 14px 16px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: #1e293b;
+      background: #f8fafc;
+      tab-size: 2;
+      caret-color: #d97706;
+    }
+
+    .code-textarea::placeholder {
+      color: #cbd5e1;
+    }
+
+
+    /* =========================================================
+       BLOCKQUOTE BLOCK
+    ========================================================= */
+
+    .quote-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+
+    .quote-accent-bar {
+      width: 3px;
+      border-radius: 2px;
+      background: #d97706;
+      flex-shrink: 0;
+    }
+
+    .quote-fields {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .quote-text-textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      min-height: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      font-style: italic;
+      color: #374151;
+      background: transparent;
+      caret-color: #d97706;
+    }
+
+    .quote-text-textarea::placeholder {
+      color: #d1d5db;
+    }
+
+    .quote-author-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      background: transparent;
+      caret-color: #d97706;
+    }
+
+    .quote-author-input::placeholder {
+      color: #e5e7eb;
+    }
+
+
+    /* =========================================================
+       LIST BLOCK
+    ========================================================= */
+
+    .list-type-selector {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .list-type-btn {
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 5px;
+      border: 1.5px solid #e5e7eb;
+      background: white;
+      color: #6b7280;
+      transition: all 0.15s;
+    }
+
+    .list-type-btn.active {
+      background: #fef3c7;
+      border-color: #d97706;
+      color: #d97706;
+    }
+
+    .list-items-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .list-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .list-item-bullet {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      min-width: 18px;
+      text-align: right;
+    }
+
+    .list-item-input {
+      flex: 1;
+      border: none;
+      border-bottom: 1.5px solid #f3f4f6;
+      outline: none;
+      padding: 4px 0;
+      font-size: 0.95rem;
+      color: #374151;
+      background: transparent;
+      transition: border-color 0.15s;
+      caret-color: #d97706;
+    }
+
+    .list-item-input:focus {
+      border-bottom-color: #d97706;
+    }
+
+    .list-item-input::placeholder {
+      color: #d1d5db;
+    }
+
+    .list-item-delete-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: transparent;
+      color: #d1d5db;
+      font-size: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .list-item-delete-btn:hover {
+      background: #fee2e2;
+      color: #ef4444;
+    }
+
+    .list-add-item-btn {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      padding: 5px 12px;
+      border-radius: 5px;
+      background: #f9fafb;
+      border: 1.5px dashed #d1d5db;
+      color: #9ca3af;
+      width: 100%;
+      text-align: left;
+      transition: all 0.15s;
+    }
+
+    .list-add-item-btn:hover {
+      border-color: #d97706;
+      color: #d97706;
+      background: #fffbeb;
+    }
+
+
+    /* =========================================================
+       ADD BLOCK TOOLBAR (bottom)
+    ========================================================= */
+
+    #add-block-bar {
+      max-width: 680px;
+      margin: 16px auto 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .add-block-btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      color: #374151;
+      transition: all 0.15s;
+    }
+
+    .add-block-btn:hover {
+      border-color: #d97706;
+      color: #d97706;
+      background: #fffbeb;
+    }
+
+
+    /* =========================================================
+       TOAST NOTIFICATION
+    ========================================================= */
+
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #1a1a1a;
+      color: white;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.22s;
+    }
+
+    #toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+  </style>
+</head>
+<body>
+
+
+  <!-- =========================================================
+       HEADER
+  ========================================================= -->
+
+  <header>
+    <div class="logo">Block<span>.</span>Editor</div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="copyAllHTML()">Copy HTML</button>
+      <button class="btn btn-primary" onclick="saveAllBlocks()">&#8595; Save All</button>
+    </div>
+  </header>
+
+  <!-- Appears briefly after saving -->
+  <div id="save-status-bar">
+    <span class="save-status-note" id="save-status-note">&#10003; Saved</span>
+  </div>
+
+
+  <!-- =========================================================
+       CANVAS — blocks are injected here by JavaScript
+  ========================================================= -->
+
+  <div id="canvas">
+    <div id="empty-state">
+      <div class="empty-icon">&#9783;</div>
+      <p>Add a block below to get started</p>
+    </div>
+  </div>
+
+
+  <!-- =========================================================
+       ADD BLOCK TOOLBAR
+  ========================================================= -->
+
+  <div id="add-block-bar">
+    <button class="add-block-btn" onclick="addBlock('heading')">H  Heading</button>
+    <button class="add-block-btn" onclick="addBlock('paragraph')">&#182; Paragraph</button>
+    <button class="add-block-btn" onclick="addBlock('code')">&lt;/&gt; Code</button>
+    <button class="add-block-btn" onclick="addBlock('quote')">" Quote</button>
+    <button class="add-block-btn" onclick="addBlock('list')">&#8801; List</button>
+  </div>
+
+
+  <!-- Toast notification element -->
+  <div id="toast"></div>
+
+
+  <script>
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    let blockCounter = 0;   // Increments to give each block a unique numeric ID
+    let listCounters = {};  // Tracks how many items each list block has created
+    let dragSourceId = null; // ID of the block currently being dragged
+
+    const STORAGE_KEY = 'block-editor-v1';
+
+
+    // =========================================================
+    // INIT — runs on page load
+    // =========================================================
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const restoredFromStorage = loadBlocksFromStorage();
+      if (!restoredFromStorage) {
+        addBlock('heading'); // Start with a blank heading block
+      }
+    });
+
+
+    // =========================================================
+    // ADD BLOCK — creates a new block and appends it to canvas
+    // =========================================================
+
+    function addBlock(type) {
+      document.getElementById('empty-state')?.remove();
+
+      const id = 'block-' + (++blockCounter);
+
+      const blockEl = document.createElement('div');
+      blockEl.className    = 'block-card';
+      blockEl.id           = id;
+      blockEl.dataset.type = type;
+
+      blockEl.innerHTML = buildBlockHTML(id, type);
+
+      document.getElementById('canvas').appendChild(blockEl);
+      attachDragListeners(blockEl);
+
+      blockEl.querySelector('input, textarea')?.focus();
+    }
+
+
+    // =========================================================
+    // BUILD BLOCK HTML
+    // Combines the shared header bar with the type-specific content
+    // =========================================================
+
+    function buildBlockHTML(id, type) {
+      const typeLabels = {
+        heading:   'Heading',
+        paragraph: 'Paragraph',
+        code:      'Code',
+        quote:     'Blockquote',
+        list:      'List',
+      };
+
+      const headerHTML = `
+        <div class="block-header">
+          <span class="drag-handle" title="Drag to reorder">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+              <circle cx="3" cy="3"  r="1.5"/>
+              <circle cx="7" cy="3"  r="1.5"/>
+              <circle cx="3" cy="8"  r="1.5"/>
+              <circle cx="7" cy="8"  r="1.5"/>
+              <circle cx="3" cy="13" r="1.5"/>
+              <circle cx="7" cy="13" r="1.5"/>
+            </svg>
+          </span>
+          <span class="block-type-label">${typeLabels[type]}</span>
+          <button class="block-save-btn" id="${id}-save-btn" onclick="saveOneBlock('${id}')">Save</button>
+          <button class="block-delete-btn" onclick="deleteBlock('${id}')">&#10005;</button>
+        </div>
+      `;
+
+      const contentHTML = `
+        <div class="block-content">
+          ${buildBlockContent(id, type)}
+        </div>
+      `;
+
+      return headerHTML + contentHTML;
+    }
+
+
+    // =========================================================
+    // BUILD BLOCK CONTENT — inner HTML specific to each type
+    // =========================================================
+
+    function buildBlockContent(id, type) {
+      switch (type) {
+
+        case 'heading':
+          return `
+            <div class="heading-level-selector">
+              <button class="heading-level-btn active" onclick="setHeadingLevel('${id}', 1, this)">H1</button>
+              <button class="heading-level-btn"        onclick="setHeadingLevel('${id}', 2, this)">H2</button>
+              <button class="heading-level-btn"        onclick="setHeadingLevel('${id}', 3, this)">H3</button>
+            </div>
+            <input
+              class="heading-text-input h1"
+              id="${id}-input"
+              placeholder="Your heading..."
+              autocomplete="off"
+            >
+          `;
+
+        case 'paragraph':
+          return `
+            <textarea
+              class="paragraph-textarea"
+              id="${id}-input"
+              placeholder="Start writing..."
+              rows="3"
+              oninput="autoGrow(this)"
+            ></textarea>
+          `;
+
+        case 'code':
+          return `
+            <div class="code-language-bar">
+              <select class="code-language-select" id="${id}-lang">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="bash">Bash</option>
+                <option value="sql">SQL</option>
+                <option value="json">JSON</option>
+              </select>
+              <button class="code-copy-btn" onclick="copyCodeBlock('${id}')">Copy</button>
+            </div>
+            <textarea
+              class="code-textarea"
+              id="${id}-input"
+              placeholder="// write your code here..."
+              onkeydown="handleCodeTab(event)"
+            ></textarea>
+          `;
+
+        case 'quote':
+          return `
+            <div class="quote-wrapper">
+              <div class="quote-accent-bar"></div>
+              <div class="quote-fields">
+                <textarea
+                  class="quote-text-textarea"
+                  id="${id}-input"
+                  placeholder="Enter quote..."
+                  rows="2"
+                  oninput="autoGrow(this)"
+                ></textarea>
+                <input
+                  class="quote-author-input"
+                  id="${id}-author"
+                  placeholder="&#8212; Author (optional)"
+                >
+              </div>
+            </div>
+          `;
+
+        case 'list':
+          listCounters[id] = 0;
+          return `
+            <div class="list-type-selector">
+              <button class="list-type-btn active" onclick="setListType('${id}', 'ul', this)">&#8226; Bullet</button>
+              <button class="list-type-btn"        onclick="setListType('${id}', 'ol', this)">1. Numbered</button>
+            </div>
+            <div class="list-items-container" id="${id}-items"></div>
+            <button class="list-add-item-btn" onclick="addListItem('${id}')">+ Add item</button>
+          `;
+
+        default:
+          return '';
+      }
+    }
+
+
+    // =========================================================
+    // HEADING BLOCK LOGIC
+    // =========================================================
+
+    function setHeadingLevel(blockId, level, clickedBtn) {
+      // Swap the size class on the input
+      const input = document.getElementById(blockId + '-input');
+      input.className = 'heading-text-input h' + level;
+
+      // Update which level button is active
+      const levelButtons = clickedBtn.closest('.heading-level-selector')
+                                     .querySelectorAll('.heading-level-btn');
+      levelButtons.forEach(btn => btn.classList.remove('active'));
+      clickedBtn.classList.add('active');
+    }
+
+
+    // =========================================================
+    // CODE BLOCK LOGIC
+    // =========================================================
+
+    function handleCodeTab(event) {
+      // Insert two spaces instead of moving focus
+      if (event.key !== 'Tab') return;
+      event.preventDefault();
+
+      const textarea    = event.target;
+      const cursorStart = textarea.selectionStart;
+      const before      = textarea.value.substring(0, cursorStart);
+      const after       = textarea.value.substring(textarea.selectionEnd);
+
+      textarea.value          = before + '  ' + after;
+      textarea.selectionStart = textarea.selectionEnd = cursorStart + 2;
+    }
+
+    function copyCodeBlock(blockId) {
+      const code = document.getElementById(blockId + '-input')?.value || '';
+      navigator.clipboard.writeText(code).then(() => showToast('Code copied!'));
+    }
+
+
+    // =========================================================
+    // LIST BLOCK LOGIC
+    // =========================================================
+
+    function setListType(blockId, type, clickedBtn) {
+      document.getElementById(blockId).dataset.listType = type;
+
+      const typeButtons = clickedBtn.closest('.list-type-selector')
+                                    .querySelectorAll('.list-type-btn');
+      typeButtons.forEach(btn => btn.classList.remove('active'));
+      clickedBtn.classList.add('active');
+
+      renumberListItems(blockId);
+    }
+
+    function addListItem(blockId) {
+      listCounters[blockId] = (listCounters[blockId] || 0) + 1;
+
+      const itemId     = blockId + '-item-' + listCounters[blockId];
+      const container  = document.getElementById(blockId + '-items');
+      const isOrdered  = document.getElementById(blockId).dataset.listType === 'ol';
+      const position   = container.children.length + 1;
+      const bulletText = isOrdered ? position + '.' : '\u2022';
+
+      const row = document.createElement('div');
+      row.className = 'list-item-row';
+      row.id        = itemId;
+      row.innerHTML = `
+        <span class="list-item-bullet">${bulletText}</span>
+        <input
+          class="list-item-input"
+          placeholder="List item..."
+          onkeydown="onListItemKeydown(event, '${blockId}')"
+        >
+        <button class="list-item-delete-btn" onclick="removeListItem('${itemId}', '${blockId}')">&#10005;</button>
+      `;
+
+      container.appendChild(row);
+      row.querySelector('input').focus();
+    }
+
+    function removeListItem(itemId, blockId) {
+      document.getElementById(itemId)?.remove();
+      renumberListItems(blockId);
+    }
+
+    function renumberListItems(blockId) {
+      const isOrdered = document.getElementById(blockId).dataset.listType === 'ol';
+      const bullets   = document.querySelectorAll('#' + blockId + '-items .list-item-bullet');
+
+      bullets.forEach((bullet, index) => {
+        bullet.textContent = isOrdered ? (index + 1) + '.' : '\u2022';
+      });
+    }
+
+    function onListItemKeydown(event, blockId) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addListItem(blockId);
+      }
+    }
+
+
+    // =========================================================
+    // UTILITY — auto-grow textareas to fit content
+    // =========================================================
+
+    function autoGrow(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+
+    // =========================================================
+    // DELETE BLOCK
+    // =========================================================
+
+    function deleteBlock(blockId) {
+      document.getElementById(blockId)?.remove();
+
+      if (document.querySelectorAll('.block-card').length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.id        = 'empty-state';
+        emptyState.innerHTML = `
+          <div class="empty-icon">&#9783;</div>
+          <p>Add a block below to get started</p>
+        `;
+        document.getElementById('canvas').appendChild(emptyState);
+      }
+
+      persistBlocksToStorage();
+    }
+
+
+    // =========================================================
+    // DRAG AND DROP — reorder blocks by dragging
+    // =========================================================
+
+    function attachDragListeners(blockEl) {
+      blockEl.addEventListener('dragstart', onDragStart);
+      blockEl.addEventListener('dragend',   onDragEnd);
+      blockEl.addEventListener('dragover',  onDragOver);
+      blockEl.addEventListener('dragleave', onDragLeave);
+      blockEl.addEventListener('drop',      onDrop);
+    }
+
+    // Only start dragging when the user clicks the drag handle
+    document.getElementById('canvas').addEventListener('mousedown', (event) => {
+      const blockEl = event.target.closest('.block-card');
+      if (!blockEl) return;
+      blockEl.draggable = !!event.target.closest('.drag-handle');
+    });
+
+    function onDragStart(event) {
+      dragSourceId = this.id;
+      setTimeout(() => this.classList.add('is-dragging'), 0);
+      event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function onDragEnd() {
+      this.classList.remove('is-dragging');
+      document.querySelectorAll('.block-card').forEach(el => el.classList.remove('drag-target'));
+      dragSourceId = null;
+    }
+
+    function onDragOver(event) {
+      event.preventDefault();
+      if (this.id === dragSourceId) return;
+      document.querySelectorAll('.block-card').forEach(el => el.classList.remove('drag-target'));
+      this.classList.add('drag-target');
+    }
+
+    function onDragLeave(event) {
+      if (!this.contains(event.relatedTarget)) {
+        this.classList.remove('drag-target');
+      }
+    }
+
+    function onDrop(event) {
+      event.preventDefault();
+      this.classList.remove('drag-target');
+
+      if (!dragSourceId || dragSourceId === this.id) return;
+
+      const canvas    = document.getElementById('canvas');
+      const allBlocks = [...canvas.querySelectorAll('.block-card')];
+      const sourceEl  = document.getElementById(dragSourceId);
+      const sourceIdx = allBlocks.indexOf(sourceEl);
+      const targetIdx = allBlocks.indexOf(this);
+
+      // Insert before or after depending on direction of drag
+      if (sourceIdx < targetIdx) {
+        canvas.insertBefore(sourceEl, this.nextSibling);
+      } else {
+        canvas.insertBefore(sourceEl, this);
+      }
+
+      showToast('Block reordered!');
+    }
+
+
+    // =========================================================
+    // GENERATE HTML OUTPUT
+    // =========================================================
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function generateBlockHTML(blockEl) {
+      const id   = blockEl.id;
+      const type = blockEl.dataset.type;
+
+      switch (type) {
+
+        case 'heading': {
+          const activeBtn = blockEl.querySelector('.heading-level-btn.active');
+          const level     = activeBtn?.textContent.toLowerCase() || 'h1';
+          const text      = escapeHTML(document.getElementById(id + '-input')?.value || '');
+          return `<${level}>${text}</${level}>`;
+        }
+
+        case 'paragraph': {
+          const text = escapeHTML(document.getElementById(id + '-input')?.value || '');
+          return `<p>${text.replace(/\n/g, '<br>')}</p>`;
+        }
+
+        case 'code': {
+          const lang = document.getElementById(id + '-lang')?.value || 'plaintext';
+          const code = escapeHTML(document.getElementById(id + '-input')?.value || '');
+          return `<pre><code class="language-${lang}">${code}</code></pre>`;
+        }
+
+        case 'quote': {
+          const quoteText = escapeHTML(document.getElementById(id + '-input')?.value  || '');
+          const author    = escapeHTML(document.getElementById(id + '-author')?.value || '');
+          if (author) {
+            return `<blockquote>\n  <p>${quoteText}</p>\n  <cite>${author}</cite>\n</blockquote>`;
+          }
+          return `<blockquote>\n  <p>${quoteText}</p>\n</blockquote>`;
+        }
+
+        case 'list': {
+          const tag   = blockEl.dataset.listType === 'ol' ? 'ol' : 'ul';
+          const items = [...blockEl.querySelectorAll('.list-item-input')]
+                          .map(input => `  <li>${escapeHTML(input.value)}</li>`)
+                          .join('\n');
+          return `<${tag}>\n${items}\n</${tag}>`;
+        }
+
+        default:
+          return '';
+      }
+    }
+
+    function generateAllHTML() {
+      return [...document.querySelectorAll('.block-card')]
+        .map(generateBlockHTML)
+        .filter(html => html.trim() !== '')
+        .join('\n\n');
+    }
+
+    function wrapInHTMLDocument(bodyContent) {
+      return [
+        bodyContent
+      ].join('\n');
+    }
+
+
+    // =========================================================
+    // SAVE — download as HTML file
+    // =========================================================
+
+    function saveOneBlock(blockId) {
+      const blockEl   = document.getElementById(blockId);
+      const blockHTML = generateBlockHTML(blockEl);
+
+      if (!blockHTML.trim()) {
+        showToast('Block is empty!');
+        return;
+      }
+
+      const fullDocument = wrapInHTMLDocument(blockHTML);
+      triggerDownload(fullDocument, blockId + '.html');
+
+      markBlockSaved(blockId);
+      showToast('Block saved as HTML!');
+    }
+
+    function saveAllBlocks() {
+      const allHTML = generateAllHTML();
+
+      if (!allHTML) {
+        showToast('No blocks to save!');
+        return;
+      }
+
+      const fullDocument = wrapInHTMLDocument(allHTML);
+      triggerDownload(fullDocument, 'all-blocks.html');
+
+      document.querySelectorAll('.block-card').forEach(blockEl => markBlockSaved(blockEl.id));
+
+      showSaveStatusNote();
+      showToast('All blocks saved!');
+    }
+
+    function markBlockSaved(blockId) {
+      const saveBtn = document.getElementById(blockId + '-save-btn');
+      if (saveBtn) {
+        saveBtn.classList.add('saved');
+        saveBtn.innerHTML = '&#10003; Saved';
+      }
+    }
+
+    function triggerDownload(content, filename) {
+      const blob = new Blob([content], { type: 'text/html' });
+      const url  = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href     = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showSaveStatusNote() {
+      const note = document.getElementById('save-status-note');
+      note.classList.add('visible');
+      clearTimeout(note._hideTimer);
+      note._hideTimer = setTimeout(() => note.classList.remove('visible'), 2500);
+    }
+
+
+    // =========================================================
+    // COPY ALL — write HTML to clipboard
+    // =========================================================
+
+    function copyAllHTML() {
+      const html = generateAllHTML();
+      if (!html) { showToast('No blocks to copy!'); return; }
+      navigator.clipboard.writeText(html).then(() => showToast('HTML copied to clipboard!'));
+    }
+
+
+    // =========================================================
+    // LOCAL STORAGE — persist blocks between sessions
+    // =========================================================
+
+    function persistBlocksToStorage() {
+      const allData = [...document.querySelectorAll('.block-card')].map(collectBlockData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+    }
+
+    function collectBlockData(blockEl) {
+      const id   = blockEl.id;
+      const type = blockEl.dataset.type;
+      const data = { id, type };
+
+      switch (type) {
+        case 'heading':
+          data.level = blockEl.querySelector('.heading-level-btn.active')?.textContent.toLowerCase() || 'h1';
+          data.text  = document.getElementById(id + '-input')?.value || '';
+          break;
+
+        case 'paragraph':
+          data.text = document.getElementById(id + '-input')?.value || '';
+          break;
+
+        case 'code':
+          data.language = document.getElementById(id + '-lang')?.value  || 'javascript';
+          data.text     = document.getElementById(id + '-input')?.value || '';
+          break;
+
+        case 'quote':
+          data.text   = document.getElementById(id + '-input')?.value  || '';
+          data.author = document.getElementById(id + '-author')?.value || '';
+          break;
+
+        case 'list':
+          data.listType = blockEl.dataset.listType || 'ul';
+          data.items    = [...blockEl.querySelectorAll('.list-item-input')].map(input => input.value);
+          break;
+      }
+
+      return data;
+    }
+
+    function loadBlocksFromStorage() {
+      let savedData;
+
+      try {
+        savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      } catch (e) {
+        return false;
+      }
+
+      if (!savedData || savedData.length === 0) return false;
+
+      document.getElementById('empty-state')?.remove();
+      savedData.forEach(restoreBlock);
+      return true;
+    }
+
+    function restoreBlock(data) {
+      // Keep blockCounter ahead of any restored IDs
+      const idNumber = parseInt(data.id?.replace('block-', '')) || 0;
+      if (idNumber >= blockCounter) blockCounter = idNumber;
+
+      const blockEl = document.createElement('div');
+      blockEl.className    = 'block-card';
+      blockEl.id           = data.id;
+      blockEl.dataset.type = data.type;
+
+      if (data.listType) {
+        blockEl.dataset.listType = data.listType;
+      }
+
+      blockEl.innerHTML = buildBlockHTML(data.id, data.type);
+      document.getElementById('canvas').appendChild(blockEl);
+      attachDragListeners(blockEl);
+
+      populateRestoredBlock(blockEl, data);
+      markBlockSaved(data.id); // Mark as saved since it came from storage
+    }
+
+    function populateRestoredBlock(blockEl, data) {
+      const id = blockEl.id;
+
+      switch (data.type) {
+
+        case 'heading': {
+          const input = document.getElementById(id + '-input');
+          if (input) {
+            input.value     = data.text || '';
+            input.className = 'heading-text-input ' + (data.level || 'h1');
+          }
+          blockEl.querySelectorAll('.heading-level-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase() === (data.level || 'h1'));
+          });
+          break;
+        }
+
+        case 'paragraph': {
+          const textarea = document.getElementById(id + '-input');
+          if (textarea) {
+            textarea.value = data.text || '';
+            autoGrow(textarea);
+          }
+          break;
+        }
+
+        case 'code': {
+          const textarea = document.getElementById(id + '-input');
+          const select   = document.getElementById(id + '-lang');
+          if (textarea) textarea.value = data.text     || '';
+          if (select)   select.value   = data.language || 'javascript';
+          break;
+        }
+
+        case 'quote': {
+          const textarea    = document.getElementById(id + '-input');
+          const authorInput = document.getElementById(id + '-author');
+          if (textarea)    { textarea.value    = data.text   || ''; autoGrow(textarea); }
+          if (authorInput)   authorInput.value  = data.author || '';
+          break;
+        }
+
+        case 'list': {
+          listCounters[id] = 0;
+
+          (data.items || []).forEach(itemText => {
+            addListItem(id);
+            const container = document.getElementById(id + '-items');
+            const lastInput = container.lastElementChild?.querySelector('.list-item-input');
+            if (lastInput) lastInput.value = itemText;
+          });
+
+          if (data.listType === 'ol') {
+            const numberedBtn = blockEl.querySelector('.list-type-btn:last-child');
+            if (numberedBtn) setListType(id, 'ol', numberedBtn);
+          }
+          break;
+        }
+      }
+    }
+
+
+    // =========================================================
+    // TOAST NOTIFICATION
+    // =========================================================
+
+    let toastHideTimer;
+
+    function showToast(message) {
+      clearTimeout(toastHideTimer);
+
+      const toastEl       = document.getElementById('toast');
+      toastEl.textContent = message;
+      toastEl.classList.add('visible');
+
+      toastHideTimer = setTimeout(() => toastEl.classList.remove('visible'), 2200);
+    }
+
+  </script>
+</body>
+</html>
