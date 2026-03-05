@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The quiet art of restraint — Alex Morgan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f9f9f8;
+      --ink: #0d0d0d;
+      --ink-2: #6b6b6b;
+      --ink-3: #b0b0b0;
+      --accent: #2563eb;
+      --border: #ebebeb;
+      --tag-design: #fef3c7; --tag-design-ink: #92400e;
+      --font-display: 'Instrument Serif', Georgia, serif;
+      --font-body:    'Geist', sans-serif;
+      --prose-w: 672px;
+      --r: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 2rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-weight: 600; font-size: 0.88rem; letter-spacing: -0.01em; }
+    .nav-links { display: flex; gap: 2rem; font-size: 0.82rem; color: var(--ink-2); }
+    .nav-links a { transition: color 0.15s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.active { color: var(--ink); font-weight: 500; }
+    .nav-back {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.82rem; color: var(--ink-2); transition: color 0.15s;
+    }
+    .nav-back:hover { color: var(--ink); }
+    .nav-back svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none; flex-direction: column; justify-content: center; align-items: center;
+      gap: 5px; width: 36px; height: 36px; background: none; border: none;
+      cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.15s;
+    }
+    .hamburger:hover { background: var(--bg2); }
+    .hamburger span {
+      display: block; width: 20px; height: 1.5px;
+      background: var(--ink); border-radius: 2px;
+      transition: transform 0.25s, opacity 0.2s; transform-origin: center;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* MOBILE DRAWER */
+    .mobile-menu {
+      display: none; position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+      z-index: 99; flex-direction: column; padding: 2rem; gap: 0;
+      transform: translateY(-8px); opacity: 0;
+      transition: opacity 0.2s, transform 0.2s; pointer-events: none;
+    }
+    .mobile-menu.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+    .mobile-menu a {
+      font-size: 1.5rem; font-family: var(--font-display); font-weight: 400;
+      color: var(--ink-2); padding: 1rem 0; border-bottom: 1px solid var(--border);
+      transition: color 0.15s; letter-spacing: -0.01em;
+    }
+    .mobile-menu a:first-child { border-top: 1px solid var(--border); }
+    .mobile-menu a:hover, .mobile-menu a.active { color: var(--ink); }
+    .mobile-menu a.active { font-style: italic; }
+
+    /* ── ARTICLE LAYOUT ── */
+    .article-wrap {
+      max-width: var(--prose-w);
+      margin: 0 auto;
+      padding: 3.5rem 2rem 6rem;
+    }
+
+    /* ── HEADER ── */
+    .article-tag {
+      display: inline-block; border-radius: 999px; padding: 0.2rem 0.75rem;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+      background: var(--tag-design); color: var(--tag-design-ink);
+      margin-bottom: 1.25rem;
+    }
+    .article-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 2.9rem);
+      font-weight: 400; line-height: 1.15; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 1.25rem;
+    }
+    .article-meta {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.8rem; color: var(--ink-3);
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .article-meta .dot { opacity: 0.4; }
+    .article-meta .author { color: var(--ink-2); font-weight: 500; }
+
+    /* ── COVER IMAGE ── */
+    .article-cover {
+      margin: 2rem 0;
+      border-radius: var(--r);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .article-cover img {
+      width: 100%; display: block;
+      aspect-ratio: 16/7; object-fit: cover;
+    }
+    .article-cover figcaption {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem; color: var(--ink-3);
+      background: var(--bg2); text-align: center;
+    }
+
+    /* ── PROSE ── */
+    .prose { margin-top: 2rem; }
+
+    .prose p {
+      font-size: 1.025rem;
+      line-height: 1.85;
+      color: #1e1e1e;
+      margin-bottom: 1.5rem;
+    }
+    .prose h2 {
+      font-family: var(--font-display);
+      font-size: 1.55rem; font-weight: 400;
+      line-height: 1.2; letter-spacing: -0.01em;
+      color: var(--ink);
+      margin: 2.5rem 0 0.85rem;
+    }
+    .prose h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 400;
+      line-height: 1.25; color: var(--ink);
+      margin: 2rem 0 0.65rem;
+    }
+    .prose strong { font-weight: 600; color: var(--ink); }
+    .prose em { font-style: italic; }
+    .prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .prose a:hover { text-decoration: none; }
+
+    .prose blockquote {
+      margin: 2rem 0;
+      padding: 1.25rem 1.5rem;
+      border-left: 3px solid var(--accent);
+      background: #f0f5ff;
+      border-radius: 0 8px 8px 0;
+    }
+    .prose blockquote p {
+      font-family: var(--font-display);
+      font-size: 1.15rem; font-style: italic;
+      color: var(--ink); margin: 0; line-height: 1.65;
+    }
+
+    .prose ul, .prose ol {
+      padding-left: 1.4rem; margin-bottom: 1.5rem;
+    }
+    .prose li {
+      font-size: 1.025rem; line-height: 1.8; color: #1e1e1e;
+      margin-bottom: 0.35rem;
+    }
+
+    .prose hr {
+      border: none; border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* Inline image */
+    .prose figure {
+      margin: 2rem 0;
+      border-radius: var(--r); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .prose figure img { width: 100%; display: block; }
+    .prose figure figcaption {
+      padding: 0.55rem 1rem; font-size: 0.75rem;
+      color: var(--ink-3); background: var(--bg2); text-align: center;
+    }
+
+    /* ── SHARE BAR ── */
+    .share-bar {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-top: 3rem; padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .share-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--ink-3); margin-right: 0.25rem;
+    }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.42rem 0.9rem;
+      border: 1px solid var(--border); border-radius: 999px;
+      font-family: var(--font-body); font-size: 0.78rem; font-weight: 500;
+      color: var(--ink-2); background: none; cursor: pointer;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .share-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .share-btn:hover { color: var(--ink); border-color: var(--ink); background: var(--bg2); }
+    .share-btn.copy-btn.copied {
+      background: #f0fdf4; border-color: #86efac; color: #166534;
+    }
+
+    /* ── BACK LINK ── */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      margin-top: 3rem; font-size: 0.82rem; color: var(--ink-2);
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--ink); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .mobile-menu { display: flex; }
+      .article-wrap { padding: 2rem 1.25rem 4rem; }
+      .prose p, .prose li { font-size: 0.97rem; }
+    }
+
+    /* ── FADE IN ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .article-wrap { animation: fadeUp 0.45s ease both; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">Alex Morgan</a>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#">Work</a>
+        <a href="#" class="active">Writing</a>
+        <a href="#">About</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#">Home</a>
+    <a href="#">Work</a>
+    <a href="#" class="active">Writing</a>
+    <a href="#">About</a>
+  </div>
+
+  <!-- ARTICLE -->
+  <main class="article-wrap">
+
+    <!-- Header -->
+    <span class="article-tag">Design</span>
+    <h1 class="article-title">The quiet art of restraint — why less is rarely easy</h1>
+    <div class="article-meta">
+      <span class="author">Alex Morgan</span>
+      <span class="dot">·</span>
+      <span>March 2, 2025</span>
+      <span class="dot">·</span>
+      <span>6 min read</span>
+    </div>
+
+    <!-- Cover image -->
+    <figure class="article-cover">
+      <img src="https://picsum.photos/seed/design1/1200/500" alt="Abstract shapes representing design restraint"/>
+      <figcaption>Negative space isn't emptiness — it's intention.</figcaption>
+    </figure>
+
+    <!-- Body -->
+    <div class="prose">
+
+      <p>There's a particular kind of discipline that doesn't get talked about enough in design circles: the discipline of <strong>not adding</strong>. Of looking at something that works and resisting every instinct to embellish it, to prove your worth through addition.</p>
+
+      <p>Every designer I've admired deeply has had this quality. Not minimalism as an aesthetic religion, but restraint as a working practice — a constant, quiet negotiation between what could be there and what should be.</p>
+
+      <h2>The addition bias</h2>
+
+      <p>There's a well-documented cognitive tendency called the <em>addition bias</em>: when asked to improve something, people almost universally think first about what to add, rarely about what to remove. Researchers at the University of Virginia demonstrated this by giving participants a Lego structure and asking them to improve it. The vast majority added bricks. Almost no one removed them — even when removing a single block was the cleaner, more structurally sound solution.</p>
+
+      <p>Design suffers from the same bias, and it's compounded by the need to feel useful. If a designer spends a sprint removing three things instead of building five new ones, it can feel like they haven't done enough. The removal is invisible. The additions are a portfolio piece.</p>
+
+      <blockquote>
+        <p>Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away.</p>
+      </blockquote>
+
+      <p>Antoine de Saint-Exupéry wrote that about engineering, but it applies to interfaces just as cleanly. The question is never "what would make this richer?" It's "what would make this clearer?"</p>
+
+      <h2>Restraint isn't minimalism</h2>
+
+      <p>This is an important distinction. Minimalism is a visual style — white space, monochrome palettes, sparse type. Restraint is a decision-making posture. You can have a maximalist, dense, richly layered design that is still deeply restrained — every element earning its presence, nothing there by accident or inertia.</p>
+
+      <p>The opposite of restraint isn't richness. It's noise. And noise, in a design, is any element that asks for attention without offering anything in return.</p>
+
+      <figure>
+        <img src="https://picsum.photos/seed/designdetail/1200/600" alt="A clean, well-spaced interface detail"/>
+        <figcaption>Good design often looks effortless — the effort is just invisible.</figcaption>
+      </figure>
+
+      <h2>Practical discipline</h2>
+
+      <p>So how do you actually practise restraint when every client wants more features, every stakeholder has one more thing to add, and your own instincts push you toward elaboration?</p>
+
+      <p>A few things that have helped:</p>
+
+      <ul>
+        <li><strong>Ask "what job is this doing?"</strong> for every element, every time. If you can't answer quickly and clearly, it probably doesn't belong.</li>
+        <li><strong>Default to removing</strong> before adding. When something isn't working, try taking something away before layering on a fix.</li>
+        <li><strong>Protect the user's attention.</strong> Treat it as a finite, precious resource that your interface is borrowing. Spend it wisely.</li>
+        <li><strong>Sit with discomfort.</strong> A screen that feels "too empty" usually just needs time. Give it a week before you fill it.</li>
+      </ul>
+
+      <hr/>
+
+      <p>None of this is easy. The temptation to add is almost gravitational. But the designers and products that last — that people describe as feeling <em>obvious</em>, or <em>just right</em> — they got there through subtraction, not addition. The restraint is the work. And it's worth doing.</p>
+
+    </div>
+
+    <!-- Share -->
+    <div class="share-bar">
+      <span class="share-label">Share</span>
+
+      <!-- Twitter / X -->
+      <a class="share-btn" href="https://twitter.com/intent/tweet?text=The+quiet+art+of+restraint&url=https://alexmorgan.com/writing/restraint" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        X / Twitter
+      </a>
+
+      <!-- LinkedIn -->
+      <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https://alexmorgan.com/writing/restraint" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+        LinkedIn
+      </a>
+
+      <!-- Copy link -->
+      <button class="share-btn copy-btn" id="copyBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        <span id="copyLabel">Copy link</span>
+      </button>
+    </div>
+
+    <!-- Back -->
+    <a href="#" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back to Writing
+    </a>
+
+  </main>
+
+  <script>
+    // Hamburger
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => {
+      const open = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    });
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // Copy link
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        this.classList.add('copied');
+        document.getElementById('copyLabel').textContent = 'Copied!';
+        setTimeout(() => {
+          this.classList.remove('copied');
+          document.getElementById('copyLabel').textContent = 'Copy link';
+        }, 2000);
+      });
+    });
+  </script>
+
+</body>
+</html>
