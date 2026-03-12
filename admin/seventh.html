@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XP Admin — AeroPanel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --xp-blue: #1e5fa8;
+    --xp-blue-light: #3a82d4;
+    --xp-blue-mid: #2563b0;
+    --xp-start-green: #3a8a3a;
+    --xp-start-green-h: #4aaa4a;
+    --xp-taskbar: linear-gradient(180deg, #2a6dd9 0%, #1a4fad 40%, #1645a0 100%);
+    --xp-title-active: linear-gradient(180deg, #4a9ef7 0%, #1a5fd0 8%, #1451b8 50%, #1558c8 92%, #4a9ef7 100%);
+    --xp-title-inactive: linear-gradient(180deg, #9ab4d8 0%, #7898c8 8%, #6888b8 50%, #6e90c0 92%, #9ab4d8 100%);
+    --glass: rgba(255,255,255,0.12);
+    --glass-border: rgba(255,255,255,0.35);
+    --aero-bg: #1a3a6a;
+    --widget-bg: rgba(255,255,255,0.08);
+    --widget-border: rgba(255,255,255,0.18);
+    --text-light: #e8f0fe;
+    --accent-gold: #f0c040;
+    --accent-pink: #e860a0;
+    --accent-cyan: #40d0f0;
+    --shadow-deep: 0 8px 32px rgba(0,0,30,0.5), 0 2px 8px rgba(0,0,30,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+    background: var(--aero-bg);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: default;
+    user-select: none;
+  }
+
+  /* ─── DESKTOP ─── */
+  #desktop {
+    position: absolute;
+    inset: 0 0 40px 0;
+    background:
+      radial-gradient(ellipse 120% 80% at 20% 110%, #0a2a60 0%, transparent 60%),
+      radial-gradient(ellipse 100% 100% at 80% -20%, #1a4a90 0%, transparent 55%),
+      radial-gradient(ellipse 60% 60% at 50% 50%, #1e3f78 0%, transparent 70%),
+      linear-gradient(135deg, #0d1f4a 0%, #1a3568 40%, #0f2555 100%);
+    overflow: hidden;
+  }
+
+  /* Subtle scanline texture */
+  #desktop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Aero glow orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+  .orb-1 { width: 500px; height: 500px; background: #4080ff; top: -100px; left: -100px; animation: orbFloat 12s ease-in-out infinite; }
+  .orb-2 { width: 400px; height: 400px; background: #40d0ff; bottom: 0; right: 100px; animation: orbFloat 15s ease-in-out infinite reverse; }
+  .orb-3 { width: 300px; height: 300px; background: #8040ff; top: 30%; left: 40%; animation: orbFloat 10s ease-in-out infinite 3s; }
+
+  @keyframes orbFloat {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-20px) scale(1.05); }
+    66% { transform: translate(-20px,30px) scale(0.95); }
+  }
+
+  /* ─── DESKTOP ICONS ─── */
+  .desktop-icons {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 10;
+  }
+
+  .desk-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 72px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .desk-icon:hover { background: rgba(255,255,255,0.15); }
+  .desk-icon:active { background: rgba(255,255,255,0.25); }
+  .desk-icon .icon-img {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  }
+  .desk-icon span {
+    font-size: 11px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+    line-height: 1.2;
+  }
+
+  /* ─── MAIN DASHBOARD WINDOW ─── */
+  #main-window {
+    position: absolute;
+    top: 30px; left: 90px;
+    width: calc(100vw - 110px);
+    height: calc(100vh - 82px);
+    border-radius: 8px 8px 4px 4px;
+    overflow: hidden;
+    box-shadow: var(--shadow-deep), 0 0 0 1px rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    animation: windowOpen 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 20;
+  }
+
+  @keyframes windowOpen {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* Title bar */
+  .title-bar {
+    background: var(--xp-title-active);
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 6px;
+    flex-shrink: 0;
+    border-top: 1px solid #8ab8ff;
+  }
+
+  .title-bar-icon { font-size: 14px; }
+  .title-bar-text {
+    flex: 1;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    letter-spacing: 0.3px;
+  }
+
+  .title-btn {
+    width: 21px; height: 21px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    transition: filter 0.1s;
+  }
+  .title-btn:hover { filter: brightness(1.2); }
+  .btn-min { background: linear-gradient(180deg, #f0c060 0%, #d09020 100%); color: #6b4000; }
+  .btn-max { background: linear-gradient(180deg, #60c060 0%, #208020 100%); color: #004000; }
+  .btn-close { background: linear-gradient(180deg, #f06060 0%, #c02020 100%); color: #600000; }
+
+  /* Menu bar */
+  .menu-bar {
+    background: linear-gradient(180deg, #f0f4fc 0%, #dde8f8 100%);
+    height: 22px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border-bottom: 1px solid #aac0e0;
+    flex-shrink: 0;
+  }
+  .menu-item {
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #1a2a4a;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .menu-item:hover { background: var(--xp-blue-light); color: white; }
+
+  /* Address bar */
+  .addr-bar {
+    background: linear-gradient(180deg, #e8f0fc 0%, #d8e8f8 100%);
+    height: 26px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 8px;
+    border-bottom: 1px solid #aac0e0;
+    flex-shrink: 0;
+  }
+  .addr-label { font-size: 11px; color: #2a4a80; font-weight: 700; }
+  .addr-input {
+    flex: 1;
+    height: 18px;
+    border: 1px solid #88aacc;
+    border-radius: 2px;
+    padding: 0 6px;
+    font-size: 11px;
+    color: #1a2a4a;
+    background: #fff;
+    outline: none;
+  }
+
+  /* Content area with sidebar */
+  .content-wrap {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left sidebar / nav */
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #dce8f8 0%, #c8daf0 100%);
+    border-right: 1px solid #a8c0e0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 8px; }
+  .sidebar::-webkit-scrollbar-track { background: #c0d8f0; }
+  .sidebar::-webkit-scrollbar-thumb { background: #7098c8; border-radius: 4px; }
+
+  .sidebar-section {
+    border-bottom: 1px solid #a8c0e0;
+  }
+
+  .sidebar-section-title {
+    background: linear-gradient(180deg, #3a7ad8 0%, #1858c0 100%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    letter-spacing: 0.3px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #1a3060;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-bottom: 1px solid rgba(168,192,224,0.3);
+  }
+  .nav-item:hover { background: rgba(58,130,212,0.2); color: #1040a0; }
+  .nav-item.active { background: linear-gradient(90deg, rgba(58,130,212,0.4) 0%, rgba(58,130,212,0.1) 100%); color: #0a2870; font-weight: 700; border-left: 3px solid #1e5fa8; }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* Main dashboard content */
+  .dashboard {
+    flex: 1;
+    background: linear-gradient(135deg, #f0f6ff 0%, #e8f2ff 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+  }
+
+  .dashboard::-webkit-scrollbar { width: 10px; }
+  .dashboard::-webkit-scrollbar-track { background: #d8e8f8; }
+  .dashboard::-webkit-scrollbar-thumb { background: #7098c8; border-radius: 5px; }
+
+  /* Dashboard header */
+  .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(30,95,168,0.2);
+  }
+  .dash-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a3880;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .dash-subtitle { font-size: 11px; color: #5070a0; margin-top: 2px; }
+  .dash-date {
+    font-size: 11px;
+    color: #5070a0;
+    background: rgba(30,95,168,0.08);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(30,95,168,0.2);
+  }
+
+  /* Stat cards */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
+    border: 1px solid #b8d0f0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(30,95,168,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30,95,168,0.2), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 6px 6px 0 0;
+  }
+  .stat-card.blue::before { background: linear-gradient(90deg, #1e5fa8, #40a0ff); }
+  .stat-card.green::before { background: linear-gradient(90deg, #2a8a2a, #40dd40); }
+  .stat-card.orange::before { background: linear-gradient(90deg, #c06020, #f0a040); }
+  .stat-card.purple::before { background: linear-gradient(90deg, #6030a0, #c080ff); }
+
+  .stat-icon { font-size: 24px; margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 700; color: #1a2a5a; line-height: 1; }
+  .stat-label { font-size: 10px; color: #6080a8; margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .stat-change { font-size: 10px; margin-top: 4px; }
+  .stat-change.up { color: #208020; }
+  .stat-change.down { color: #a02020; }
+
+  /* Chart grid */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .chart-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+    border: 1px solid #b8d0f0;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(30,95,168,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  .panel-title-bar {
+    background: linear-gradient(180deg, #3a7ad8 0%, #1858c0 100%);
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .panel-title {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    letter-spacing: 0.3px;
+  }
+  .panel-badge {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+  .panel-body { padding: 10px; }
+
+  canvas { display: block; }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .data-table th {
+    background: linear-gradient(180deg, #dce8f8 0%, #ccd8f0 100%);
+    color: #1a3060;
+    padding: 5px 8px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid #a8c0e0;
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #e0ecf8;
+    color: #2a3a5a;
+  }
+  .data-table tr:hover td { background: rgba(58,130,212,0.08); }
+  .data-table tr:nth-child(even) td { background: rgba(220,232,248,0.3); }
+  .data-table tr:nth-child(even):hover td { background: rgba(58,130,212,0.08); }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .badge-success { background: #d0f0d0; color: #1a6020; border: 1px solid #90d890; }
+  .badge-warning { background: #fff0c0; color: #705010; border: 1px solid #d8b040; }
+  .badge-danger  { background: #f8d0d0; color: #801010; border: 1px solid #e08080; }
+  .badge-info    { background: #d0e8ff; color: #104070; border: 1px solid #80b8e8; }
+
+  /* Progress bars */
+  .progress-wrap { margin-bottom: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 10px; color: #3a5080; margin-bottom: 3px; }
+  .progress-bar { height: 10px; background: #d0e0f4; border-radius: 5px; overflow: hidden; border: 1px solid #b0c8e8; }
+  .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #1e5fa8 0%, #40a0ff 100%);
+    transition: width 1s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .progress-fill.green { background: linear-gradient(90deg, #2a8020 0%, #50d040 100%); }
+  .progress-fill.orange { background: linear-gradient(90deg, #c06020 0%, #f0a040 100%); }
+  .progress-fill.purple { background: linear-gradient(90deg, #6030a0 0%, #c080ff 100%); }
+
+  /* Activity list */
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #e0ecf8;
+    font-size: 11px;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activity-dot.blue { background: #3a82d4; }
+  .activity-dot.green { background: #40b840; }
+  .activity-dot.orange { background: #e08030; }
+  .activity-dot.red { background: #d04040; }
+  .activity-text { flex: 1; color: #2a3a5a; }
+  .activity-time { color: #8098b8; white-space: nowrap; }
+
+  /* ─── TASKBAR ─── */
+  #taskbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: var(--xp-taskbar);
+    border-top: 2px solid #4a8af8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* ─── START BUTTON ─── */
+  #start-btn {
+    height: 32px;
+    padding: 0 14px 0 10px;
+    background: linear-gradient(180deg, #60c050 0%, #3a9030 40%, #2a8020 60%, #3a9030 100%);
+    border: 1px solid #1a6010;
+    border-radius: 0 16px 16px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Tahoma', sans-serif;
+    font-style: italic;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    box-shadow: 0 0 8px rgba(80,200,60,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: filter 0.1s;
+    flex-shrink: 0;
+  }
+  #start-btn:hover { filter: brightness(1.1); box-shadow: 0 0 14px rgba(80,200,60,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+  #start-btn:active { filter: brightness(0.9); }
+  #start-btn .win-logo { font-size: 18px; }
+
+  /* Taskbar tasks area */
+  .taskbar-tasks {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .task-btn {
+    height: 28px;
+    padding: 0 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.1) 100%);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px;
+    color: #fff;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    font-family: 'Tahoma', sans-serif;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2);
+    transition: background 0.1s;
+  }
+  .task-btn:hover { background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.15) 100%); }
+  .task-btn.active { background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.1) 100%); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+
+  /* System tray */
+  .sys-tray {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    height: 100%;
+    background: linear-gradient(180deg, #1a50b0 0%, #1040a0 100%);
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  .tray-icon { font-size: 14px; cursor: pointer; opacity: 0.9; transition: opacity 0.1s; }
+  .tray-icon:hover { opacity: 1; }
+  .tray-clock {
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    padding: 0 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    cursor: default;
+  }
+
+  /* ─── START MENU ─── */
+  #start-menu {
+    position: absolute;
+    bottom: 42px;
+    left: 0;
+    width: 320px;
+    background: linear-gradient(180deg, #1e5fa8 0%, #1a52a0 6%, #f0f4fc 6%);
+    border: 1px solid #1040a0;
+    border-radius: 8px 8px 0 0;
+    box-shadow: var(--shadow-deep);
+    display: none;
+    z-index: 200;
+    overflow: hidden;
+    animation: menuPop 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #start-menu.open { display: flex; flex-direction: column; }
+
+  @keyframes menuPop {
+    from { transform: translateY(10px) scale(0.97); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .start-header {
+    background: linear-gradient(135deg, #1e5fa8 0%, #1a4a90 100%);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .user-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #40a0ff, #8060ff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .user-name { color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .user-role { color: rgba(255,255,255,0.7); font-size: 10px; }
+
+  .start-body {
+    display: flex;
+    flex: 1;
+  }
+
+  .start-left {
+    flex: 1;
+    padding: 6px 0;
+    background: #fff;
+    border-right: 1px solid #d0ddf0;
+  }
+  .start-right {
+    width: 130px;
+    background: linear-gradient(180deg, #dce8f8 0%, #ccd8f0 100%);
+    padding: 6px 0;
+  }
+
+  .sm-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .sm-item:hover { background: #1e5fa8; }
+  .sm-item:hover .sm-label, .sm-item:hover .sm-sub { color: #fff !important; }
+  .sm-icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
+  .sm-label { font-size: 12px; font-weight: 700; color: #1a2a4a; }
+  .sm-sub { font-size: 10px; color: #6080a8; }
+
+  .sm-divider { height: 1px; background: linear-gradient(90deg, transparent, #c0d0e8, transparent); margin: 4px 10px; }
+
+  .sm-right-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 11px;
+    color: #1a3060;
+    transition: background 0.1s;
+  }
+  .sm-right-item:hover { background: #1e5fa8; color: #fff; }
+  .sm-right-icon { font-size: 14px; width: 18px; text-align: center; }
+
+  .start-footer {
+    background: linear-gradient(180deg, #2a70d8 0%, #1858c0 100%);
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid #4a90f8;
+  }
+
+  .power-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    transition: filter 0.1s;
+    font-family: 'Tahoma', sans-serif;
+  }
+  .power-btn:hover { filter: brightness(1.2); }
+  .power-btn.shutdown { background: linear-gradient(180deg, #e06030 0%, #c04010 100%); }
+  .power-btn.restart { background: linear-gradient(180deg, #3a82d4 0%, #1860c0 100%); }
+  .power-btn.logoff { background: linear-gradient(180deg, #6030a0 0%, #402080 100%); }
+
+  /* Notification bubble */
+  #notify {
+    position: absolute;
+    bottom: 50px;
+    right: 16px;
+    background: #fffce0;
+    border: 1px solid #e0c060;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #3a3000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 300;
+    max-width: 220px;
+    animation: notifyIn 0.2s ease;
+  }
+  #notify::after {
+    content: '';
+    position: absolute;
+    bottom: -7px; right: 20px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #e0c060;
+  }
+  @keyframes notifyIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Scrollbar global */
+  ::-webkit-scrollbar { width: 16px; }
+  ::-webkit-scrollbar-track { background: #d0e0f0; border-left: 1px solid #b0c8e0; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #7098d0 0%, #5080c0 100%);
+    border: 1px solid #4070b0;
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #80a8e0 0%, #6090d0 100%); }
+  ::-webkit-scrollbar-button {
+    background: linear-gradient(180deg, #8ab0d8 0%, #6898c8 100%);
+    border: 1px solid #5080b8;
+    height: 16px;
+    display: block;
+  }
+
+  /* Tooltip */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffcc;
+    border: 1px solid #808060;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: #000;
+    white-space: nowrap;
+    border-radius: 2px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  /* Right click menu */
+  #ctx-menu {
+    position: absolute;
+    background: #f0f4fc;
+    border: 1px solid #8098c8;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+    padding: 2px;
+    display: none;
+    z-index: 500;
+    min-width: 160px;
+    border-radius: 3px;
+  }
+  #ctx-menu.show { display: block; animation: ctxIn 0.1s ease; }
+  @keyframes ctxIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  .ctx-item {
+    padding: 5px 24px 5px 8px;
+    font-size: 12px;
+    color: #1a2a4a;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .ctx-item:hover { background: #1e5fa8; color: #fff; }
+  .ctx-divider { height: 1px; background: #b8c8e0; margin: 2px 2px; }
+  .ctx-item.disabled { color: #a0a8b8; cursor: default; }
+  .ctx-item.disabled:hover { background: transparent; color: #a0a8b8; }
+
+  /* Responsive shrink */
+  @media (max-width: 900px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-row-2 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Desktop -->
+<div id="desktop" oncontextmenu="showCtxMenu(event)">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Desktop Icons -->
+  <div class="desktop-icons">
+    <div class="desk-icon" ondblclick="openWindow()" title="Dashboard">
+      <div class="icon-img">🖥️</div>
+      <span>Dashboard</span>
+    </div>
+    <div class="desk-icon" title="My Documents">
+      <div class="icon-img">📁</div>
+      <span>Documents</span>
+    </div>
+    <div class="desk-icon" title="Recycle Bin">
+      <div class="icon-img">🗑️</div>
+      <span>Recycle Bin</span>
+    </div>
+    <div class="desk-icon" title="Analytics">
+      <div class="icon-img">📊</div>
+      <span>Analytics</span>
+    </div>
+  </div>
+
+  <!-- Main Window -->
+  <div id="main-window">
+    <!-- Title Bar -->
+    <div class="title-bar">
+      <span class="title-bar-icon">📊</span>
+      <span class="title-bar-text">AeroPanel — Admin Dashboard</span>
+      <button class="title-btn btn-min" onclick="minimizeWindow()" title="Minimize">─</button>
+      <button class="title-btn btn-max" onclick="maximizeWindow()" title="Maximize">□</button>
+      <button class="title-btn btn-close" onclick="closeWindow()" title="Close">✕</button>
+    </div>
+
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+      <div class="menu-item">File</div>
+      <div class="menu-item">Edit</div>
+      <div class="menu-item">View</div>
+      <div class="menu-item">Favorites</div>
+      <div class="menu-item">Tools</div>
+      <div class="menu-item">Help</div>
+    </div>
+
+    <!-- Address Bar -->
+    <div class="addr-bar">
+      <span class="addr-label">Address</span>
+      <input class="addr-input" value="admin://localhost/dashboard" readonly>
+    </div>
+
+    <!-- Content -->
+    <div class="content-wrap">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">⚙ Admin Panel</div>
+          <div class="nav-item active" onclick="setActive(this)"><span class="nav-icon">📊</span> Dashboard</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">🗂</span> Projects</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">📄</span> Pages</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">📚</span> Books</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">🧪</span> Labs</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">👤 Account</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">👤</span> Profile</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">🔔</span> Notifications</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">⚙</span> Settings</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">🔧 System</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">📈</span> Reports</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">🛡</span> Security</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">💾</span> Backups</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">🔌 Quick Links</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">🌐</span> API Docs</div>
+          <div class="nav-item" onclick="setActive(this)"><span class="nav-icon">❓</span> Help Center</div>
+          <div class="nav-item" onclick="setActive(this)" style="color:#b03030"><span class="nav-icon">🚪</span> Logout</div>
+        </div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard" id="dashboard-content">
+        <!-- Header -->
+        <div class="dash-header">
+          <div>
+            <div class="dash-title">📊 Admin Dashboard</div>
+            <div class="dash-subtitle">Welcome back, Administrator · All systems operational</div>
+          </div>
+          <div class="dash-date" id="live-clock">Loading...</div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card blue">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value">24,891</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-change up">↑ 12.4% this month</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">$84,320</div>
+            <div class="stat-label">Revenue</div>
+            <div class="stat-change up">↑ 8.7% vs last month</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value">1,482</div>
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-change down">↓ 2.1% this week</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value">99.8%</div>
+            <div class="stat-label">Uptime</div>
+            <div class="stat-change up">↑ Stable</div>
+          </div>
+        </div>
+
+        <!-- Main Charts Row -->
+        <div class="chart-grid">
+          <div class="panel">
+            <div class="panel-title-bar">
+              <span class="panel-title">📈 Revenue & Users — Last 12 Months</span>
+              <span class="panel-badge">LIVE</span>
+            </div>
+            <div class="panel-body">
+              <canvas id="lineChart" height="160"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title-bar">
+              <span class="panel-title">🍩 Traffic Sources</span>
+            </div>
+            <div class="panel-body">
+              <canvas id="doughnutChart" height="160"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="chart-row-2">
+          <div class="panel">
+            <div class="panel-title-bar">
+              <span class="panel-title">📊 Weekly Activity</span>
+            </div>
+            <div class="panel-body">
+              <canvas id="barChart" height="160"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title-bar">
+              <span class="panel-title">🎯 Server Performance</span>
+            </div>
+            <div class="panel-body">
+              <div class="progress-wrap">
+                <div class="progress-label"><span>CPU Usage</span><span>62%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:62%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>Memory</span><span>78%</span></div>
+                <div class="progress-bar"><div class="progress-fill orange" style="width:78%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>Disk I/O</span><span>34%</span></div>
+                <div class="progress-bar"><div class="progress-fill green" style="width:34%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>Network</span><span>91%</span></div>
+                <div class="progress-bar"><div class="progress-fill purple" style="width:91%"></div></div>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-label"><span>Database</span><span>55%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:55%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title-bar">
+              <span class="panel-title">⚡ Recent Activity</span>
+            </div>
+            <div class="panel-body">
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text">New user registered: jdoe@example.com</div>
+                <div class="activity-time">2m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text">Deployment #482 completed</div>
+                <div class="activity-time">8m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot orange"></div>
+                <div class="activity-text">Memory alert: server-03 at 89%</div>
+                <div class="activity-time">15m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text">Backup completed successfully</div>
+                <div class="activity-time">1h ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot red"></div>
+                <div class="activity-text">Failed login attempt: 192.168.1.45</div>
+                <div class="activity-time">2h ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div class="activity-text">API key rotated for service-auth</div>
+                <div class="activity-time">3h ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="panel">
+          <div class="panel-title-bar">
+            <span class="panel-title">📋 Recent Projects</span>
+            <span class="panel-badge">8 TOTAL</span>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Project Name</th>
+                  <th>Manager</th>
+                  <th>Status</th>
+                  <th>Progress</th>
+                  <th>Deadline</th>
+                  <th>Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>001</td><td>🌐 AeroPanel Redesign</td><td>Alice K.</td><td><span class="badge badge-success">Active</span></td><td>74%</td><td>Mar 28</td><td><span class="badge badge-danger">High</span></td></tr>
+                <tr><td>002</td><td>📱 Mobile App v2</td><td>Bob M.</td><td><span class="badge badge-info">Review</span></td><td>91%</td><td>Mar 15</td><td><span class="badge badge-warning">Med</span></td></tr>
+                <tr><td>003</td><td>🗄 DB Migration</td><td>Carol P.</td><td><span class="badge badge-warning">Paused</span></td><td>45%</td><td>Apr 10</td><td><span class="badge badge-info">Low</span></td></tr>
+                <tr><td>004</td><td>🔐 Auth Service</td><td>Dan R.</td><td><span class="badge badge-success">Active</span></td><td>88%</td><td>Mar 20</td><td><span class="badge badge-danger">High</span></td></tr>
+                <tr><td>005</td><td>📊 Analytics Engine</td><td>Eve S.</td><td><span class="badge badge-success">Active</span></td><td>32%</td><td>May 01</td><td><span class="badge badge-warning">Med</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <!-- Start Button -->
+  <button id="start-btn" onclick="toggleStart(event)">
+    <span class="win-logo">⊞</span>
+    <span>start</span>
+  </button>
+
+  <!-- Quick Launch -->
+  <div style="display:flex;gap:3px;padding:0 4px;border-left:1px solid rgba(255,255,255,0.15);border-right:1px solid rgba(255,255,255,0.15);margin:0 4px;">
+    <div class="tray-icon" data-tip="Show Desktop" onclick="toggleDesktop()">🖥️</div>
+    <div class="tray-icon" data-tip="Internet Explorer">🌐</div>
+    <div class="tray-icon" data-tip="File Manager">📁</div>
+  </div>
+
+  <!-- Task Buttons -->
+  <div class="taskbar-tasks">
+    <div class="task-btn active" onclick="openWindow()">📊 Admin Dashboard</div>
+    <div class="task-btn">📁 Documents</div>
+    <div class="task-btn">📝 Notepad</div>
+  </div>
+
+  <!-- System Tray -->
+  <div class="sys-tray">
+    <div class="tray-icon" data-tip="Network Connected">🌐</div>
+    <div class="tray-icon" data-tip="Volume">🔊</div>
+    <div class="tray-icon" data-tip="Security">🛡</div>
+    <div class="tray-icon" data-tip="Notifications" onclick="showNotify()">🔔</div>
+    <div class="tray-clock" id="clock">12:00 PM</div>
+  </div>
+</div>
+
+<!-- Start Menu -->
+<div id="start-menu">
+  <div class="start-header">
+    <div class="user-avatar">👤</div>
+    <div>
+      <div class="user-name">Administrator</div>
+      <div class="user-role">Super Admin · Online</div>
+    </div>
+  </div>
+  <div class="start-body">
+    <div class="start-left">
+      <div class="sm-item" onclick="navTo('dashboard')">
+        <div class="sm-icon">📊</div>
+        <div><div class="sm-label">Dashboard</div><div class="sm-sub">Analytics overview</div></div>
+      </div>
+      <div class="sm-item" onclick="navTo('projects')">
+        <div class="sm-icon">🗂</div>
+        <div><div class="sm-label">Projects</div><div class="sm-sub">Manage projects</div></div>
+      </div>
+      <div class="sm-item" onclick="navTo('pages')">
+        <div class="sm-icon">📄</div>
+        <div><div class="sm-label">Pages</div><div class="sm-sub">CMS pages editor</div></div>
+      </div>
+      <div class="sm-item" onclick="navTo('books')">
+        <div class="sm-icon">📚</div>
+        <div><div class="sm-label">Books</div><div class="sm-sub">Library catalog</div></div>
+      </div>
+      <div class="sm-item" onclick="navTo('labs')">
+        <div class="sm-icon">🧪</div>
+        <div><div class="sm-label">Labs</div><div class="sm-sub">Experimental features</div></div>
+      </div>
+      <div class="sm-divider"></div>
+      <div class="sm-item" onclick="navTo('profile')">
+        <div class="sm-icon">👤</div>
+        <div><div class="sm-label">Profile</div><div class="sm-sub">Account settings</div></div>
+      </div>
+      <div class="sm-item" onclick="navTo('settings')">
+        <div class="sm-icon">⚙</div>
+        <div><div class="sm-label">Settings</div><div class="sm-sub">System preferences</div></div>
+      </div>
+    </div>
+    <div class="start-right">
+      <div class="sm-right-item"><span class="sm-right-icon">📁</span> Documents</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🖼</span> Pictures</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🎵</span> Music</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🖥</span> My Computer</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🌐</span> Network</div>
+      <div class="sm-right-item"><span class="sm-right-icon">⚙</span> Control Panel</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🖨</span> Printers</div>
+      <div class="sm-right-item"><span class="sm-right-icon">❓</span> Help</div>
+      <div class="sm-right-item"><span class="sm-right-icon">🔍</span> Search</div>
+      <div class="sm-right-item"><span class="sm-right-icon">▶</span> Run...</div>
+    </div>
+  </div>
+  <div class="start-footer">
+    <button class="power-btn logoff" onclick="logoff()">🔓 Log Off</button>
+    <button class="power-btn restart" onclick="restart()">🔄 Restart</button>
+    <button class="power-btn shutdown" onclick="shutdown()">⏻ Shut Down</button>
+  </div>
+</div>
+
+<!-- Notification Bubble -->
+<div id="notify">
+  🔔 <strong>System Alert</strong><br>
+  Memory usage above 80% on server-03.<br>
+  <span style="color:#8080a0;font-size:10px">Click to view details</span>
+</div>
+
+<!-- Context Menu -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="hideCtx()">🔄 Refresh</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="hideCtx()">🖼 Change Background</div>
+  <div class="ctx-item" onclick="hideCtx()">⚙ Display Settings</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="hideCtx()">📊 New Widget</div>
+  <div class="ctx-item disabled">✂ Paste (clipboard empty)</div>
+</div>
+
+<script>
+// Clock
+function tick() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const d = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('clock').textContent = t;
+  document.getElementById('live-clock').textContent = d + ' · ' + t;
+}
+tick();
+setInterval(tick, 1000);
+
+// Start menu
+function toggleStart(e) {
+  e.stopPropagation();
+  const m = document.getElementById('start-menu');
+  m.classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('start-menu').classList.remove('open');
+  document.getElementById('ctx-menu').classList.remove('show');
+});
+
+// Window ops
+function openWindow() {
+  const w = document.getElementById('main-window');
+  w.style.display = 'flex';
+  w.style.animation = 'none';
+  requestAnimationFrame(() => { w.style.animation = 'windowOpen 0.25s cubic-bezier(0.34,1.56,0.64,1)'; });
+}
+function closeWindow() {
+  document.getElementById('main-window').style.display = 'none';
+}
+let isMin = false;
+function minimizeWindow() {
+  const w = document.getElementById('main-window');
+  isMin = !isMin;
+  w.style.display = isMin ? 'none' : 'flex';
+}
+let isMax = false;
+function maximizeWindow() {
+  const w = document.getElementById('main-window');
+  isMax = !isMax;
+  if (isMax) {
+    w.style.top='0'; w.style.left='0'; w.style.width='100vw'; w.style.height='calc(100vh - 40px)'; w.style.borderRadius='0';
+  } else {
+    w.style.top='30px'; w.style.left='90px'; w.style.width='calc(100vw - 110px)'; w.style.height='calc(100vh - 82px)'; w.style.borderRadius='8px 8px 4px 4px';
+  }
+}
+function toggleDesktop() {
+  const w = document.getElementById('main-window');
+  w.style.display = w.style.display === 'none' ? 'flex' : 'none';
+}
+
+// Nav
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+function navTo(page) {
+  document.getElementById('start-menu').classList.remove('open');
+  openWindow();
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().toLowerCase().includes(page)) {
+      n.classList.add('active');
+    } else {
+      n.classList.remove('active');
+    }
+  });
+}
+
+// Power ops
+function logoff() { alert('Logging off...'); document.getElementById('start-menu').classList.remove('open'); }
+function restart() { location.reload(); }
+function shutdown() { document.body.innerHTML = '<div style="background:#000;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Tahoma,sans-serif;font-size:18px">Windows is shutting down...</div>'; }
+
+// Notification
+function showNotify() {
+  const n = document.getElementById('notify');
+  n.style.display = 'block';
+  setTimeout(() => { n.style.display = 'none'; }, 4000);
+}
+
+// Context menu
+function showCtxMenu(e) {
+  e.preventDefault();
+  const m = document.getElementById('ctx-menu');
+  m.style.left = Math.min(e.clientX, window.innerWidth - 170) + 'px';
+  m.style.top = Math.min(e.clientY, window.innerHeight - 120) + 'px';
+  m.classList.add('show');
+}
+function hideCtx() { document.getElementById('ctx-menu').classList.remove('show'); }
+
+// ─── Charts ───
+const chartDefaults = {
+  font: { family: "'Tahoma', sans-serif", size: 10 },
+  color: '#4060a0'
+};
+Chart.defaults.font = chartDefaults.font;
+Chart.defaults.color = chartDefaults.color;
+
+const months = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+const revenueData = [48,52,61,58,70,68,80,75,84,79,88,84];
+const usersData   = [14,16,18,17,21,22,25,23,26,24,27,25];
+
+// Line chart
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [
+      {
+        label: 'Revenue ($k)',
+        data: revenueData,
+        borderColor: '#1e5fa8',
+        backgroundColor: 'rgba(30,95,168,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#1e5fa8',
+        pointRadius: 3,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Users (k)',
+        data: usersData,
+        borderColor: '#e06030',
+        backgroundColor: 'rgba(224,96,48,0.05)',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.4,
+        pointBackgroundColor: '#e06030',
+        pointRadius: 3,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } } },
+    scales: {
+      y: { ticks: { callback: v => '$' + v + 'k' }, grid: { color: 'rgba(0,0,0,0.06)' } },
+      y1: { position: 'right', ticks: { callback: v => v + 'k' }, grid: { display: false } }
+    }
+  }
+});
+
+// Doughnut
+new Chart(document.getElementById('doughnutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Organic', 'Direct', 'Referral', 'Social', 'Email'],
+    datasets: [{
+      data: [35, 25, 18, 14, 8],
+      backgroundColor: ['#1e5fa8','#3a9030','#e06030','#8030a0','#30a0a0'],
+      borderColor: '#f0f4fc',
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } }
+    },
+    cutout: '65%'
+  }
+});
+
+// Bar chart
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets: [
+      {
+        label: 'Sessions',
+        data: [820, 960, 740, 1100, 980, 450, 380],
+        backgroundColor: 'rgba(30,95,168,0.75)',
+        borderColor: '#1e5fa8',
+        borderWidth: 1,
+        borderRadius: 3
+      },
+      {
+        label: 'Conversions',
+        data: [120, 145, 98, 168, 142, 72, 55],
+        backgroundColor: 'rgba(58,144,48,0.75)',
+        borderColor: '#3a9030',
+        borderWidth: 1,
+        borderRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: 'rgba(0,0,0,0.06)' } }
+    }
+  }
+});
+</script>
+</body>
+</html>

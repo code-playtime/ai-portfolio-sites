@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroPanel — Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tahoma&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bar-h: 38px;
+  --sidebar-w: 210px;
+  --blue: #1a56b0;
+  --title-grad: linear-gradient(180deg, #4a9cf8 0%, #1650c8 10%, #1248b8 50%, #154ec0 90%, #4a9cf8 100%);
+  --section-grad: linear-gradient(180deg, #3a7ed8 0%, #1450b8 100%);
+  --content-bg: #e8f0fa;
+  --panel-bg: #fff;
+  --panel-border: #b0c8e8;
+  --text: #1a2a4a;
+  --text-muted: #5a78a8;
+  --shadow: 0 2px 8px rgba(10,30,80,0.13);
+}
+
+html, body { height: 100%; font-family: 'Tahoma','Segoe UI',sans-serif; font-size: 12px; background: #1a3a6a; overflow: hidden; }
+
+/* ── SHELL ── */
+#shell { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── TITLE BAR ── */
+#title-bar {
+  height: 28px; background: var(--title-grad);
+  display: flex; align-items: center; padding: 0 8px; gap: 8px;
+  border-bottom: 1px solid #6aaaf8; flex-shrink: 0;
+}
+#title-bar .win-icon { font-size: 14px; }
+#title-bar .title-text { flex: 1; color: #fff; font-size: 12px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.tb-btn { width: 22px; height: 20px; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; transition: filter .1s; font-family: 'Tahoma',sans-serif; }
+.tb-btn:hover { filter: brightness(1.15); }
+.tb-min { background: linear-gradient(180deg,#f0c860,#c89020); color: #5a3a00; }
+.tb-max { background: linear-gradient(180deg,#60c860,#208020); color: #003a00; }
+.tb-cls { background: linear-gradient(180deg,#f86060,#c82020); color: #5a0000; }
+
+/* ── BODY ── */
+#body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: linear-gradient(180deg,#d6e8fb,#bcd4f5);
+  border-right: 1px solid #a8c4e8;
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  transition: transform .22s ease;
+}
+#sidebar::-webkit-scrollbar { width: 7px; }
+#sidebar::-webkit-scrollbar-track { background: #c0d8f0; }
+#sidebar::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#6a9ad8,#4a7ab8); border-radius: 4px; }
+
+.sb-section { border-bottom: 1px solid #a8c4e8; }
+.sb-heading { background: var(--section-grad); color: #fff; font-size: 11px; font-weight: 700; padding: 5px 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+.sb-item { display: flex; align-items: center; gap: 9px; padding: 7px 12px; color: var(--text); cursor: pointer; border-bottom: 1px solid rgba(168,196,232,0.25); transition: background .12s; }
+.sb-item:hover { background: rgba(26,86,176,0.13); }
+.sb-item.active { background: linear-gradient(90deg,rgba(26,86,176,0.22),rgba(26,86,176,0.05)); color: #0a2060; font-weight: 700; border-left: 3px solid var(--blue); padding-left: 9px; }
+.sb-item .ic { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.sb-user { margin-top: auto; padding: 10px 12px; background: linear-gradient(180deg,rgba(26,86,176,0.12),rgba(26,86,176,0.2)); border-top: 1px solid #a8c4e8; display: flex; align-items: center; gap: 9px; }
+.sb-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,#3a80f8,#8050e8); display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid rgba(255,255,255,0.6); flex-shrink: 0; }
+.sb-uname { font-size: 12px; font-weight: 700; color: #0a2060; }
+.sb-urole { font-size: 10px; color: #5070a0; }
+
+/* ── SIDEBAR OVERLAY (mobile) ── */
+#sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 49; }
+#sidebar-overlay.show { display: block; }
+
+/* ── CONTENT ── */
+#content { flex: 1; background: var(--content-bg); overflow-y: auto; overflow-x: hidden; min-width: 0; }
+#content::-webkit-scrollbar { width: 12px; }
+#content::-webkit-scrollbar-track { background: #ccddf0; }
+#content::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#6a9ad8,#4a7ab8); border: 1px solid #3a6aa8; }
+#content::-webkit-scrollbar-button { background: linear-gradient(180deg,#8ab0d8,#6890c8); border: 1px solid #5a80b8; height: 12px; }
+
+/* ── ADDRESS / BREADCRUMB BAR ── */
+#addr-bar {
+  background: linear-gradient(180deg,#e4eefc,#d8e8f8);
+  border-bottom: 1px solid #b0c8e8;
+  height: auto; min-height: 26px;
+  display: flex; align-items: center; flex-wrap: wrap;
+  padding: 3px 8px; gap: 4px;
+  position: sticky; top: 0; z-index: 10;
+}
+.addr-label { font-size: 11px; color: #2a4a80; font-weight: 700; flex-shrink: 0; }
+.breadcrumb { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.bc-sep { font-size: 10px; color: #90a8cc; }
+.bc-crumb {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+  border: 1px solid; cursor: pointer; transition: filter .1s;
+}
+.bc-crumb:hover { filter: brightness(0.92); }
+.bc-crumb.root { background: #dce8fa; color: #1a3878; border-color: #a0bce0; }
+.bc-crumb.section { background: #c8daf4; color: #122a68; border-color: #8aaad8; }
+.bc-crumb.current { background: linear-gradient(90deg,#1a56b0,#2d7be8); color: #fff; border-color: #1040a0; cursor: default; }
+.bc-crumb.current:hover { filter: none; }
+
+/* ── HAMBURGER (mobile) ── */
+#hamburger {
+  display: none; align-items: center; justify-content: center;
+  width: 26px; height: 22px; cursor: pointer;
+  flex-direction: column; gap: 4px; margin-right: 4px; flex-shrink: 0;
+}
+#hamburger span { display: block; width: 18px; height: 2px; background: #1a3878; border-radius: 2px; }
+
+/* ── TASKBAR ── */
+#taskbar {
+  height: var(--bar-h);
+  background: linear-gradient(180deg,#2a6ee0,#1a50b8 45%,#1448b0);
+  border-top: 2px solid #4a92f8;
+  display: flex; align-items: center; gap: 3px; padding: 0 4px;
+  flex-shrink: 0; z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,40,0.4);
+}
+
+#start-btn {
+  height: 30px; padding: 0 14px 0 10px;
+  background: linear-gradient(180deg,#68c850,#3a9030 40%,#2a8020 60%,#3a9030);
+  border: 1px solid #1a6010; border-radius: 0 15px 15px 0;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 900; font-style: italic;
+  color: #fff; font-family: 'Tahoma',sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px rgba(80,210,60,0.35), inset 0 1px 0 rgba(255,255,255,0.28);
+  transition: filter .1s; flex-shrink: 0;
+}
+#start-btn:hover { filter: brightness(1.1); }
+#start-btn:active { filter: brightness(0.92); }
+
+.tb-divider { width: 1px; height: 28px; background: linear-gradient(180deg,transparent,rgba(255,255,255,0.3),transparent); margin: 0 3px; flex-shrink: 0; }
+
+.tb-active-page {
+  height: 27px; padding: 0 10px; min-width: 0;
+  background: linear-gradient(180deg,rgba(0,0,0,0.18),rgba(255,255,255,0.08));
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 3px;
+  color: #fff; font-size: 11px; display: flex; align-items: center; gap: 5px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+  font-family: 'Tahoma',sans-serif; flex-shrink: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.sys-tray {
+  margin-left: auto; display: flex; align-items: center; gap: 5px;
+  padding: 0 8px; height: 100%;
+  background: linear-gradient(180deg,#1a50b0,#1040a0);
+  border-left: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+.tray-ic { font-size: 14px; cursor: pointer; opacity: 0.85; transition: opacity .1s; }
+.tray-ic:hover { opacity: 1; }
+.tray-clock { color: #fff; font-size: 11px; cursor: default; text-shadow: 0 1px 2px rgba(0,0,0,0.4); white-space: nowrap; }
+
+/* ── START MENU ── */
+#start-menu {
+  position: fixed; bottom: var(--bar-h); left: 0;
+  width: 260px; background: #fff;
+  border: 1px solid #1040a0; border-radius: 8px 8px 0 0;
+  box-shadow: 4px -2px 20px rgba(0,0,50,0.45);
+  display: none; flex-direction: column; z-index: 999; overflow: hidden;
+}
+#start-menu.open { display: flex; animation: smPop .15s cubic-bezier(.34,1.56,.64,1); }
+@keyframes smPop { from{transform:translateY(12px) scale(.97);opacity:0} to{transform:none;opacity:1} }
+
+.sm-head {
+  background: linear-gradient(135deg,#1e60b8,#1448a0);
+  padding: 10px 14px; display: flex; align-items: center; gap: 11px;
+}
+.sm-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#40a0ff,#8060e8); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid rgba(255,255,255,0.45); flex-shrink: 0; }
+.sm-uname { color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.sm-urole { color: rgba(255,255,255,0.65); font-size: 10px; margin-top: 1px; }
+
+/* Single-column menu list */
+.sm-list { padding: 5px 0; }
+.sm-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 14px; cursor: pointer; transition: background .1s;
+}
+.sm-item:hover { background: var(--blue); }
+.sm-item:hover .sm-label, .sm-item:hover .sm-sub { color: #fff !important; }
+.sm-item .sm-ic { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+.sm-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.sm-sub { font-size: 10px; color: #6080a8; }
+.sm-sep { height: 1px; background: linear-gradient(90deg,transparent,#c0d0e8,transparent); margin: 4px 10px; }
+
+.sm-footer {
+  background: linear-gradient(180deg,#2a70d8,#1858c0);
+  display: flex; justify-content: flex-end; gap: 4px;
+  padding: 6px 8px; border-top: 1px solid #4a90f8;
+}
+.pow-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 3px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.28); color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4); transition: filter .1s;
+  font-family: 'Tahoma',sans-serif;
+}
+.pow-btn:hover { filter: brightness(1.18); }
+.pow-logoff  { background: linear-gradient(180deg,#7040c0,#4020a0); }
+.pow-restart { background: linear-gradient(180deg,#3a82d4,#1860c0); }
+.pow-shut    { background: linear-gradient(180deg,#e06030,#c04010); }
+
+/* ════════════════════════════
+   PAGE STYLES
+════════════════════════════ */
+.page { display: none; padding: 16px; animation: pgIn .18s ease; }
+.page.active { display: block; }
+@keyframes pgIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+
+.pg-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid rgba(26,86,176,0.18); }
+.pg-title { font-size: 17px; font-weight: 700; color: #0e2860; text-shadow: 0 1px 0 rgba(255,255,255,0.8); }
+.pg-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.pg-meta { font-size: 10px; color: var(--text-muted); background: rgba(26,86,176,0.08); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(26,86,176,0.18); white-space: nowrap; }
+
+.panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 5px; overflow: hidden; box-shadow: var(--shadow),inset 0 1px 0 rgba(255,255,255,0.9); margin-bottom: 12px; }
+.panel-bar { background: var(--section-grad); padding: 5px 11px; display: flex; align-items: center; justify-content: space-between; }
+.panel-title { color: #fff; font-size: 11px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.35); }
+.panel-tag { background: rgba(255,255,255,0.18); color: #fff; font-size: 9px; padding: 1px 7px; border-radius: 3px; }
+.panel-body { padding: 12px; }
+
+/* grids */
+.g4  { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 12px; }
+.g21 { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 12px; }
+.g3  { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
+.g2  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+/* stat card */
+.stat { background: linear-gradient(180deg,#fff,#f4f8ff); border: 1px solid var(--panel-border); border-radius: 5px; padding: 12px 13px; box-shadow: var(--shadow),inset 0 1px 0 rgba(255,255,255,0.9); position: relative; overflow: hidden; cursor: default; transition: transform .13s,box-shadow .13s; }
+.stat:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(26,86,176,0.18); }
+.stat::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; border-radius:5px 5px 0 0; }
+.stat.c1::before{background:linear-gradient(90deg,#1e5fa8,#40a0ff)}
+.stat.c2::before{background:linear-gradient(90deg,#2a8a20,#50e040)}
+.stat.c3::before{background:linear-gradient(90deg,#c06020,#f0a040)}
+.stat.c4::before{background:linear-gradient(90deg,#6030a0,#c080ff)}
+.stat .s-ic { font-size: 20px; margin-bottom: 5px; }
+.stat .s-val { font-size: 20px; font-weight: 700; color: #0e2050; line-height: 1; }
+.stat .s-lbl { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+.stat .s-chg { font-size: 10px; margin-top: 3px; }
+.s-chg.up{color:#1a6018} .s-chg.dn{color:#901010}
+
+/* progress */
+.prg-row { margin-bottom: 8px; }
+.prg-lbl { display: flex; justify-content: space-between; font-size: 10px; color: #3a5080; margin-bottom: 3px; }
+.prg-track { height: 10px; background: #cfe0f4; border-radius: 5px; overflow: hidden; border: 1px solid #b0c8e4; }
+.prg-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg,#1e5fa8,#40a0ff); position: relative; overflow: hidden; transition: width 1.1s ease; }
+.prg-fill::after { content:''; position:absolute; inset:0; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent); animation: shim 2s infinite; }
+@keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.prg-fill.g{background:linear-gradient(90deg,#208020,#50d050)}
+.prg-fill.o{background:linear-gradient(90deg,#b85820,#f09840)}
+.prg-fill.p{background:linear-gradient(90deg,#5828a0,#b870ff)}
+
+/* activity */
+.act-item { display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #e0ecf8;font-size:11px; }
+.act-item:last-child{border:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.act-dot.b{background:#3a82d4}.act-dot.g{background:#40b840}.act-dot.o{background:#e08030}.act-dot.r{background:#d04040}
+.act-txt{flex:1;color:#2a3a5a}.act-t{color:#8098b8;white-space:nowrap;font-size:10px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:linear-gradient(180deg,#dce8f8,#ccd8f0);color:#1a3060;padding:5px 8px;text-align:left;font-weight:700;border-bottom:2px solid #a8c0e0;white-space:nowrap}
+.tbl td{padding:5px 8px;border-bottom:1px solid #e0ecf8;color:#2a3a5a}
+.tbl tr:hover td{background:rgba(26,86,176,0.06)}
+.tbl tr:nth-child(even) td{background:rgba(220,232,248,0.28)}
+.tbl-wrap{overflow-x:auto}
+
+/* badges */
+.bdg{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700}
+.bdg-s{background:#d0f0d0;color:#1a6020;border:1px solid #90d890}
+.bdg-w{background:#fff0c0;color:#705010;border:1px solid #d8b040}
+.bdg-d{background:#f8d0d0;color:#801010;border:1px solid #e08080}
+.bdg-i{background:#d0e8ff;color:#104070;border:1px solid #80b8e8}
+
+/* placeholder */
+.pg-placeholder{max-width:480px;margin:40px auto;text-align:center;padding:36px 28px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:6px;box-shadow:var(--shadow)}
+.pg-placeholder .ph-ic{font-size:48px;margin-bottom:12px}
+.pg-placeholder h2{font-size:15px;color:#0e2860;margin-bottom:8px}
+.pg-placeholder p{font-size:11px;color:var(--text-muted);line-height:1.7}
+
+/* button */
+.btn-xp{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;background:linear-gradient(180deg,#f0f4fc,#dde8f8);border:1px solid #a0b8d8;border-radius:3px;font-size:11px;color:#1a3060;cursor:pointer;font-family:'Tahoma',sans-serif;box-shadow:0 1px 3px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.9);transition:background .1s}
+.btn-xp:hover{background:linear-gradient(180deg,#e0ecff,#ccdcf4)}
+
+/* profile */
+.profile-card{background:linear-gradient(180deg,#fff,#f4f8ff);border:1px solid var(--panel-border);border-radius:6px;padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.profile-av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#3a80f8,#8050e8);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;border:3px solid rgba(255,255,255,0.7);box-shadow:0 3px 10px rgba(26,86,176,0.25)}
+.profile-info h2{font-size:15px;color:#0e2060}
+.profile-info p{font-size:11px;color:var(--text-muted);margin-top:2px}
+.profile-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.ptag{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;background:rgba(26,86,176,0.1);color:#1a3a80;border:1px solid rgba(26,86,176,0.2)}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 210px; }
+
+  /* Sidebar slides in from left on mobile */
+  #sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 50; transform: translateX(-100%);
+    box-shadow: 3px 0 16px rgba(0,0,40,0.35);
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  #hamburger { display: flex; }
+
+  /* Title bar: hide text label on small screens */
+  #title-bar .title-text { font-size: 11px; }
+
+  /* Compact addr bar */
+  #addr-bar { padding: 3px 6px; }
+
+  /* Grids collapse */
+  .g4  { grid-template-columns: repeat(2,1fr); }
+  .g21 { grid-template-columns: 1fr; }
+  .g3  { grid-template-columns: 1fr; }
+  .g2  { grid-template-columns: 1fr; }
+
+  /* Page padding */
+  .page { padding: 10px; }
+
+  /* Taskbar compact */
+  .tray-ic:not(:last-child) { display: none; }
+  .tb-divider { display: none; }
+
+  /* Start menu full-width */
+  #start-menu { width: 100%; border-radius: 8px 8px 0 0; }
+
+  /* Stat cards compact */
+  .stat .s-val { font-size: 17px; }
+  .stat .s-ic  { font-size: 17px; }
+
+  /* Tables scroll */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 420px) {
+  .g4 { grid-template-columns: 1fr 1fr; gap: 7px; }
+  #title-bar .win-icon { display: none; }
+  .tb-active-page { font-size: 10px; padding: 0 7px; }
+  .tray-clock { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+<div id="shell">
+
+  <!-- TITLE BAR -->
+  <div id="title-bar">
+    <span class="win-icon">📊</span>
+    <span class="title-text">AeroPanel — Admin Dashboard</span>
+    <button class="tb-btn tb-min" title="Minimize">─</button>
+    <button class="tb-btn tb-max" title="Maximize">□</button>
+    <button class="tb-btn tb-cls" title="Close">✕</button>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- Sidebar overlay (mobile tap-to-close) -->
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sb-section">
+        <div class="sb-heading">⚙ Admin Panel</div>
+        <div class="sb-item active" onclick="nav(this,'dashboard')"><span class="ic">📊</span> Dashboard</div>
+        <div class="sb-item" onclick="nav(this,'projects')"><span class="ic">🗂</span> Projects</div>
+        <div class="sb-item" onclick="nav(this,'pages')"><span class="ic">📄</span> Pages</div>
+        <div class="sb-item" onclick="nav(this,'books')"><span class="ic">📚</span> Books</div>
+        <div class="sb-item" onclick="nav(this,'labs')"><span class="ic">🧪</span> Labs</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-heading">👤 Account</div>
+        <div class="sb-item" onclick="nav(this,'profile')"><span class="ic">👤</span> Profile</div>
+        <div class="sb-item" onclick="nav(this,'notifications')"><span class="ic">🔔</span> Notifications</div>
+        <div class="sb-item" onclick="nav(this,'settings')"><span class="ic">⚙</span> Settings</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-heading">🔧 System</div>
+        <div class="sb-item" onclick="nav(this,'reports')"><span class="ic">📈</span> Reports</div>
+        <div class="sb-item" onclick="nav(this,'security')"><span class="ic">🛡</span> Security</div>
+        <div class="sb-item" onclick="nav(this,'backups')"><span class="ic">💾</span> Backups</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-heading">🔌 More</div>
+        <div class="sb-item" onclick="nav(this,'help')"><span class="ic">❓</span> Help Center</div>
+        <div class="sb-item" onclick="nav(this,'logout')" style="color:#901010"><span class="ic">🚪</span> Logout</div>
+      </div>
+      <div class="sb-user">
+        <div class="sb-avatar">👤</div>
+        <div>
+          <div class="sb-uname">Administrator</div>
+          <div class="sb-urole">Super Admin · Online</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content">
+
+      <!-- ADDRESS BAR with breadcrumb badges -->
+      <div id="addr-bar">
+        <div id="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></div>
+        <span class="addr-label">📂</span>
+        <div class="breadcrumb" id="breadcrumb">
+          <span class="bc-crumb root" onclick="nav(null,'dashboard')">⊞ AeroPanel</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-crumb section">Admin</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-crumb current" id="bc-current">📊 Dashboard</span>
+        </div>
+      </div>
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="page active" id="pg-dashboard">
+        <div class="pg-header">
+          <div>
+            <div class="pg-title">📊 Dashboard</div>
+            <div class="pg-sub">Welcome back, Administrator · All systems operational</div>
+          </div>
+          <div class="pg-meta" id="live-clock">—</div>
+        </div>
+        <div class="g4">
+          <div class="stat c1"><div class="s-ic">👥</div><div class="s-val">24,891</div><div class="s-lbl">Total Users</div><div class="s-chg up">↑ 12.4% this month</div></div>
+          <div class="stat c2"><div class="s-ic">💰</div><div class="s-val">$84,320</div><div class="s-lbl">Revenue</div><div class="s-chg up">↑ 8.7% last month</div></div>
+          <div class="stat c3"><div class="s-ic">📦</div><div class="s-val">1,482</div><div class="s-lbl">Active Projects</div><div class="s-chg dn">↓ 2.1% this week</div></div>
+          <div class="stat c4"><div class="s-ic">⚡</div><div class="s-val">99.8%</div><div class="s-lbl">Uptime</div><div class="s-chg up">↑ Stable</div></div>
+        </div>
+        <div class="g21">
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">📈 Revenue & Users — Last 12 Months</span><span class="panel-tag">LIVE</span></div>
+            <div class="panel-body"><canvas id="lineChart" height="150"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">🍩 Traffic Sources</span></div>
+            <div class="panel-body"><canvas id="doughnutChart" height="150"></canvas></div>
+          </div>
+        </div>
+        <div class="g3">
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">📊 Weekly Activity</span></div>
+            <div class="panel-body"><canvas id="barChart" height="150"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">🎯 Server Performance</span></div>
+            <div class="panel-body">
+              <div class="prg-row"><div class="prg-lbl"><span>CPU Usage</span><span>62%</span></div><div class="prg-track"><div class="prg-fill" style="width:62%"></div></div></div>
+              <div class="prg-row"><div class="prg-lbl"><span>Memory</span><span>78%</span></div><div class="prg-track"><div class="prg-fill o" style="width:78%"></div></div></div>
+              <div class="prg-row"><div class="prg-lbl"><span>Disk I/O</span><span>34%</span></div><div class="prg-track"><div class="prg-fill g" style="width:34%"></div></div></div>
+              <div class="prg-row"><div class="prg-lbl"><span>Network</span><span>91%</span></div><div class="prg-track"><div class="prg-fill p" style="width:91%"></div></div></div>
+              <div class="prg-row"><div class="prg-lbl"><span>Database</span><span>55%</span></div><div class="prg-track"><div class="prg-fill" style="width:55%"></div></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">⚡ Recent Activity</span></div>
+            <div class="panel-body">
+              <div class="act-item"><div class="act-dot b"></div><div class="act-txt">New user: jdoe@example.com</div><div class="act-t">2m</div></div>
+              <div class="act-item"><div class="act-dot g"></div><div class="act-txt">Deployment #482 completed</div><div class="act-t">8m</div></div>
+              <div class="act-item"><div class="act-dot o"></div><div class="act-txt">Memory alert: server-03 89%</div><div class="act-t">15m</div></div>
+              <div class="act-item"><div class="act-dot g"></div><div class="act-txt">Backup completed (2.4 GB)</div><div class="act-t">1h</div></div>
+              <div class="act-item"><div class="act-dot r"></div><div class="act-txt">Failed login: 192.168.1.45</div><div class="act-t">2h</div></div>
+              <div class="act-item"><div class="act-dot b"></div><div class="act-txt">API key rotated: service-auth</div><div class="act-t">3h</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="panel-title">📋 Recent Projects</span><span class="panel-tag">5 SHOWN</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>#</th><th>Project</th><th>Manager</th><th>Status</th><th>Progress</th><th>Deadline</th><th>Priority</th></tr></thead>
+              <tbody>
+                <tr><td>001</td><td>🌐 AeroPanel Redesign</td><td>Alice K.</td><td><span class="bdg bdg-s">Active</span></td><td>74%</td><td>Mar 28</td><td><span class="bdg bdg-d">High</span></td></tr>
+                <tr><td>002</td><td>📱 Mobile App v2</td><td>Bob M.</td><td><span class="bdg bdg-i">Review</span></td><td>91%</td><td>Mar 15</td><td><span class="bdg bdg-w">Med</span></td></tr>
+                <tr><td>003</td><td>🗄 DB Migration</td><td>Carol P.</td><td><span class="bdg bdg-w">Paused</span></td><td>45%</td><td>Apr 10</td><td><span class="bdg bdg-i">Low</span></td></tr>
+                <tr><td>004</td><td>🔐 Auth Service</td><td>Dan R.</td><td><span class="bdg bdg-s">Active</span></td><td>88%</td><td>Mar 20</td><td><span class="bdg bdg-d">High</span></td></tr>
+                <tr><td>005</td><td>📊 Analytics Engine</td><td>Eve S.</td><td><span class="bdg bdg-s">Active</span></td><td>32%</td><td>May 01</td><td><span class="bdg bdg-w">Med</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PROJECTS ══ -->
+      <div class="page" id="pg-projects">
+        <div class="pg-header">
+          <div><div class="pg-title">🗂 Projects</div><div class="pg-sub">All active and archived projects</div></div>
+          <button class="btn-xp">＋ New Project</button>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="panel-title">All Projects</span><span class="panel-tag">8 TOTAL</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>#</th><th>Project</th><th>Manager</th><th>Team</th><th>Status</th><th>Progress</th><th>Start</th><th>Deadline</th><th>Priority</th></tr></thead>
+              <tbody>
+                <tr><td>001</td><td>🌐 AeroPanel Redesign</td><td>Alice K.</td><td>5</td><td><span class="bdg bdg-s">Active</span></td><td>74%</td><td>Jan 10</td><td>Mar 28</td><td><span class="bdg bdg-d">High</span></td></tr>
+                <tr><td>002</td><td>📱 Mobile App v2</td><td>Bob M.</td><td>4</td><td><span class="bdg bdg-i">Review</span></td><td>91%</td><td>Nov 01</td><td>Mar 15</td><td><span class="bdg bdg-w">Med</span></td></tr>
+                <tr><td>003</td><td>🗄 DB Migration</td><td>Carol P.</td><td>3</td><td><span class="bdg bdg-w">Paused</span></td><td>45%</td><td>Feb 01</td><td>Apr 10</td><td><span class="bdg bdg-i">Low</span></td></tr>
+                <tr><td>004</td><td>🔐 Auth Service</td><td>Dan R.</td><td>2</td><td><span class="bdg bdg-s">Active</span></td><td>88%</td><td>Jan 20</td><td>Mar 20</td><td><span class="bdg bdg-d">High</span></td></tr>
+                <tr><td>005</td><td>📊 Analytics Engine</td><td>Eve S.</td><td>6</td><td><span class="bdg bdg-s">Active</span></td><td>32%</td><td>Mar 01</td><td>May 01</td><td><span class="bdg bdg-w">Med</span></td></tr>
+                <tr><td>006</td><td>🎨 Design System</td><td>Frank L.</td><td>3</td><td><span class="bdg bdg-s">Active</span></td><td>60%</td><td>Feb 15</td><td>Apr 30</td><td><span class="bdg bdg-w">Med</span></td></tr>
+                <tr><td>007</td><td>🛒 E-commerce v3</td><td>Grace T.</td><td>8</td><td><span class="bdg bdg-i">Review</span></td><td>98%</td><td>Oct 01</td><td>Mar 12</td><td><span class="bdg bdg-d">High</span></td></tr>
+                <tr><td>008</td><td>📧 Email Service</td><td>Henry B.</td><td>2</td><td><span class="bdg bdg-w">Paused</span></td><td>20%</td><td>Mar 05</td><td>Jun 01</td><td><span class="bdg bdg-i">Low</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAGES ══ -->
+      <div class="page" id="pg-pages">
+        <div class="pg-header">
+          <div><div class="pg-title">📄 Pages</div><div class="pg-sub">CMS page management</div></div>
+          <button class="btn-xp">＋ New Page</button>
+        </div>
+        <div class="g2">
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">Published</span><span class="panel-tag">12</span></div>
+            <div class="tbl-wrap"><table class="tbl">
+              <thead><tr><th>Title</th><th>Slug</th><th>Author</th><th>Status</th><th>Updated</th></tr></thead>
+              <tbody>
+                <tr><td>🏠 Home</td><td>/</td><td>Admin</td><td><span class="bdg bdg-s">Live</span></td><td>Today</td></tr>
+                <tr><td>ℹ About</td><td>/about</td><td>Alice</td><td><span class="bdg bdg-s">Live</span></td><td>Mar 10</td></tr>
+                <tr><td>📞 Contact</td><td>/contact</td><td>Bob</td><td><span class="bdg bdg-s">Live</span></td><td>Mar 8</td></tr>
+                <tr><td>💼 Services</td><td>/services</td><td>Carol</td><td><span class="bdg bdg-s">Live</span></td><td>Mar 5</td></tr>
+                <tr><td>💬 Blog</td><td>/blog</td><td>Dan</td><td><span class="bdg bdg-s">Live</span></td><td>Mar 12</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-bar"><span class="panel-title">Drafts</span><span class="panel-tag">4</span></div>
+            <div class="tbl-wrap"><table class="tbl">
+              <thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Created</th></tr></thead>
+              <tbody>
+                <tr><td>🚀 Pricing v2</td><td>Eve</td><td><span class="bdg bdg-w">Draft</span></td><td>Mar 11</td></tr>
+                <tr><td>🎁 Offers</td><td>Frank</td><td><span class="bdg bdg-w">Draft</span></td><td>Mar 9</td></tr>
+                <tr><td>📋 Terms</td><td>Admin</td><td><span class="bdg bdg-i">Review</span></td><td>Mar 7</td></tr>
+                <tr><td>🔒 Privacy</td><td>Admin</td><td><span class="bdg bdg-i">Review</span></td><td>Mar 6</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BOOKS ══ -->
+      <div class="page" id="pg-books">
+        <div class="pg-header">
+          <div><div class="pg-title">📚 Books</div><div class="pg-sub">Library catalog &amp; management</div></div>
+          <button class="btn-xp">＋ Add Book</button>
+        </div>
+        <div class="g4">
+          <div class="stat c1"><div class="s-ic">📚</div><div class="s-val">3,842</div><div class="s-lbl">Total Books</div></div>
+          <div class="stat c2"><div class="s-ic">✅</div><div class="s-val">3,201</div><div class="s-lbl">Available</div></div>
+          <div class="stat c3"><div class="s-ic">📖</div><div class="s-val">641</div><div class="s-lbl">Checked Out</div></div>
+          <div class="stat c4"><div class="s-ic">⭐</div><div class="s-val">4.6</div><div class="s-lbl">Avg Rating</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="panel-title">Catalog</span></div>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Genre</th><th>Year</th><th>Status</th><th>Rating</th></tr></thead>
+            <tbody>
+              <tr><td>B001</td><td>📘 Clean Code</td><td>Robert C. Martin</td><td>Programming</td><td>2008</td><td><span class="bdg bdg-s">Available</span></td><td>⭐ 4.8</td></tr>
+              <tr><td>B002</td><td>📗 Pragmatic Programmer</td><td>Hunt &amp; Thomas</td><td>Programming</td><td>1999</td><td><span class="bdg bdg-d">Checked Out</span></td><td>⭐ 4.7</td></tr>
+              <tr><td>B003</td><td>📙 Design Patterns</td><td>Gang of Four</td><td>Architecture</td><td>1994</td><td><span class="bdg bdg-s">Available</span></td><td>⭐ 4.5</td></tr>
+              <tr><td>B004</td><td>📕 Designing Data-Intensive Apps</td><td>M. Kleppmann</td><td>Systems</td><td>2017</td><td><span class="bdg bdg-d">Checked Out</span></td><td>⭐ 4.9</td></tr>
+              <tr><td>B005</td><td>📘 The Phoenix Project</td><td>Kim, Behr &amp; Spafford</td><td>DevOps</td><td>2013</td><td><span class="bdg bdg-s">Available</span></td><td>⭐ 4.6</td></tr>
+              <tr><td>B006</td><td>📗 Refactoring</td><td>Martin Fowler</td><td>Programming</td><td>2018</td><td><span class="bdg bdg-w">Reserved</span></td><td>⭐ 4.7</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ══ LABS ══ -->
+      <div class="page" id="pg-labs">
+        <div class="pg-header">
+          <div><div class="pg-title">🧪 Labs</div><div class="pg-sub">Experimental features — use with caution</div></div>
+          <span class="pg-meta">⚠ Beta Environment</span>
+        </div>
+        <div class="g3">
+          <div class="panel"><div class="panel-bar"><span class="panel-title">🤖 AI Assistant</span><span class="panel-tag">BETA</span></div><div class="panel-body" style="text-align:center;padding:18px 10px"><div style="font-size:34px;margin-bottom:8px">🤖</div><p style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:10px">AI-powered admin assistant. Analyzes your data and provides actionable insights.</p><button class="btn-xp">Enable Feature</button></div></div>
+          <div class="panel"><div class="panel-bar"><span class="panel-title">🌗 Dark Mode</span><span class="panel-tag">ALPHA</span></div><div class="panel-body" style="text-align:center;padding:18px 10px"><div style="font-size:34px;margin-bottom:8px">🌗</div><p style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:10px">Toggle between light and dark themes. Currently in alpha testing phase.</p><button class="btn-xp">Try Dark Mode</button></div></div>
+          <div class="panel"><div class="panel-bar"><span class="panel-title">⚡ Live Sync</span><span class="panel-tag">BETA</span></div><div class="panel-body" style="text-align:center;padding:18px 10px"><div style="font-size:34px;margin-bottom:8px">⚡</div><p style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:10px">Real-time data synchronization across all connected clients via WebSockets.</p><button class="btn-xp">Enable Sync</button></div></div>
+        </div>
+        <div class="g2">
+          <div class="panel"><div class="panel-bar"><span class="panel-title">📊 Advanced Charts</span><span class="panel-tag">PREVIEW</span></div><div class="panel-body"><canvas id="radarChart" height="160"></canvas></div></div>
+          <div class="panel"><div class="panel-bar"><span class="panel-title">🧬 Feature Flags</span></div><div class="panel-body">
+            <table class="tbl"><thead><tr><th>Feature</th><th>Status</th><th>Rollout</th></tr></thead><tbody>
+              <tr><td>🤖 AI Suggestions</td><td><span class="bdg bdg-s">On</span></td><td>100%</td></tr>
+              <tr><td>🌗 Dark Theme</td><td><span class="bdg bdg-w">Partial</span></td><td>20%</td></tr>
+              <tr><td>⚡ WebSocket Sync</td><td><span class="bdg bdg-d">Off</span></td><td>0%</td></tr>
+              <tr><td>📊 Radar Charts</td><td><span class="bdg bdg-s">On</span></td><td>80%</td></tr>
+              <tr><td>🔔 Push Alerts</td><td><span class="bdg bdg-w">Partial</span></td><td>50%</td></tr>
+            </tbody></table>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- ══ PROFILE ══ -->
+      <div class="page" id="pg-profile">
+        <div class="pg-header">
+          <div><div class="pg-title">👤 Profile</div><div class="pg-sub">Account details and preferences</div></div>
+          <button class="btn-xp">✏ Edit Profile</button>
+        </div>
+        <div class="profile-card">
+          <div class="profile-av">👤</div>
+          <div class="profile-info">
+            <h2>Administrator</h2>
+            <p>admin@aeropanel.local · Joined January 2022</p>
+            <div class="profile-tags"><span class="ptag">Super Admin</span><span class="ptag">Developer</span><span class="ptag">Verified</span></div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="panel"><div class="panel-bar"><span class="panel-title">Personal Info</span></div><div class="panel-body">
+            <table class="tbl"><tbody>
+              <tr><td style="color:var(--text-muted)">Full Name</td><td>Administrator User</td></tr>
+              <tr><td style="color:var(--text-muted)">Email</td><td>admin@aeropanel.local</td></tr>
+              <tr><td style="color:var(--text-muted)">Role</td><td>Super Admin</td></tr>
+              <tr><td style="color:var(--text-muted)">Department</td><td>Engineering</td></tr>
+              <tr><td style="color:var(--text-muted)">Location</td><td>San Francisco, CA</td></tr>
+              <tr><td style="color:var(--text-muted)">Timezone</td><td>PST (UTC−8)</td></tr>
+              <tr><td style="color:var(--text-muted)">Last Login</td><td>Today, 09:41 AM</td></tr>
+            </tbody></table>
+          </div></div>
+          <div class="panel"><div class="panel-bar"><span class="panel-title">Activity Summary</span></div><div class="panel-body">
+            <div class="prg-row"><div class="prg-lbl"><span>Projects Managed</span><span>14</span></div><div class="prg-track"><div class="prg-fill" style="width:70%"></div></div></div>
+            <div class="prg-row"><div class="prg-lbl"><span>Pages Edited</span><span>38</span></div><div class="prg-track"><div class="prg-fill g" style="width:55%"></div></div></div>
+            <div class="prg-row"><div class="prg-lbl"><span>Reports Generated</span><span>22</span></div><div class="prg-track"><div class="prg-fill o" style="width:44%"></div></div></div>
+            <div class="prg-row"><div class="prg-lbl"><span>Books Catalogued</span><span>91</span></div><div class="prg-track"><div class="prg-fill p" style="width:82%"></div></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- ══ NOTIFICATIONS ══ -->
+      <div class="page" id="pg-notifications">
+        <div class="pg-header"><div><div class="pg-title">🔔 Notifications</div><div class="pg-sub">System alerts and messages</div></div><span class="pg-meta">6 Unread</span></div>
+        <div class="panel"><div class="panel-bar"><span class="panel-title">All Notifications</span></div><div class="panel-body">
+          <div class="act-item"><div class="act-dot o"></div><div class="act-txt"><b>Memory Alert</b> — server-03 at 89%</div><div class="act-t">15m ago</div></div>
+          <div class="act-item"><div class="act-dot b"></div><div class="act-txt"><b>New User</b> — jdoe@example.com registered</div><div class="act-t">2m ago</div></div>
+          <div class="act-item"><div class="act-dot g"></div><div class="act-txt"><b>Deployment</b> — Build #482 deployed</div><div class="act-t">8m ago</div></div>
+          <div class="act-item"><div class="act-dot r"></div><div class="act-txt"><b>Security</b> — Failed login from 192.168.1.45</div><div class="act-t">2h ago</div></div>
+          <div class="act-item"><div class="act-dot g"></div><div class="act-txt"><b>Backup</b> — Daily backup completed (2.4 GB)</div><div class="act-t">1h ago</div></div>
+          <div class="act-item"><div class="act-dot b"></div><div class="act-txt"><b>API</b> — Key rotated for service-auth</div><div class="act-t">3h ago</div></div>
+        </div></div>
+      </div>
+
+      <div class="page" id="pg-settings"><div class="pg-placeholder"><div class="ph-ic">⚙</div><h2>Settings</h2><p>System configuration, preferences, appearance, and advanced options.</p><button class="btn-xp" style="margin-top:12px">Open Settings</button></div></div>
+      <div class="page" id="pg-reports"><div class="pg-placeholder"><div class="ph-ic">📈</div><h2>Reports</h2><p>Generate and export detailed analytics reports in PDF, CSV, or Excel format.</p><button class="btn-xp" style="margin-top:12px">Generate Report</button></div></div>
+      <div class="page" id="pg-security"><div class="pg-placeholder"><div class="ph-ic">🛡</div><h2>Security</h2><p>Manage access control, view security logs, configure firewall rules, and 2FA settings.</p><button class="btn-xp" style="margin-top:12px">View Security Log</button></div></div>
+      <div class="page" id="pg-backups"><div class="pg-placeholder"><div class="ph-ic">💾</div><h2>Backups</h2><p>Manage automated backups, restore points, and off-site storage configurations.</p><button class="btn-xp" style="margin-top:12px">Create Backup</button></div></div>
+      <div class="page" id="pg-help"><div class="pg-placeholder"><div class="ph-ic">❓</div><h2>Help Center</h2><p>Documentation, FAQs, keyboard shortcuts, and support ticket submission.</p><button class="btn-xp" style="margin-top:12px">Browse Docs</button></div></div>
+      <div class="page" id="pg-logout"><div class="pg-placeholder"><div class="ph-ic">🚪</div><h2>Log Out</h2><p>You are about to end your admin session. All unsaved changes will be lost.</p><button class="btn-xp" onclick="if(confirm('Log out?'))location.reload()" style="margin-top:12px">🔓 Confirm Logout</button></div></div>
+
+    </div><!-- /content -->
+  </div><!-- /body -->
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <button id="start-btn" onclick="toggleStart(event)">
+      <span style="font-size:17px">⊞</span> <span id="start-label">start</span>
+    </button>
+    <div class="tb-divider"></div>
+    <div class="tb-active-page" id="active-page-label">📊 Dashboard</div>
+    <div class="sys-tray">
+      <div class="tray-ic" title="Network">🌐</div>
+      <div class="tray-ic" title="Volume">🔊</div>
+      <div class="tray-ic" title="Security">🛡</div>
+      <div class="tray-clock" id="tray-clock">—</div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<!-- START MENU — single column, relevant items only -->
+<div id="start-menu">
+  <div class="sm-head">
+    <div class="sm-avatar">👤</div>
+    <div>
+      <div class="sm-uname">Administrator</div>
+      <div class="sm-urole">Super Admin · Online</div>
+    </div>
+  </div>
+  <div class="sm-list">
+    <div class="sm-item" onclick="nav(null,'dashboard')"><div class="sm-ic">📊</div><div><div class="sm-label">Dashboard</div><div class="sm-sub">Analytics overview</div></div></div>
+    <div class="sm-item" onclick="nav(null,'projects')"><div class="sm-ic">🗂</div><div><div class="sm-label">Projects</div><div class="sm-sub">Manage all projects</div></div></div>
+    <div class="sm-item" onclick="nav(null,'pages')"><div class="sm-ic">📄</div><div><div class="sm-label">Pages</div><div class="sm-sub">CMS page editor</div></div></div>
+    <div class="sm-item" onclick="nav(null,'books')"><div class="sm-ic">📚</div><div><div class="sm-label">Books</div><div class="sm-sub">Library catalog</div></div></div>
+    <div class="sm-item" onclick="nav(null,'labs')"><div class="sm-ic">🧪</div><div><div class="sm-label">Labs</div><div class="sm-sub">Beta &amp; experimental</div></div></div>
+    <div class="sm-sep"></div>
+    <div class="sm-item" onclick="nav(null,'profile')"><div class="sm-ic">👤</div><div><div class="sm-label">Profile</div><div class="sm-sub">Account settings</div></div></div>
+    <div class="sm-item" onclick="nav(null,'notifications')"><div class="sm-ic">🔔</div><div><div class="sm-label">Notifications</div><div class="sm-sub">Alerts &amp; messages</div></div></div>
+    <div class="sm-item" onclick="nav(null,'settings')"><div class="sm-ic">⚙</div><div><div class="sm-label">Settings</div><div class="sm-sub">System preferences</div></div></div>
+  </div>
+  <div class="sm-footer">
+    <button class="pow-btn pow-logoff" onclick="nav(null,'logout')">🔓 Log Off</button>
+    <button class="pow-btn pow-restart" onclick="location.reload()">🔄 Restart</button>
+    <button class="pow-btn pow-shut" onclick="document.body.innerHTML='<div style=\'background:#000;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Tahoma,sans-serif;font-size:16px\'>💻 Shutting down...</div>'">⏻ Shut Down</button>
+  </div>
+</div>
+
+<script>
+/* Clock */
+function tick() {
+  const n = new Date();
+  document.getElementById('tray-clock').textContent = n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const lc = document.getElementById('live-clock');
+  if (lc) lc.textContent = n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) + ' · ' + n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+tick(); setInterval(tick, 1000);
+
+/* Breadcrumb config */
+const pageConfig = {
+  dashboard:     { label:'📊 Dashboard',     section:'Admin Panel' },
+  projects:      { label:'🗂 Projects',       section:'Admin Panel' },
+  pages:         { label:'📄 Pages',          section:'Admin Panel' },
+  books:         { label:'📚 Books',          section:'Admin Panel' },
+  labs:          { label:'🧪 Labs',           section:'Admin Panel' },
+  profile:       { label:'👤 Profile',        section:'Account' },
+  notifications: { label:'🔔 Notifications',  section:'Account' },
+  settings:      { label:'⚙ Settings',        section:'Account' },
+  reports:       { label:'📈 Reports',        section:'System' },
+  security:      { label:'🛡 Security',       section:'System' },
+  backups:       { label:'💾 Backups',        section:'System' },
+  help:          { label:'❓ Help',           section:'More' },
+  logout:        { label:'🚪 Logout',         section:'More' },
+};
+
+/* Navigation */
+function nav(sbEl, pageId) {
+  // close menus
+  document.getElementById('start-menu').classList.remove('open');
+  closeSidebar();
+
+  // sidebar active
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  if (sbEl) {
+    sbEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.sb-item').forEach(el => {
+      const txt = el.textContent.trim().toLowerCase().replace(/\s+/g,'');
+      if (txt.includes(pageId.replace(/\s/g,''))) el.classList.add('active');
+    });
+  }
+
+  // switch page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('pg-' + pageId);
+  if (pg) { pg.classList.add('active'); document.getElementById('content').scrollTop = 0; }
+
+  // update breadcrumb
+  const cfg = pageConfig[pageId] || { label: pageId, section: 'Admin' };
+  document.getElementById('bc-current').textContent = cfg.label;
+  document.querySelector('.bc-crumb.section').textContent = cfg.section;
+
+  // update taskbar label
+  document.getElementById('active-page-label').textContent = cfg.label;
+}
+
+/* Start menu */
+function toggleStart(e) {
+  e.stopPropagation();
+  document.getElementById('start-menu').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('start-menu').classList.remove('open');
+});
+
+/* Mobile sidebar */
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+/* Charts */
+Chart.defaults.font = { family: "'Tahoma', sans-serif", size: 10 };
+Chart.defaults.color = '#4060a0';
+
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'],
+    datasets: [
+      { label:'Revenue ($k)', data:[48,52,61,58,70,68,80,75,84,79,88,84], borderColor:'#1e5fa8', backgroundColor:'rgba(30,95,168,0.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:3, yAxisID:'y' },
+      { label:'Users (k)',    data:[14,16,18,17,21,22,25,23,26,24,27,25], borderColor:'#c04020', backgroundColor:'rgba(192,64,32,0.05)', borderWidth:2, fill:false, tension:0.4, pointRadius:3, yAxisID:'y1' }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:true,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10}}},
+    scales:{
+      y:{ticks:{callback:v=>'$'+v+'k'},grid:{color:'rgba(0,0,0,0.05)'}},
+      y1:{position:'right',ticks:{callback:v=>v+'k'},grid:{display:false}}
+    }
+  }
+});
+
+new Chart(document.getElementById('doughnutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Organic','Direct','Referral','Social','Email'],
+    datasets:[{ data:[35,25,18,14,8], backgroundColor:['#1e5fa8','#3a9030','#d06020','#8030a0','#2090a0'], borderColor:'#f0f4ff', borderWidth:2 }]
+  },
+  options: { responsive:true, maintainAspectRatio:true, cutout:'65%',
+    plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:7,font:{size:10}}}}
+  }
+});
+
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets: [
+      { label:'Sessions',    data:[820,960,740,1100,980,450,380], backgroundColor:'rgba(30,95,168,0.72)', borderColor:'#1e5fa8', borderWidth:1, borderRadius:3 },
+      { label:'Conversions', data:[120,145,98,168,142,72,55],     backgroundColor:'rgba(58,144,48,0.72)', borderColor:'#3a9030', borderWidth:1, borderRadius:3 }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:true,
+    plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10}}},
+    scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}
+  }
+});
+
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['Performance','Security','Reliability','Scalability','Usability','Maintainability'],
+    datasets: [
+      { label:'Current', data:[82,90,88,74,79,85], borderColor:'#1e5fa8', backgroundColor:'rgba(30,95,168,0.15)', pointBackgroundColor:'#1e5fa8', borderWidth:2 },
+      { label:'Target',  data:[95,95,95,90,90,95], borderColor:'#c04020', backgroundColor:'rgba(192,64,32,0.08)', pointBackgroundColor:'#c04020', borderWidth:2, borderDash:[4,4] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:true,
+    plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10}}},
+    scales:{r:{grid:{color:'rgba(0,0,0,0.08)'},ticks:{backdropColor:'transparent',font:{size:9}}}}
+  }
+});
+</script>
+</body>
+</html>
