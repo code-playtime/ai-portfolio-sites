@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockForge — Web Components Editor</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  --page-bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #f9f8f5;
+  --border: #e8e4dc;
+  --border-strong: #d4cfc5;
+  --text-1: #1c1917;
+  --text-2: #6b6560;
+  --text-3: #b0aca4;
+  --accent: #18794e;
+  --accent-bg: #edf7f1;
+  --accent-dark: #0f6b44;
+  --code-accent: #b5460f;
+  --code-bg: #fdf3ee;
+  --warn: #a16207;
+  --warn-bg: #fefce8;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: 'Geist', system-ui, sans-serif;
+  --mono: 'Geist Mono', 'Fira Code', monospace;
+  --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --focus: 0 0 0 3px rgba(24,121,78,0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--page-bg);
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.app-header {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.app-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.app-title span { color: var(--accent); }
+
+.app-version {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.header-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--text-2);
+  transition: all 0.14s;
+}
+.tab-btn:hover { background: var(--surface-2); color: var(--text-1); }
+.tab-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Editor pane ── */
+.editor-pane {
+  padding: 24px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+/* ── Docs pane ── */
+.docs-pane {
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.docs-pane.hidden { display: none; }
+.editor-pane.full { grid-column: 1 / -1; border-right: none; }
+
+/* ── Docs styles ── */
+.docs-section {
+  margin-bottom: 32px;
+}
+
+.docs-h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  margin-bottom: 6px;
+  color: var(--text-1);
+}
+
+.docs-h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 16px 0 6px;
+}
+
+.docs-p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+.docs-code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text-1);
+  overflow-x: auto;
+  margin: 8px 0 12px;
+  white-space: pre;
+}
+
+.docs-tag {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--code-accent);
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 8px 0 12px;
+}
+.docs-table th {
+  text-align: left;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.docs-table td {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  vertical-align: top;
+}
+.docs-table td:first-child { font-family: var(--mono); font-size: 11px; color: var(--code-accent); }
+
+.docs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  letter-spacing: 0.4px;
+}
+.badge-standalone { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(24,121,78,0.2); }
+.badge-orchestrator { background: #eff6ff; color: #1d4ed8; border: 1px solid rgba(29,78,216,0.2); }
+
+.docs-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+.docs-note {
+  background: var(--accent-bg);
+  border: 1px solid rgba(24,121,78,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--accent-dark);
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+/* ── Toolbar ── */
+.bf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.bf-brand-inner { font-size: 14px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
+.bf-brand-inner span { color: var(--accent); }
+.bf-count {
+  font-size: 10px; font-family: var(--mono); color: var(--text-3);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2px 7px; margin-left: 8px;
+}
+.bf-toolbar-right { display: flex; gap: 8px; }
+
+/* ── Buttons ── */
+.bf-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  transition: all 0.14s ease; line-height: 1;
+}
+.bf-btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-strong); }
+.bf-btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+.bf-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bf-btn-primary:hover { background: var(--accent-dark); }
+
+/* ── Add strip ── */
+.bf-add-strip {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+}
+.bf-add-strip::before, .bf-add-strip::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.bf-add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px dashed var(--border-strong);
+  background: var(--surface); cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  color: var(--text-2); transition: all 0.16s ease;
+}
+.bf-add-btn:hover { border-style: solid; }
+.bf-add-text:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.bf-add-code:hover { border-color: var(--code-accent); color: var(--code-accent); background: var(--code-bg); }
+
+/* ── Block shell ── */
+.bf-block {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  margin-bottom: 10px; transition: border-color 0.18s, box-shadow 0.18s;
+  animation: blockIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes blockIn {
+  from { opacity:0; transform:translateY(8px) scale(0.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.bf-block:hover { border-color: var(--border-strong); }
+.bf-block.is-editing { border-color: var(--accent); box-shadow: var(--focus); }
+
+.bf-block-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 11px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.bf-drag-handle {
+  cursor: grab; color: var(--text-3); padding: 2px 3px;
+  border-radius: 4px; display: flex; align-items: center;
+  flex-shrink: 0; transition: color 0.14s;
+}
+.bf-drag-handle:hover { color: var(--text-2); background: var(--border); }
+
+.bf-type-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 20px; font-size: 10px;
+  font-weight: 600; font-family: var(--mono);
+  letter-spacing: 0.4px; text-transform: uppercase; flex-shrink: 0;
+}
+.badge-text { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(24,121,78,0.2); }
+.badge-code { background: var(--code-bg); color: var(--code-accent); border: 1px solid rgba(181,70,15,0.2); }
+
+.bf-lang-select {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-2); font-size: 11px; font-family: var(--mono);
+  border-radius: 4px; padding: 2px 6px; cursor: pointer; outline: none;
+}
+.bf-lang-select:focus { border-color: var(--accent); }
+
+.bf-label-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text-2); font-size: 12px; font-family: var(--font); min-width: 0;
+}
+.bf-label-input::placeholder { color: var(--text-3); }
+.bf-label-input:focus { color: var(--text-1); }
+
+.bf-block-controls { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+
+.bf-save-status {
+  font-size: 10px; font-family: var(--mono);
+  padding: 1px 6px; border-radius: 3px; opacity: 0; transition: opacity 0.2s;
+}
+.bf-save-status.visible { opacity: 1; }
+.bf-save-status.is-saved   { color: var(--accent); background: var(--accent-bg); }
+.bf-save-status.is-changed { color: var(--warn);   background: var(--warn-bg);   }
+
+.bf-icon-btn {
+  width: 26px; height: 26px; display: flex; align-items: center;
+  justify-content: center; border: none; background: transparent;
+  color: var(--text-3); border-radius: 5px; cursor: pointer; transition: all 0.13s; flex-shrink: 0;
+}
+.bf-icon-btn:hover { background: var(--border); color: var(--text-1); }
+.bf-icon-btn.btn-save:hover   { background: var(--accent-bg); color: var(--accent); }
+.bf-icon-btn.btn-edit:hover   { background: var(--accent-bg); color: var(--accent); }
+.bf-icon-btn.btn-delete:hover { background: #fdecea; color: #c0392b; }
+
+/* ── Preview ── */
+.bf-preview-content {
+  padding: 16px 18px; min-height: 60px;
+  line-height: 1.75; color: var(--text-1);
+  font-family: var(--font); font-size: 14px;
+}
+.bf-text-preview h1 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.bf-text-preview h2 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.bf-text-preview h3 { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
+.bf-text-preview p  { margin-bottom: 6px; }
+.bf-text-preview ul, .bf-text-preview ol { padding-left: 20px; margin-bottom: 6px; }
+.bf-text-preview strong { font-weight: 600; }
+.bf-empty-hint { color: var(--text-3); font-size: 13px; font-style: italic; }
+
+.bf-preview-content .prv-cb {
+  border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden;
+  background: #f6f8fa; font-family: var(--mono); margin: 4px 0;
+}
+.bf-preview-content .prv-cb-h {
+  background: #eaeef2; padding: 6px 14px; border-bottom: 1px solid #d0d7de;
+}
+.bf-preview-content .prv-cb-h span {
+  font-size: 11px; color: #57606a; font-family: var(--mono); font-weight: 500;
+}
+.bf-preview-content .prv-cb pre { margin: 0; overflow-x: auto; }
+.bf-preview-content .prv-cb pre code {
+  display: block; padding: 12px 14px; font-size: 12.5px;
+  line-height: 1.65; background: transparent; font-family: var(--mono);
+}
+
+/* ── Edit mode ── */
+.bf-text-body .ql-toolbar {
+  border: none !important; border-bottom: 1px solid var(--border) !important;
+  background: #fdfcfa; padding: 5px 11px;
+}
+.bf-text-body .ql-container { border: none !important; }
+.bf-text-body .ql-editor {
+  min-height: 110px; font-family: var(--font); font-size: 14px;
+  color: var(--text-1); padding: 14px 18px; line-height: 1.75;
+}
+.bf-text-body .ql-editor.ql-blank::before { color: var(--text-3); font-style: normal; font-size: 13px; }
+.ql-snow .ql-stroke { stroke: var(--text-2) !important; }
+.ql-snow .ql-fill   { fill:   var(--text-2) !important; }
+.ql-snow .ql-picker  { color:  var(--text-2) !important; }
+.ql-snow .ql-picker-options { background: var(--surface) !important; border-color: var(--border) !important; }
+.ql-toolbar.ql-snow button:hover .ql-stroke,
+.ql-toolbar.ql-snow button.ql-active .ql-stroke { stroke: var(--accent) !important; }
+.ql-toolbar.ql-snow button:hover .ql-fill,
+.ql-toolbar.ql-snow button.ql-active .ql-fill   { fill:   var(--accent) !important; }
+
+.bf-code-body { position: relative; }
+.CodeMirror {
+  height: auto !important; min-height: 110px; background: #fefefe !important;
+  font-family: var(--mono) !important; font-size: 13px !important;
+  line-height: 1.65 !important;
+  border-radius: 0 0 calc(var(--radius) - 1.5px) calc(var(--radius) - 1.5px);
+}
+.CodeMirror-scroll { min-height: 110px; }
+.CodeMirror-gutters { background: #f6f8fa !important; border-right: 1px solid var(--border) !important; }
+.CodeMirror-linenumber { color: var(--text-3) !important; padding: 0 10px 0 8px; }
+.CodeMirror-cursor { border-left: 2px solid var(--accent) !important; }
+.CodeMirror-selected { background: rgba(24,121,78,0.1) !important; }
+
+/* ── Empty state ── */
+.bf-empty { text-align: center; padding: 48px 20px; color: var(--text-3); }
+.bf-empty h3 { font-size: 16px; font-weight: 500; color: var(--text-2); margin-bottom: 4px; }
+.bf-empty p  { font-size: 12px; }
+
+/* ── Sortable ── */
+.sortable-ghost  { opacity: 0.2; }
+.sortable-chosen { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+/* ── Toast ── */
+.toast-box {
+  position: fixed; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 6px; z-index: 9999;
+}
+.toast-item {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); padding: 8px 13px;
+  font-size: 12px; font-family: var(--font);
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: var(--shadow); color: var(--text-1);
+  animation: toastIn 0.18s ease;
+}
+@keyframes toastIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .docs-pane { display: none; }
+  .editor-pane { border-right: none; }
+}
+
+.docs-warn {
+  background: var(--warn-bg);
+  border: 1px solid rgba(161,98,7,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--warn);
+  line-height: 1.6;
+  margin: 8px 0;
+}
+.docs-layout { display: grid; grid-template-columns: 164px 1fr; height: 100%; }
+.docs-nav { border-right: 1px solid var(--border); padding: 16px 0; position: sticky; top: 53px; height: calc(100vh - 53px); overflow-y: auto; background: var(--surface-2); flex-shrink:0; }
+.docs-nav-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); padding: 10px 14px 4px; display:block; }
+.docs-nav-link { display: block; padding: 5px 14px; font-size: 12px; color: var(--text-2); text-decoration: none; cursor: pointer; border-left: 2px solid transparent; transition: all 0.12s; line-height: 1.4; }
+.docs-nav-link:hover { color: var(--text-1); background: rgba(0,0,0,0.03); }
+.docs-nav-link.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-bg); font-weight: 500; }
+.docs-nav-link-sub { padding-left: 24px; font-size: 11px; color: var(--text-3); }
+.docs-nav-link-sub:hover { color: var(--text-2); }
+.docs-content { padding: 24px 28px 80px; overflow-y: auto; height: calc(100vh - 53px); }
+.method-sig { background: #1e1e2e; border-radius: var(--radius-sm); padding: 11px 14px; font-family: var(--mono); font-size: 12px; color: #cdd6f4; margin: 8px 0 4px; line-height: 1.7; }
+.method-sig .kw { color: #cba6f7; } .method-sig .fn { color: #89b4fa; } .method-sig .arg { color: #fab387; } .method-sig .typ { color: #a6e3a1; } .method-sig .ret { color: #f38ba8; } .method-sig .cm { color: #6c7086; font-style:italic; }
+.param-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0 14px; }
+.param-table th { text-align: left; padding: 5px 8px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; color: var(--text-1); font-size: 11px; }
+.param-table td { padding: 6px 8px; border: 1px solid var(--border); color: var(--text-2); vertical-align: top; font-size: 11.5px; line-height: 1.5; }
+.param-table td:first-child { font-family: var(--mono); font-size: 11px; color: var(--code-accent); white-space: nowrap; }
+.param-table td:nth-child(2) { font-family: var(--mono); font-size: 10.5px; color: #1d4ed8; white-space: nowrap; }
+.docs-anchor { scroll-margin-top: 16px; }
+.step-list { margin: 10px 0 14px; } .step-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; } .step-num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; } .step-body { flex: 1; } .step-title { font-size: 12px; font-weight: 600; color: var(--text-1); margin-bottom: 3px; } .step-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+.ic { background: var(--surface-2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: var(--mono); font-size: 11px; color: var(--code-accent); }
+.returns-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-family: var(--mono); background: #eff6ff; color: #1d4ed8; border: 1px solid rgba(29,78,216,0.2); margin-left: 6px; vertical-align: middle; }
+.method-block { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 18px; overflow: hidden; }
+.method-block-header { background: var(--surface-2); padding: 8px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.method-block-body { padding: 12px 14px; }
+.method-type-badge { font-size: 9px; font-weight: 700; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 3px; }
+.mtb-method { background: #eff6ff; color: #1d4ed8; border: 1px solid rgba(29,78,216,0.2); }
+.mtb-getter { background: var(--code-bg); color: var(--code-accent); border: 1px solid rgba(181,70,15,0.2); }
+.mtb-event { background: #fdf4ff; color: #7e22ce; border: 1px solid rgba(126,34,206,0.2); }
+.mtb-callback { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(24,121,78,0.2); }
+.mtb-internal { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+.method-name { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text-1); }
+/* Override docs-pane to allow docs-layout to stretch */
+.docs-pane { padding: 0 !important; overflow: hidden; }
+
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-brand">
+      <div class="app-logo">&lt;/&gt;</div>
+      <span class="app-title">Block<span>Forge</span></span>
+      <span class="app-version">v0.0.1</span>
+    </div>
+    <div class="header-tabs">
+      <button class="tab-btn active" id="tab-editor" onclick="switchTab('editor')">Editor</button>
+      <button class="tab-btn" id="tab-docs" onclick="switchTab('docs')">Docs</button>
+      <button class="tab-btn" id="tab-both" onclick="switchTab('both')">Split</button>
+    </div>
+  </header>
+
+  <!-- Editor pane -->
+  <main class="editor-pane" id="editor-pane">
+    <div id="editor-container"></div>
+  </main>
+
+  <!-- Docs pane -->
+  <aside class="docs-pane" id="docs-pane">
+    <div class="docs-layout">
+
+      <!-- Sidebar nav -->
+      <nav class="docs-nav" id="docs-nav">
+        <div class="docs-nav-label">Overview</div>
+        <a class="docs-nav-link" onclick="scrollDoc('intro')">Introduction</a>
+        <a class="docs-nav-link" onclick="scrollDoc('install')">Installation</a>
+        <a class="docs-nav-link" onclick="scrollDoc('architecture')">Architecture</a>
+
+        <div class="docs-nav-label">Components</div>
+        <a class="docs-nav-link" onclick="scrollDoc('text-block')">TextBlock</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('tb-attrs')">Attributes</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('tb-methods')">Methods</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('tb-events')">Events</a>
+        <a class="docs-nav-link" onclick="scrollDoc('code-block')">CodeBlock</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('cb-attrs')">Attributes</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('cb-methods')">Methods</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('cb-langs')">Languages</a>
+
+        <div class="docs-nav-label">Orchestrator</div>
+        <a class="docs-nav-link" onclick="scrollDoc('blockeditor')">BlockEditor</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('be-methods')">Methods</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('be-internal')">Internals</a>
+
+        <div class="docs-nav-label">Data</div>
+        <a class="docs-nav-link" onclick="scrollDoc('block-shape')">Block Data Shape</a>
+        <a class="docs-nav-link" onclick="scrollDoc('output-formats')">Output Formats</a>
+
+        <div class="docs-nav-label">Guides</div>
+        <a class="docs-nav-link" onclick="scrollDoc('db-guide')">DB Integration</a>
+        <a class="docs-nav-link" onclick="scrollDoc('new-block')">Creating New Blocks</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('nb-contract')">Contract</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('nb-walkthrough')">Walkthrough</a>
+        <a class="docs-nav-link docs-nav-link-sub" onclick="scrollDoc('nb-register')">Registration</a>
+      </nav>
+
+      <!-- Main content -->
+      <div class="docs-content" id="docs-content">
+
+        <!-- ══ Introduction ══ -->
+        <div class="docs-section docs-anchor" id="intro">
+          <div class="docs-h1">BlockForge</div>
+          <p class="docs-p">A block-based rich text editor built on the Web Components standard. Each block is a fully autonomous <code>&lt;custom-element&gt;</code> that manages its own state, rendering, and events. Blocks can be used standalone or orchestrated by the <span class="ic">BlockEditor</span> class which adds a toolbar, drag-to-reorder, and collective save.</p>
+        </div>
+
+        <!-- ══ Install ══ -->
+        <div class="docs-section docs-anchor" id="install">
+          <div class="docs-h2">Installation</div>
+          <pre class="docs-code">npm install @bhaswanth53/block-forge</pre>
+          <div class="docs-h3">With a bundler</div>
+          <pre class="docs-code">import BlockEditor from '@bhaswanth53/block-forge';
+import '@bhaswanth53/block-forge/css';</pre>
+          <div class="docs-h3">Plain &lt;script&gt; tag</div>
+          <pre class="docs-code">&lt;link rel="stylesheet" href="node_modules/@bhaswanth53/block-forge/dist/block-forge.css" /&gt;
+&lt;script src="node_modules/@bhaswanth53/block-forge/dist/block-forge.umd.js"&gt;&lt;/script&gt;</pre>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ Architecture ══ -->
+        <div class="docs-section docs-anchor" id="architecture">
+          <div class="docs-h2">Architecture</div>
+          <p class="docs-p">BlockForge has two layers:</p>
+
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <div class="step-title">Web Component blocks — <span class="ic">text-block</span>, <span class="ic">code-block</span></div>
+                <div class="step-desc">Each is a native custom element extending <span class="ic">HTMLElement</span>. They self-render, manage their own editor instances (Quill / CodeMirror), track mode state (preview/edit), and fire <span class="ic">block:save</span> / <span class="ic">block:delete</span> custom events that bubble up through the DOM.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <div class="step-title">BlockEditor orchestrator — <span class="ic">new BlockEditor(selector)</span></div>
+                <div class="step-desc">A plain JS class that builds the toolbar shell, mounts a SortableJS drag list, creates blocks dynamically, listens for bubbling events from all child blocks, and exposes <span class="ic">onSave</span> / <span class="ic">onSaveAll</span> / <span class="ic">load</span> / <span class="ic">getAll</span>. Entirely optional — blocks work without it.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="docs-h3">File structure</div>
+          <pre class="docs-code">src/
+├── js/
+│   ├── main.js          ← entry: imports SCSS + re-exports BlockEditor
+│   ├── BlockEditor.js   ← orchestrator class
+│   ├── TextBlock.js     ← &lt;text-block&gt; custom element
+│   └── CodeBlock.js     ← &lt;code-block&gt; custom element
+└── css/
+    └── main.scss        ← all styles</pre>
+
+          <div class="docs-h3">Lifecycle flow</div>
+          <pre class="docs-code">HTML parsed → connectedCallback() fires
+  → _render() builds innerHTML
+  → _attachEvents() wires listeners
+  → [user clicks Edit] → setMode('edit')
+      → _render() rebuilds as edit UI
+      → _mountQuill() / _mountCodeMirror() after 20ms
+  → [user clicks Save] → _save()
+      → snapshot content from editor instance
+      → _setStatus('saved')
+      → fire block:save CustomEvent (bubbles)
+      → call _onSaveCb if set directly on element
+  → [BlockEditor hears block:save]
+      → calls onSave callback with corrected order</pre>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ TextBlock ══ -->
+        <div class="docs-section docs-anchor" id="text-block">
+          <div class="docs-h2">TextBlock &lt;text-block&gt;</div>
+          <p class="docs-p">Rich text block powered by Quill JS. Renders HTML preview by default; switches to a Quill editor on demand.</p>
+        </div>
+
+        <div class="docs-section docs-anchor" id="tb-attrs">
+          <div class="docs-h3">Attributes</div>
+          <table class="param-table">
+            <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+            <tr><td>block-id</td><td>number | string</td><td>recommended</td><td>Unique identifier returned in all save callbacks. Auto-incremented if omitted when using BlockEditor.</td></tr>
+            <tr><td>label</td><td>string</td><td>no</td><td>Label shown in the block header input. Editable by the user.</td></tr>
+            <tr><td>content</td><td>HTML string</td><td>no</td><td>Initial content. Should be the <span class="ic">raw</span> value from your DB record (HTML for text blocks), not the rendered <span class="ic">content</span> output.</td></tr>
+          </table>
+          <div class="docs-note">Attributes listed in <span class="ic">static get observedAttributes()</span> are reactive — setting them programmatically after mount triggers a re-render.</div>
+        </div>
+
+        <div class="docs-section docs-anchor" id="tb-methods">
+          <div class="docs-h3">Public methods</div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-method">method</span>
+              <span class="method-name">onSave(callback)</span>
+              <span class="returns-badge">→ this</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Registers a callback fired when the block's Save button is clicked. Returns <span class="ic">this</span> for chaining.</p>
+              <div class="method-sig">
+<span class="kw">const</span> block = document.querySelector(<span class="typ">'text-block'</span>);<br>
+block.<span class="fn">onSave</span>(<span class="arg">callback</span>: (<span class="arg">data</span>: BlockData) =&gt; <span class="ret">void</span>)
+              </div>
+              <pre class="docs-code">block.onSave((data) => {
+  console.log(data.id, data.content, data.raw);
+});</pre>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-method">method</span>
+              <span class="method-name">setMode(mode)</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Switches the block between preview and edit mode. Automatically snapshots content before switching from edit to preview.</p>
+              <div class="method-sig">
+block.<span class="fn">setMode</span>(<span class="arg">mode</span>: <span class="typ">'preview'</span> | <span class="typ">'edit'</span>)
+              </div>
+              <table class="param-table">
+                <tr><th>Value</th><th>Effect</th></tr>
+                <tr><td>'preview'</td><td>Snapshots Quill HTML → renders it as live HTML inside .bf-text-preview</td></tr>
+                <tr><td>'edit'</td><td>Re-renders with Quill mount point → mounts Quill after 20ms delay → focuses</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-getter">getter</span>
+              <span class="method-name">blockData</span>
+              <span class="returns-badge">→ BlockData</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Returns the current block data snapshot. Reads live from Quill if in edit mode, from <span class="ic">this._content</span> if in preview mode.</p>
+              <div class="method-sig">
+block.<span class="fn">blockData</span> <span class="cm">// → { id, type, order, label, language, content, raw }</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="docs-section docs-anchor" id="tb-events">
+          <div class="docs-h3">Events fired</div>
+          <table class="param-table">
+            <tr><th>Event</th><th>Bubbles</th><th>detail shape</th><th>When</th></tr>
+            <tr><td>block:save</td><td>yes</td><td>BlockData object</td><td>Save button clicked</td></tr>
+            <tr><td>block:delete</td><td>yes</td><td>{ id }</td><td>Delete button clicked, before element is removed</td></tr>
+          </table>
+          <pre class="docs-code">// Attach on a parent to catch all block events
+container.addEventListener('block:save', (e) => {
+  const data = e.detail; // full BlockData
+});</pre>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ CodeBlock ══ -->
+        <div class="docs-section docs-anchor" id="code-block">
+          <div class="docs-h2">CodeBlock &lt;code-block&gt;</div>
+          <p class="docs-p">Code editing block powered by CodeMirror 5 with syntax highlighting via highlight.js. Preview renders the <span class="ic">prv-cb</span> highlighted HTML format.</p>
+        </div>
+
+        <div class="docs-section docs-anchor" id="cb-attrs">
+          <div class="docs-h3">Attributes</div>
+          <table class="param-table">
+            <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+            <tr><td>block-id</td><td>number | string</td><td>recommended</td><td>Unique identifier returned in save callbacks.</td></tr>
+            <tr><td>language</td><td>string</td><td>no</td><td>Default language. Falls back to 'javascript'. Must be one of the supported language values.</td></tr>
+            <tr><td>label</td><td>string</td><td>no</td><td>Label shown in the block header.</td></tr>
+            <tr><td>content</td><td>string</td><td>no</td><td>Raw code string. Do not pass HTML here — pass the <span class="ic">raw</span> field from your DB record. If the content contains <span class="ic">prv-cb</span>, the component automatically extracts the plain code from inside the <span class="ic">&lt;code&gt;</span> tag via <span class="ic">innerText</span>.</td></tr>
+          </table>
+        </div>
+
+        <div class="docs-section docs-anchor" id="cb-methods">
+          <div class="docs-h3">Methods</div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-method">method</span>
+              <span class="method-name">onSave(callback)</span>
+              <span class="returns-badge">→ this</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Same signature as TextBlock. Callback receives the full BlockData including <span class="ic">language</span>, <span class="ic">content</span> (prv-cb HTML), and <span class="ic">raw</span> (plain code string).</p>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-method">method</span>
+              <span class="method-name">setMode(mode)</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Snapshots CodeMirror value before switching to preview. In edit mode, mounts CodeMirror on the textarea via <span class="ic">CodeMirror.fromTextArea()</span>, restores raw code, and focuses.</p>
+              <div class="docs-note">There is a 20ms <span class="ic">setTimeout</span> before mounting CodeMirror. This is intentional — it allows the DOM to settle after <span class="ic">innerHTML</span> is set before CodeMirror measures the textarea.</div>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-internal">internal</span>
+              <span class="method-name">_buildHtmlOutput()</span>
+              <span class="returns-badge">→ string</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Builds the <span class="ic">prv-cb</span> HTML from raw code using highlight.js. Falls back to <span class="ic">hljs.highlightAuto()</span> if the language isn't recognized. Override this in a subclass if you want a different preview format.</p>
+              <pre class="docs-code">// Output format:
+&lt;div class="prv-cb"&gt;
+  &lt;div class="prv-cb-h"&gt;&lt;span&gt;javascript&lt;/span&gt;&lt;/div&gt;
+  &lt;pre&gt;&lt;code class="hljs language-javascript"&gt;...&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</pre>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-internal">internal</span>
+              <span class="method-name">_extractRaw(content)</span>
+              <span class="returns-badge">→ string</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Converts stored DB content back to a plain code string for loading into CodeMirror. If the string contains <span class="ic">prv-cb</span>, it parses it as HTML and reads <span class="ic">codeEl.innerText</span> (which automatically decodes HTML entities). Otherwise strips all tags.</p>
+              <pre class="docs-code">_extractRaw(content) {
+  if (!content) return '';
+  if (content.includes('prv-cb')) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = content;
+    const el = tmp.querySelector('code');
+    return el ? el.innerText : content; // innerText decodes &amp;lt; etc.
+  }
+  return content.replace(/&lt;[^&gt;]*&gt;/g, '');
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="docs-section docs-anchor" id="cb-langs">
+          <div class="docs-h3">Supported languages</div>
+          <table class="param-table">
+            <tr><th>value</th><th>label</th><th>CodeMirror mode</th></tr>
+            <tr><td>javascript</td><td>JavaScript</td><td>javascript</td></tr>
+            <tr><td>typescript</td><td>TypeScript</td><td>javascript</td></tr>
+            <tr><td>python</td><td>Python</td><td>python</td></tr>
+            <tr><td>html</td><td>HTML</td><td>htmlmixed</td></tr>
+            <tr><td>css</td><td>CSS</td><td>css</td></tr>
+            <tr><td>java</td><td>Java</td><td>clike</td></tr>
+            <tr><td>cpp</td><td>C++</td><td>clike</td></tr>
+            <tr><td>bash</td><td>Bash</td><td>shell</td></tr>
+            <tr><td>plaintext</td><td>Plain Text</td><td>null (no highlighting)</td></tr>
+          </table>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ BlockEditor ══ -->
+        <div class="docs-section docs-anchor" id="blockeditor">
+          <div class="docs-h2">BlockEditor</div>
+          <p class="docs-p">Optional orchestrator class. Instantiate it on a container element and it builds a toolbar, a sortable block list, and an add-block strip. All communication with individual blocks happens through the bubbling <span class="ic">block:save</span> / <span class="ic">block:delete</span> events.</p>
+          <div class="method-sig">
+<span class="kw">const</span> editor = <span class="kw">new</span> <span class="fn">BlockEditor</span>(<span class="arg">selector</span>: <span class="typ">string</span>)
+          </div>
+          <pre class="docs-code">const editor = new BlockEditor('#editor-container');</pre>
+        </div>
+
+        <div class="docs-section docs-anchor" id="be-methods">
+          <div class="docs-h3">Public methods</div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-callback">callback</span>
+              <span class="method-name">onSave(callback)</span>
+              <span class="returns-badge">→ this</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Fires when any individual block is saved. The block's order is recalculated at the time of save to reflect the current DOM position (including any drag reordering).</p>
+              <div class="method-sig">
+editor.<span class="fn">onSave</span>(<span class="arg">callback</span>: (<span class="arg">block</span>: BlockData) =&gt; <span class="ret">void</span>)
+              </div>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-callback">callback</span>
+              <span class="method-name">onSaveAll(callback)</span>
+              <span class="returns-badge">→ this</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Fires when the Save All toolbar button is clicked. Receives an array of all blocks in current DOM order. Also marks all blocks as 'saved'.</p>
+              <div class="method-sig">
+editor.<span class="fn">onSaveAll</span>(<span class="arg">callback</span>: (<span class="arg">blocks</span>: BlockData[]) =&gt; <span class="ret">void</span>)
+              </div>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-method">method</span>
+              <span class="method-name">load(blockArray)</span>
+              <span class="returns-badge">→ this</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Stamps web component elements from a JSON array. Sets attributes on each element so <span class="ic">connectedCallback</span> picks them up. Uses <span class="ic">raw</span> if present, falls back to <span class="ic">content</span>.</p>
+              <div class="method-sig">
+editor.<span class="fn">load</span>(<span class="arg">blocks</span>: <span class="typ">LoadBlock[]</span>): <span class="ret">this</span>
+              </div>
+              <table class="param-table">
+                <tr><th>LoadBlock field</th><th>Type</th><th>Notes</th></tr>
+                <tr><td>id</td><td>number | string</td><td>Optional. Auto-incremented if omitted. idCounter advances past any custom numeric id to prevent collisions.</td></tr>
+                <tr><td>type</td><td>'text' | 'code'</td><td>Required. Determines which element tag to create.</td></tr>
+                <tr><td>label</td><td>string</td><td>Optional.</td></tr>
+                <tr><td>language</td><td>string</td><td>Code blocks only.</td></tr>
+                <tr><td>raw</td><td>string</td><td>Preferred for editor reload. Passed as content attribute.</td></tr>
+                <tr><td>content</td><td>string</td><td>Fallback if raw is absent.</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="method-block">
+            <div class="method-block-header">
+              <span class="method-type-badge mtb-getter">getter</span>
+              <span class="method-name">getAll()</span>
+              <span class="returns-badge">→ BlockData[]</span>
+            </div>
+            <div class="method-block-body">
+              <p class="docs-p">Reads <span class="ic">blockData</span> from every <span class="ic">text-block</span> and <span class="ic">code-block</span> in the list in current DOM order. Does not trigger callbacks or status updates.</p>
+              <div class="method-sig">
+editor.<span class="fn">getAll</span>(): <span class="ret">BlockData[]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="docs-section docs-anchor" id="be-internal">
+          <div class="docs-h3">Internal methods reference</div>
+          <table class="param-table">
+            <tr><th>Method</th><th>Description</th></tr>
+            <tr><td>_buildShell()</td><td>Called in constructor. Creates .bf-toolbar, .bf-blocks-list, .bf-add-strip and appends to mount. Wires Save All button and block:save / block:delete listeners.</td></tr>
+            <tr><td>_initSortable()</td><td>Attaches SortableJS to listEl with handle: '.bf-drag-handle'. Calls _refreshCount() on drag end.</td></tr>
+            <tr><td>_addBlock(type)</td><td>Creates a new web component element, assigns a block-id, appends to listEl, then calls setMode('edit') after 30ms so it opens ready to type.</td></tr>
+            <tr><td>_handleSaveAll()</td><td>Calls getAll(), calls _setStatus('saved') on each block element, fires onSaveAll callback, shows toast.</td></tr>
+            <tr><td>_showEmptyState()</td><td>Adds a placeholder div when no blocks are present.</td></tr>
+            <tr><td>_removeEmptyState()</td><td>Removes the placeholder div.</td></tr>
+            <tr><td>_refreshCount()</td><td>Updates the block count badge in the toolbar. Also calls _showEmptyState() if count drops to zero.</td></tr>
+            <tr><td>_toast(msg)</td><td>Creates and appends a toast notification to #be-global-toasts with a 2.5s auto-dismiss.</td></tr>
+          </table>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ Block Data Shape ══ -->
+        <div class="docs-section docs-anchor" id="block-shape">
+          <div class="docs-h2">Block Data Shape</div>
+          <p class="docs-p">Every callback and <span class="ic">getAll()</span> returns objects of this shape:</p>
+          <div class="method-sig">
+<span class="kw">type</span> <span class="typ">BlockData</span> = {<br>
+&nbsp;&nbsp;<span class="arg">id</span>:       <span class="typ">number | string</span>;  <span class="cm">// block-id attribute value</span><br>
+&nbsp;&nbsp;<span class="arg">type</span>:     <span class="typ">'text' | 'code'</span>;  <span class="cm">// element type</span><br>
+&nbsp;&nbsp;<span class="arg">order</span>:    <span class="typ">number</span>;            <span class="cm">// 1-based DOM position</span><br>
+&nbsp;&nbsp;<span class="arg">label</span>:    <span class="typ">string</span>;            <span class="cm">// label input value</span><br>
+&nbsp;&nbsp;<span class="arg">language</span>: <span class="typ">string | null</span>;    <span class="cm">// code blocks only; null for text</span><br>
+&nbsp;&nbsp;<span class="arg">content</span>:  <span class="typ">string</span>;            <span class="cm">// HTML output — store in DB</span><br>
+&nbsp;&nbsp;<span class="arg">raw</span>:      <span class="typ">string</span>;            <span class="cm">// raw content — use for reload</span><br>
+}
+          </div>
+        </div>
+
+        <!-- ══ Output Formats ══ -->
+        <div class="docs-section docs-anchor" id="output-formats">
+          <div class="docs-h2">Output Formats</div>
+
+          <div class="docs-h3">content vs raw</div>
+          <table class="param-table">
+            <tr><th>Field</th><th>TextBlock</th><th>CodeBlock</th><th>Use for</th></tr>
+            <tr><td>content</td><td>Quill HTML (<code>&lt;h2&gt;...&lt;p&gt;...</code>)</td><td>prv-cb highlighted HTML</td><td>Storing in DB, rendering on your site</td></tr>
+            <tr><td>raw</td><td>Same as content (Quill HTML)</td><td>Plain code string</td><td>Reloading into the editor via load()</td></tr>
+          </table>
+
+          <div class="docs-h3">prv-cb format (code blocks)</div>
+          <pre class="docs-code">&lt;div class="prv-cb"&gt;
+  &lt;div class="prv-cb-h"&gt;
+    &lt;span&gt;javascript&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;pre&gt;&lt;code class="hljs language-javascript"&gt;
+    &lt;span class="hljs-variable language_"&gt;console&lt;/span&gt;
+    .&lt;span class="hljs-title function_"&gt;log&lt;/span&gt;(...)
+  &lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</pre>
+          <div class="docs-note">Always pass <span class="ic">raw</span> (not <span class="ic">content</span>) back through <span class="ic">load()</span>. If you only have <span class="ic">content</span>, the component will auto-extract the plain code via <span class="ic">_extractRaw()</span>, but storing both is the safest pattern.</div>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ DB Integration ══ -->
+        <div class="docs-section docs-anchor" id="db-guide">
+          <div class="docs-h2">Database Integration</div>
+          <pre class="docs-code">// On page load: restore from DB
+const rows = await fetch('/api/blocks').then(r => r.json());
+editor.load(rows);
+// rows should have: { id, type, label, language, content, raw }
+
+// On single block save: upsert by id
+editor.onSave(async (block) => {
+  await fetch(`/api/blocks/${block.id}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type:     block.type,
+      order:    block.order,
+      label:    block.label,
+      language: block.language,
+      content:  block.content,  // HTML — render on your site
+      raw:      block.raw,      // plain — reload into editor
+    }),
+  });
+});
+
+// On save all: bulk update
+editor.onSaveAll(async (blocks) => {
+  await fetch('/api/blocks/bulk', {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(blocks),
+  });
+});</pre>
+          <div class="docs-note">Custom IDs are collision-safe. If you load blocks with IDs 42 and 43, <span class="ic">idCounter</span> advances to 44. Any new blocks the user adds will start from 44 onwards.</div>
+        </div>
+
+        <hr class="docs-divider">
+
+        <!-- ══ Creating New Block Types ══ -->
+        <div class="docs-section docs-anchor" id="new-block">
+          <div class="docs-h2">Creating New Block Types</div>
+          <p class="docs-p">Any new block type is a class that extends <span class="ic">HTMLElement</span> and satisfies the block contract. BlockEditor discovers blocks purely by CSS selector — add your tag name to <span class="ic">querySelectorAll</span> and it becomes a first-class citizen.</p>
+        </div>
+
+        <div class="docs-section docs-anchor" id="nb-contract">
+          <div class="docs-h3">Required contract</div>
+          <p class="docs-p">Your class must implement these to work with BlockEditor:</p>
+          <table class="param-table">
+            <tr><th>Member</th><th>Type</th><th>Required</th><th>Description</th></tr>
+            <tr><td>connectedCallback()</td><td>lifecycle</td><td>yes</td><td>Called by browser when element is added to DOM. Initialize state and call _render().</td></tr>
+            <tr><td>setMode(mode)</td><td>method</td><td>yes</td><td>Switch between 'preview' and 'edit'. BlockEditor calls this when adding new blocks.</td></tr>
+            <tr><td>blockData</td><td>getter</td><td>yes</td><td>Return a BlockData object. getAll() reads this from every block.</td></tr>
+            <tr><td>onSave(callback)</td><td>method</td><td>yes (standalone)</td><td>Register a per-instance save callback. Return this for chaining.</td></tr>
+            <tr><td>block:save event</td><td>CustomEvent</td><td>yes</td><td>Fire with bubbles:true and detail: BlockData when saved. BlockEditor listens for this.</td></tr>
+            <tr><td>block:delete event</td><td>CustomEvent</td><td>yes</td><td>Fire before removing the element. BlockEditor uses this to refresh count.</td></tr>
+            <tr><td>.bf-drag-handle</td><td>DOM element</td><td>yes</td><td>SortableJS needs this selector inside each block for drag-to-reorder to work.</td></tr>
+          </table>
+        </div>
+
+        <div class="docs-section docs-anchor" id="nb-walkthrough">
+          <div class="docs-h3">Full walkthrough — ImageBlock</div>
+          <p class="docs-p">Here is a complete example of a new block type for uploading and displaying images.</p>
+
+          <pre class="docs-code">// src/js/ImageBlock.js
+
+class ImageBlock extends HTMLElement {
+
+  // ── 1. Observe attributes you care about ──────────────────
+  static get observedAttributes() {
+    return ['content', 'label'];
+    // 'content' will store the image URL or base64
+  }
+
+  // ── 2. Initialize state in connectedCallback ──────────────
+  connectedCallback() {
+    this._mode     = 'preview';  // all blocks start in preview
+    this._content  = this.getAttribute('content') || '';
+    this._label    = this.getAttribute('label')   || '';
+    this._onSaveCb = null;
+    this._render();
+  }
+
+  // ── 3. Handle reactive attribute changes ──────────────────
+  attributeChangedCallback(name, _, val) {
+    if (name === 'content') this._content = val;
+    if (name === 'label')   this._label   = val;
+    if (this.isConnected)   this._render();
+  }
+
+  // ── 4. Public onSave registration ─────────────────────────
+  onSave(callback) {
+    this._onSaveCb = callback;
+    return this; // allow chaining
+  }
+
+  // ── 5. blockData getter — must return full shape ──────────
+  get blockData() {
+    return {
+      id:       this._resolveId(),
+      type:     'image',
+      order:    this._getOrder(),
+      label:    this._label,
+      language: null,          // null for non-code blocks
+      content:  this._content, // URL or base64 — same as raw for images
+      raw:      this._content,
+    };
+  }
+
+  // ── 6. setMode — switch preview / edit ────────────────────
+  setMode(mode) {
+    this._mode = mode;
+    this._render();
+    // mount any editor logic after render if needed
+  }
+
+  // ── 7. _render — build innerHTML for each mode ────────────
+  _render() {
+    const isEdit = this._mode === 'edit';
+    this.innerHTML = `
+      &lt;div class="bf-block bf-image-block${isEdit ? ' is-editing' : ''}"&gt;
+        &lt;div class="bf-block-header"&gt;
+          &lt;div class="bf-drag-handle"&gt;⠿&lt;/div&gt;
+          &lt;span class="bf-type-badge" style="background:#f0f4ff;color:#3b5bdb"&gt;⎙ image&lt;/span&gt;
+          &lt;input class="bf-label-input" type="text" value="${this._label}" placeholder="Caption…" /&gt;
+          &lt;div class="bf-block-controls"&gt;
+            &lt;span class="bf-save-status"&gt;&lt;/span&gt;
+            ${isEdit
+              ? `&lt;button class="bf-icon-btn btn-save"&gt;💾&lt;/button&gt;`
+              : `&lt;button class="bf-icon-btn btn-edit"&gt;✎&lt;/button&gt;`
+            }
+            &lt;button class="bf-icon-btn btn-delete"&gt;🗑&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="bf-block-body" style="padding:16px"&gt;
+          ${isEdit
+            ? `&lt;input type="url" class="img-url-input"
+                style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:12px"
+                placeholder="Paste image URL…"
+                value="${this._content}" /&gt;`
+            : this._content
+              ? `&lt;img src="${this._content}" alt="${this._label}"
+                   style="max-width:100%;border-radius:6px;display:block" /&gt;`
+              : `&lt;span class="bf-empty-hint"&gt;No image — click edit to add a URL&lt;/span&gt;`
+          }
+        &lt;/div&gt;
+      &lt;/div&gt;`;
+    this._attachEvents();
+  }
+
+  // ── 8. _attachEvents — wire up controls ───────────────────
+  _attachEvents() {
+    this.querySelector('.bf-label-input')
+      ?.addEventListener('input', e => { this._label = e.target.value; });
+
+    this.querySelector('.btn-edit')
+      ?.addEventListener('click', () => this.setMode('edit'));
+
+    this.querySelector('.btn-save')
+      ?.addEventListener('click', () => {
+        // Snapshot the URL from the input before switching
+        const input = this.querySelector('.img-url-input');
+        if (input) this._content = input.value;
+        this._save();
+      });
+
+    this.querySelector('.btn-delete')
+      ?.addEventListener('click', () => this._delete());
+  }
+
+  // ── 9. _save — snapshot, fire event, call callback ────────
+  _save() {
+    this._setStatus('saved');
+    this.setMode('preview');         // switch to preview after save
+    const data = this.blockData;
+
+    if (this._onSaveCb) this._onSaveCb(data);
+
+    // Must bubble so BlockEditor's listener catches it
+    this.dispatchEvent(new CustomEvent('block:save', {
+      bubbles:  true,
+      composed: true,
+      detail:   data,
+    }));
+  }
+
+  // ── 10. _delete — fire event then remove self ─────────────
+  _delete() {
+    this.dispatchEvent(new CustomEvent('block:delete', {
+      bubbles:  true,
+      composed: true,
+      detail:   { id: this._resolveId() },
+    }));
+    this.style.opacity    = '0';
+    this.style.transition = 'opacity 0.15s';
+    setTimeout(() => this.remove(), 150);
+  }
+
+  // ── Helpers (copy these into every block type) ────────────
+  _setStatus(state) {
+    const el = this.querySelector('.bf-save-status');
+    if (!el) return;
+    el.textContent = state === 'saved' ? 'saved' : 'unsaved';
+    el.className = `bf-save-status visible ${state === 'saved' ? 'is-saved' : 'is-changed'}`;
+    if (state === 'saved') {
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('visible'), 2200);
+    }
+  }
+
+  _resolveId() {
+    const v = this.getAttribute('block-id') || this.getAttribute('id');
+    return v && !isNaN(v) ? Number(v) : v;
+  }
+
+  _getOrder() {
+    // querySelectorAll must include your new tag
+    const list = this.closest('.bf-blocks-list') || this.parentElement;
+    if (!list) return 1;
+    return [...list.querySelectorAll('text-block, code-block, image-block')]
+      .indexOf(this) + 1;
+  }
+}
+
+customElements.define('image-block', ImageBlock);
+export default ImageBlock;</pre>
+        </div>
+
+        <div class="docs-section docs-anchor" id="nb-register">
+          <div class="docs-h3">Registration steps</div>
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <div class="step-title">Import in main.js</div>
+                <div class="step-desc"><pre class="docs-code" style="margin-top:4px">import '../css/main.scss';
+import BlockEditor from './BlockEditor.js';
+import './TextBlock.js';
+import './CodeBlock.js';
+import './ImageBlock.js'; // ← add this
+
+export default BlockEditor;</pre></div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <div class="step-title">Update querySelectorAll in BlockEditor.js</div>
+                <div class="step-desc">Add your tag to the selector string in <span class="ic">getAll()</span> and <span class="ic">_handleSaveAll()</span>:<pre class="docs-code" style="margin-top:4px">// In getAll():
+return [...this.listEl.querySelectorAll(
+  'text-block, code-block, image-block' // ← add here
+)]
+
+// In _initSortable() if you use handle-based drag:
+// no change needed — .bf-drag-handle works for all blocks</pre></div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <div class="step-title">Update load() to handle the new type</div>
+                <div class="step-desc"><pre class="docs-code" style="margin-top:4px">// In load():
+const tagMap = {
+  text:  'text-block',
+  code:  'code-block',
+  image: 'image-block',  // ← add here
+};
+const tag = tagMap[item.type] || 'text-block';
+const el  = document.createElement(tag);</pre></div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <div class="step-title">Add an "Add Image Block" button to the strip</div>
+                <div class="step-desc">In <span class="ic">_buildShell()</span>, add a button to <span class="ic">this.addStrip.innerHTML</span> and wire its click handler to <span class="ic">this._addBlock('image')</span>.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">5</div>
+              <div class="step-body">
+                <div class="step-title">Rebuild and republish</div>
+                <div class="step-desc"><pre class="docs-code" style="margin-top:4px">npm run build
+npm publish</pre></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="docs-warn">
+            <strong>CSS scoping:</strong> Add styles for your new block to <span class="ic">src/css/main.scss</span>. Since web components here do not use Shadow DOM, all styles live in the global stylesheet — use the <span class="ic">.bf-image-block</span> class prefix to avoid collisions.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<div class="toast-box" id="be-global-toasts"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+
+/* ── Tab switcher ── */
+function switchTab(tab) {
+  const editorPane = document.getElementById('editor-pane');
+  const docsPane   = document.getElementById('docs-pane');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'editor') {
+    editorPane.style.display = '';
+    editorPane.classList.add('full');
+    docsPane.style.display = 'none';
+  } else if (tab === 'docs') {
+    editorPane.style.display = 'none';
+    editorPane.classList.remove('full');
+    docsPane.style.display = '';
+    docsPane.style.gridColumn = '1 / -1';
+  } else {
+    editorPane.style.display = '';
+    editorPane.classList.remove('full');
+    docsPane.style.display = '';
+    docsPane.style.gridColumn = '';
+  }
+}
+
+/* ── Shared icons ── */
+const DRAG_ICON    = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>`;
+const EDIT_ICON    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const PREVIEW_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const SAVE_ICON    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>`;
+const DELETE_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0 01-2,2H8a2,2,0 01-2-2L5,6"/><path d="M10,11v6M14,11v6"/><path d="M9,6V4a1,1,0 011-1h4a1,1,0 011,1v2"/></svg>`;
+
+const LANGUAGES = [
+  { value:'javascript', label:'JavaScript', cmMode:'javascript' },
+  { value:'typescript', label:'TypeScript', cmMode:'javascript' },
+  { value:'python',     label:'Python',     cmMode:'python'     },
+  { value:'html',       label:'HTML',       cmMode:'htmlmixed'  },
+  { value:'css',        label:'CSS',        cmMode:'css'        },
+  { value:'java',       label:'Java',       cmMode:'clike'      },
+  { value:'cpp',        label:'C++',        cmMode:'clike'      },
+  { value:'bash',       label:'Bash',       cmMode:'shell'      },
+  { value:'plaintext',  label:'Plain Text', cmMode:null         },
+];
+
+/* ══════════════════════════════════════
+   TextBlock web component
+══════════════════════════════════════ */
+class TextBlock extends HTMLElement {
+  static get observedAttributes() { return ['content','label']; }
+
+  connectedCallback() {
+    this._mode     = 'preview';
+    this._quill    = null;
+    this._content  = this.getAttribute('content') || '';
+    this._label    = this.getAttribute('label')   || '';
+    this._onSaveCb = null;
+    this._render();
+  }
+
+  attributeChangedCallback(name, _, val) {
+    if (name === 'content') this._content = val;
+    if (name === 'label')   this._label   = val;
+    if (this.isConnected)   this._render();
+  }
+
+  onSave(cb) { this._onSaveCb = cb; return this; }
+
+  get blockData() {
+    return {
+      id:       this._resolveId(),
+      type:     'text',
+      order:    this._getOrder(),
+      label:    this._label,
+      language: null,
+      content:  this._buildHtmlOutput(),
+      raw:      this._buildHtmlOutput(),
+    };
+  }
+
+  setMode(mode) {
+    if (this._mode === 'edit' && mode === 'preview' && this._quill) {
+      this._content = this._quill.root.innerHTML;
+    }
+    this._mode = mode;
+    this._render();
+    if (mode === 'edit') setTimeout(() => this._mountQuill(), 20);
+  }
+
+  _render() {
+    const isEdit = this._mode === 'edit';
+    this.innerHTML = `
+      <div class="bf-block bf-text-block${isEdit ? ' is-editing' : ''}">
+        <div class="bf-block-header">
+          <div class="bf-drag-handle" title="Drag to reorder">${DRAG_ICON}</div>
+          <span class="bf-type-badge badge-text">&para; text</span>
+          <input class="bf-label-input" type="text" placeholder="Label this block…" value="${this._label}" />
+          <div class="bf-block-controls">
+            <span class="bf-save-status"></span>
+            ${isEdit
+              ? `<button class="bf-icon-btn btn-preview" title="Preview">${PREVIEW_ICON}</button>
+                 <button class="bf-icon-btn btn-save" title="Save">${SAVE_ICON}</button>`
+              : `<button class="bf-icon-btn btn-edit" title="Edit">${EDIT_ICON}</button>`
+            }
+            <button class="bf-icon-btn btn-delete" title="Delete">${DELETE_ICON}</button>
+          </div>
+        </div>
+        <div class="bf-block-body">
+          ${isEdit
+            ? `<div class="bf-text-body"><div class="bf-quill-mount"></div></div>`
+            : `<div class="bf-preview-content bf-text-preview">${this._content || '<span class="bf-empty-hint">Empty — click edit to start writing</span>'}</div>`
+          }
+        </div>
+      </div>`;
+    this._attachEvents();
+  }
+
+  _attachEvents() {
+    this.querySelector('.bf-label-input')?.addEventListener('input',  e => { this._label = e.target.value; });
+    this.querySelector('.btn-edit')?.addEventListener('click',    () => this.setMode('edit'));
+    this.querySelector('.btn-preview')?.addEventListener('click', () => this.setMode('preview'));
+    this.querySelector('.btn-save')?.addEventListener('click',    () => this._save());
+    this.querySelector('.btn-delete')?.addEventListener('click',  () => this._delete());
+  }
+
+  _mountQuill() {
+    const mount = this.querySelector('.bf-quill-mount');
+    if (!mount) return;
+    this._quill = new Quill(mount, {
+      theme: 'snow',
+      placeholder: 'Start writing here…',
+      modules: { toolbar: [[{header:[1,2,3,false]}],['bold','italic','underline','strike'],[{list:'ordered'},{list:'bullet'}],['blockquote','link'],['clean']] }
+    });
+    if (this._content) this._quill.clipboard.dangerouslyPasteHTML(this._content);
+    this._quill.on('text-change', () => this._markChanged());
+    this.querySelector('.bf-block')?.classList.add('is-editing');
+    this._quill.focus();
+  }
+
+  _buildHtmlOutput() {
+    if (this._mode === 'edit' && this._quill) return this._quill.root.innerHTML;
+    return this._content;
+  }
+
+  _save() {
+    if (this._quill) this._content = this._quill.root.innerHTML;
+    this._setStatus('saved');
+    const data = this.blockData;
+    if (this._onSaveCb) this._onSaveCb(data);
+    this.dispatchEvent(new CustomEvent('block:save', { bubbles:true, composed:true, detail:data }));
+  }
+
+  _delete() {
+    this.dispatchEvent(new CustomEvent('block:delete', { bubbles:true, composed:true, detail:{ id:this._resolveId() } }));
+    this.style.cssText = 'opacity:0;transform:scale(0.97);transition:all 0.15s ease;pointer-events:none;';
+    setTimeout(() => this.remove(), 150);
+  }
+
+  _markChanged() { this._setStatus('changed'); }
+
+  _setStatus(state) {
+    const el = this.querySelector('.bf-save-status');
+    if (!el) return;
+    el.textContent = state === 'saved' ? 'saved' : 'unsaved';
+    el.className   = `bf-save-status visible ${state === 'saved' ? 'is-saved' : 'is-changed'}`;
+    if (state === 'saved') { clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('visible'), 2200); }
+  }
+
+  _resolveId() {
+    const v = this.getAttribute('block-id') || this.getAttribute('id');
+    return v && !isNaN(v) ? Number(v) : v;
+  }
+
+  _getOrder() {
+    const list = this.closest('.bf-blocks-list') || this.parentElement;
+    if (!list) return 1;
+    return [...list.querySelectorAll('text-block, code-block')].indexOf(this) + 1;
+  }
+}
+customElements.define('text-block', TextBlock);
+
+
+/* ══════════════════════════════════════
+   CodeBlock web component
+══════════════════════════════════════ */
+class CodeBlock extends HTMLElement {
+  static get observedAttributes() { return ['content','language','label']; }
+
+  connectedCallback() {
+    this._mode     = 'preview';
+    this._cm       = null;
+    this._content  = this.getAttribute('content')  || '';
+    this._language = this.getAttribute('language') || 'javascript';
+    this._label    = this.getAttribute('label')    || '';
+    this._onSaveCb = null;
+    this._render();
+  }
+
+  attributeChangedCallback(name, _, val) {
+    if (name === 'content')  this._content  = val;
+    if (name === 'language') this._language = val;
+    if (name === 'label')    this._label    = val;
+    if (this.isConnected)    this._render();
+  }
+
+  onSave(cb) { this._onSaveCb = cb; return this; }
+
+  get blockData() {
+    return {
+      id:       this._resolveId(),
+      type:     'code',
+      order:    this._getOrder(),
+      label:    this._label,
+      language: this._language,
+      content:  this._buildHtmlOutput(),
+      raw:      this._buildRawOutput(),
+    };
+  }
+
+  setMode(mode) {
+    if (this._mode === 'edit' && mode === 'preview' && this._cm) {
+      this._content = this._cm.getValue();
+    }
+    this._mode = mode;
+    this._render();
+    if (mode === 'edit') setTimeout(() => this._mountCodeMirror(), 20);
+  }
+
+  _render() {
+    const isEdit   = this._mode === 'edit';
+    const langOpts = LANGUAGES.map(l =>
+      `<option value="${l.value}"${l.value === this._language ? ' selected' : ''}>${l.label}</option>`
+    ).join('');
+
+    this.innerHTML = `
+      <div class="bf-block bf-code-block${isEdit ? ' is-editing' : ''}">
+        <div class="bf-block-header">
+          <div class="bf-drag-handle" title="Drag to reorder">${DRAG_ICON}</div>
+          <span class="bf-type-badge badge-code">&lt;/&gt; code</span>
+          <select class="bf-lang-select">${langOpts}</select>
+          <input class="bf-label-input" type="text" placeholder="Label this block…" value="${this._label}" />
+          <div class="bf-block-controls">
+            <span class="bf-save-status"></span>
+            ${isEdit
+              ? `<button class="bf-icon-btn btn-preview" title="Preview">${PREVIEW_ICON}</button>
+                 <button class="bf-icon-btn btn-save" title="Save">${SAVE_ICON}</button>`
+              : `<button class="bf-icon-btn btn-edit" title="Edit">${EDIT_ICON}</button>`
+            }
+            <button class="bf-icon-btn btn-delete" title="Delete">${DELETE_ICON}</button>
+          </div>
+        </div>
+        <div class="bf-block-body">
+          ${isEdit
+            ? `<div class="bf-code-body"><textarea class="bf-cm-mount"></textarea></div>`
+            : `<div class="bf-preview-content bf-code-preview">${this._buildHtmlOutput() || '<span class="bf-empty-hint">Empty — click edit to add code</span>'}</div>`
+          }
+        </div>
+      </div>`;
+    this._attachEvents();
+  }
+
+  _attachEvents() {
+    this.querySelector('.bf-lang-select')?.addEventListener('change', e => {
+      this._language = e.target.value;
+      if (this._cm) {
+        const def = LANGUAGES.find(l => l.value === this._language);
+        this._cm.setOption('mode', def?.cmMode || null);
+      }
+      this._markChanged();
+    });
+    this.querySelector('.bf-label-input')?.addEventListener('input', e => { this._label = e.target.value; });
+    this.querySelector('.btn-edit')?.addEventListener('click',    () => this.setMode('edit'));
+    this.querySelector('.btn-preview')?.addEventListener('click', () => this.setMode('preview'));
+    this.querySelector('.btn-save')?.addEventListener('click',    () => this._save());
+    this.querySelector('.btn-delete')?.addEventListener('click',  () => this._delete());
+  }
+
+  _mountCodeMirror() {
+    const ta = this.querySelector('.bf-cm-mount');
+    if (!ta) return;
+    const def = LANGUAGES.find(l => l.value === this._language);
+    this._cm = CodeMirror.fromTextArea(ta, {
+      mode: def?.cmMode || null, lineNumbers: true,
+      indentUnit: 2, tabSize: 2, indentWithTabs: false
+    });
+    const raw = this._extractRaw(this._content);
+    if (raw) this._cm.setValue(raw);
+    this._cm.on('change', () => this._markChanged());
+    this._cm.focus();
+  }
+
+  _buildRawOutput() {
+    if (this._mode === 'edit' && this._cm) return this._cm.getValue();
+    return this._extractRaw(this._content);
+  }
+
+  _buildHtmlOutput() {
+    const raw = this._buildRawOutput();
+    if (!raw) return '';
+    const lang = this._language || 'plaintext';
+    let highlighted;
+    try {
+      highlighted = lang === 'plaintext'
+        ? hljs.highlightAuto(raw).value
+        : hljs.highlight(raw, { language: lang, ignoreIllegals: true }).value;
+    } catch(_) { highlighted = hljs.highlightAuto(raw).value; }
+    return `<div class="prv-cb"><div class="prv-cb-h"><span>${lang}</span></div><pre><code class="hljs language-${lang}">${highlighted}</code></pre></div>`;
+  }
+
+  _extractRaw(content) {
+    if (!content) return '';
+    if (content.includes('prv-cb')) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = content;
+      const el = tmp.querySelector('code');
+      return el ? el.innerText : content;
+    }
+    return content.replace(/<[^>]*>/g, '');
+  }
+
+  _save() {
+    if (this._cm) this._content = this._cm.getValue();
+    this._setStatus('saved');
+    const data = this.blockData;
+    if (this._onSaveCb) this._onSaveCb(data);
+    this.dispatchEvent(new CustomEvent('block:save', { bubbles:true, composed:true, detail:data }));
+  }
+
+  _delete() {
+    this.dispatchEvent(new CustomEvent('block:delete', { bubbles:true, composed:true, detail:{ id:this._resolveId() } }));
+    this.style.cssText = 'opacity:0;transform:scale(0.97);transition:all 0.15s ease;pointer-events:none;';
+    setTimeout(() => this.remove(), 150);
+  }
+
+  _markChanged() { this._setStatus('changed'); }
+
+  _setStatus(state) {
+    const el = this.querySelector('.bf-save-status');
+    if (!el) return;
+    el.textContent = state === 'saved' ? 'saved' : 'unsaved';
+    el.className   = `bf-save-status visible ${state === 'saved' ? 'is-saved' : 'is-changed'}`;
+    if (state === 'saved') { clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('visible'), 2200); }
+  }
+
+  _resolveId() {
+    const v = this.getAttribute('block-id') || this.getAttribute('id');
+    return v && !isNaN(v) ? Number(v) : v;
+  }
+
+  _getOrder() {
+    const list = this.closest('.bf-blocks-list') || this.parentElement;
+    if (!list) return 1;
+    return [...list.querySelectorAll('text-block, code-block')].indexOf(this) + 1;
+  }
+}
+customElements.define('code-block', CodeBlock);
+
+
+/* ══════════════════════════════════════
+   BlockEditor orchestrator
+══════════════════════════════════════ */
+class BlockEditor {
+  constructor(selector) {
+    this.mount        = document.querySelector(selector);
+    this.idCounter    = 0;
+    this._onSaveCb    = null;
+    this._onSaveAllCb = null;
+    this._uid         = Math.random().toString(36).slice(2,7);
+    this._buildShell();
+    this._initSortable();
+    this._showEmptyState();
+    this._refreshCount();
+  }
+
+  onSave(cb)    { this._onSaveCb    = cb; return this; }
+  onSaveAll(cb) { this._onSaveAllCb = cb; return this; }
+
+  load(arr) {
+    arr.forEach(item => {
+      const id = item.id ?? ++this.idCounter;
+      if (typeof id === 'number' && id >= this.idCounter) this.idCounter = id + 1;
+      const tag = item.type === 'text' ? 'text-block' : 'code-block';
+      const el  = document.createElement(tag);
+      el.setAttribute('block-id', id);
+      if (item.label)    el.setAttribute('label',    item.label);
+      if (item.language) el.setAttribute('language', item.language);
+      const src = item.raw ?? item.content;
+      if (src) el.setAttribute('content', src);
+      this.listEl.appendChild(el);
+    });
+    this._removeEmptyState();
+    this._refreshCount();
+    return this;
+  }
+
+  getAll() {
+    return [...this.listEl.querySelectorAll('text-block, code-block')]
+      .map((el, i) => ({ ...el.blockData, order: i + 1 }));
+  }
+
+  _buildShell() {
+    this.toolbar = document.createElement('div');
+    this.toolbar.className = 'bf-toolbar';
+    this.toolbar.innerHTML = `
+      <div style="display:flex;align-items:center">
+        <span class="bf-brand-inner">Block<span>Forge</span></span>
+        <span class="bf-count" id="bf-count-${this._uid}">0 blocks</span>
+      </div>
+      <div class="bf-toolbar-right">
+        <button class="bf-btn bf-btn-ghost" id="bf-saveall-${this._uid}">
+          ${SAVE_ICON}&nbsp; Save All
+        </button>
+      </div>`;
+
+    this.listEl = document.createElement('div');
+    this.listEl.className = 'bf-blocks-list';
+
+    this.addStrip = document.createElement('div');
+    this.addStrip.className = 'bf-add-strip';
+    this.addStrip.innerHTML = `
+      <button class="bf-add-btn bf-add-text">¶ Text Block</button>
+      <button class="bf-add-btn bf-add-code">&lt;/&gt; Code Block</button>`;
+
+    this.mount.appendChild(this.toolbar);
+    this.mount.appendChild(this.listEl);
+    this.mount.appendChild(this.addStrip);
+
+    this.toolbar.querySelector(`#bf-saveall-${this._uid}`)
+      .addEventListener('click', () => this._handleSaveAll());
+    this.addStrip.querySelector('.bf-add-text')
+      .addEventListener('click', () => this._addBlock('text'));
+    this.addStrip.querySelector('.bf-add-code')
+      .addEventListener('click', () => this._addBlock('code'));
+
+    this.listEl.addEventListener('block:save', e => {
+      const all   = this.getAll();
+      const block = all.find(b => b.id === e.detail.id) || e.detail;
+      if (this._onSaveCb) this._onSaveCb(block);
+      this._toast(`Block #${block.id} saved`);
+    });
+
+    this.listEl.addEventListener('block:delete', () => {
+      setTimeout(() => this._refreshCount(), 200);
+    });
+  }
+
+  _initSortable() {
+    Sortable.create(this.listEl, {
+      handle: '.bf-drag-handle', animation: 150,
+      ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen',
+      onEnd: () => this._refreshCount(),
+    });
+  }
+
+  _addBlock(type) {
+    this._removeEmptyState();
+    const id = ++this.idCounter;
+    const el = document.createElement(type === 'text' ? 'text-block' : 'code-block');
+    el.setAttribute('block-id', id);
+    this.listEl.appendChild(el);
+    setTimeout(() => el.setMode('edit'), 30);
+    this._refreshCount();
+    return el;
+  }
+
+  _handleSaveAll() {
+    const all = this.getAll();
+    if (!all.length) { this._toast('No blocks to save'); return; }
+    all.forEach(b => {
+      const el = this.listEl.querySelector(`[block-id="${b.id}"]`);
+      if (el && el._setStatus) el._setStatus('saved');
+    });
+    if (this._onSaveAllCb) this._onSaveAllCb(all);
+    this._toast(`Saved ${all.length} block${all.length !== 1 ? 's' : ''}`);
+  }
+
+  _showEmptyState() {
+    this._removeEmptyState();
+    if (!this.listEl.querySelector('text-block, code-block')) {
+      const el = document.createElement('div');
+      el.id = 'bf-empty'; el.className = 'bf-empty';
+      el.innerHTML = `<h3>No blocks yet</h3><p>Add a text or code block to get started</p>`;
+      this.listEl.appendChild(el);
+    }
+  }
+
+  _removeEmptyState() { this.listEl.querySelector('#bf-empty')?.remove(); }
+
+  _refreshCount() {
+    const n  = this.listEl.querySelectorAll('text-block, code-block').length;
+    const el = this.mount.querySelector(`#bf-count-${this._uid}`);
+    if (el) el.textContent = `${n} block${n !== 1 ? 's' : ''}`;
+    if (n === 0) this._showEmptyState();
+  }
+
+  _toast(msg) {
+    const box = document.getElementById('be-global-toasts');
+    if (!box) return;
+    const t = document.createElement('div');
+    t.className = 'toast-item';
+    t.innerHTML = `<span style="color:var(--accent);font-weight:600;font-size:12px;">✓</span> ${msg}`;
+    box.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.18s'; setTimeout(() => t.remove(), 200); }, 2500);
+  }
+}
+
+/* ══════════════════════════════════════
+   Init demo
+══════════════════════════════════════ */
+const editor = new BlockEditor('#editor-container');
+
+editor.onSave(block => {
+  console.group('💾 Block Saved');
+  console.log('id      ::', block.id);
+  console.log('type    ::', block.type);
+  console.log('order   ::', block.order);
+  console.log('label   ::', block.label);
+  console.log('language::', block.language);
+  console.log('content ::', block.content);
+  console.log('raw     ::', block.raw);
+  console.groupEnd();
+});
+
+editor.onSaveAll(blocks => {
+  console.log('All blocks ::', blocks);
+});
+
+editor.load([
+  {
+    id:      1,
+    type:    'text',
+    label:   'Introduction',
+    content: '<h2>Welcome to BlockForge</h2><p>Blocks start in <strong>preview mode</strong>. Click the pencil icon to switch to editing, then save when done. You can also <strong>drag blocks</strong> by the dot handle to reorder them.</p>',
+  },
+  {
+    id:      2,
+    type:    'text',
+    label:   'Features',
+    content: '<h3>What you get</h3><ul><li>Rich text editing via Quill JS</li><li>Syntax-highlighted code via CodeMirror + highlight.js</li><li>Drag-to-reorder via SortableJS</li><li>Per-block and bulk save callbacks</li><li>Custom IDs for DB integration</li></ul>',
+  },
+  {
+    id:       3,
+    type:     'code',
+    label:    'Quick start',
+    language: 'javascript',
+    raw:      `const editor = new BlockEditor("#editor-container");\n\neditor.onSave((block) => {\n  console.log(block.id);       // your DB id\n  console.log(block.type);     // "text" | "code"\n  console.log(block.order);    // 1-based position\n  console.log(block.content);  // HTML — store in DB\n  console.log(block.raw);      // raw — use for reload\n});\n\neditor.onSaveAll((blocks) => {\n  console.log(blocks); // array of all block data\n});\n\n// Load from DB on page init\neditor.load([\n  { id: 42, type: "text",  raw: "<p>Hello</p>" },\n  { id: 43, type: "code",  language: "python", raw: "print('hi')" },\n]);`,
+  },
+]);
+</script>
+
+<script>
+function scrollDoc(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.docs-nav-link').forEach(a => a.classList.remove('active'));
+    const link = document.querySelector(`.docs-nav-link[onclick="scrollDoc('${id}'"]`);
+    if (link) link.classList.add('active');
+  }
+}
+
+// Highlight active nav link on scroll
+document.addEventListener('DOMContentLoaded', () => {
+  const content = document.getElementById('docs-content');
+  if (!content) return;
+  content.addEventListener('scroll', () => {
+    const anchors = content.querySelectorAll('.docs-anchor');
+    let current = null;
+    anchors.forEach(a => {
+      if (a.getBoundingClientRect().top < 120) current = a.id;
+    });
+    if (current) {
+      document.querySelectorAll('.docs-nav-link').forEach(a => {
+        const onclick = a.getAttribute('onclick') || '';
+        a.classList.toggle('active', onclick.includes("'" + current + "'"));
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>
