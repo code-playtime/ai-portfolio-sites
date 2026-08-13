@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bhaswanth Chiruthanuru — Full Stack Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ RESET ============ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* ============ TOKENS ============ */
+  :root{
+    --bg: #060b16;
+    --panel: #0a1322;
+    --panel-alt: #0d1a2c;
+    --border: #16283c;
+    --border-hover: rgba(94,234,212,0.38);
+    --teal: #5eead4;
+    --teal-dim: #2dd4bf;
+    --ink: #e7edf5;
+    --ink-dim: #9fb0c3;
+    --ink-faint: #64748b;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --maxw: 960px;
+  }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 12% -5%, rgba(45,212,191,0.09), transparent 38%),
+      radial-gradient(circle at 90% 10%, rgba(94,234,212,0.06), transparent 32%);
+    background-attachment: fixed;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono{ font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
+
+  ::selection{ background: rgba(94,234,212,0.25); color: #fff; }
+
+  a.link-accent{
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(94,234,212,0.4);
+    transition: border-color .2s ease, color .2s ease;
+  }
+  a.link-accent:hover{ border-bottom-color: var(--teal); }
+
+  :focus-visible{
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ============ LAYOUT ============ */
+  .wrap{
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 18px;
+  }
+
+  main.wrap{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 70px;
+  }
+
+  .panel{
+    background:
+      linear-gradient(180deg, rgba(94,234,212,0.035), rgba(94,234,212,0) 18%),
+      var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+  }
+
+  /* ============ HERO ============ */
+  .hero{
+    text-align: center;
+    padding: 64px 18px 40px;
+  }
+
+  .eyebrow{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(94,234,212,0.07);
+    border: 1px solid rgba(94,234,212,0.2);
+    color: var(--teal);
+    margin-bottom: 22px;
+  }
+
+  .hero h1{
+    font-size: clamp(1.9rem, 6vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin: 0 0 8px;
+  }
+
+  .hero .subtitle{
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    font-weight: 600;
+    color: #8fb3d9;
+    margin: 0 0 30px;
+  }
+
+  .btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 11px 22px;
+    border-radius: 8px;
+    border: 1px solid rgba(94,234,212,0.4);
+    color: var(--teal);
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .btn:hover{ background: rgba(94,234,212,0.1); transform: translateY(-2px); }
+
+  /* ============ SECTION HEADINGS ============ */
+  .section-heading{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--teal);
+    margin: 0 0 22px;
+  }
+  .section-heading svg{ width: 19px; height: 19px; flex-shrink: 0; }
+  .section-heading .num{ color: var(--teal); }
+
+  /* ============ ABOUT ============ */
+  .about-body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    text-align: center;
+  }
+
+  .avatar{
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(94,234,212,0.3), rgba(45,212,191,0.04));
+    border: 1px solid rgba(94,234,212,0.32);
+  }
+
+  .about-text p{
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    margin: 0 0 14px;
+  }
+  .about-text p:last-child{ margin-bottom: 0; }
+
+  /* ============ EXPERIENCE ============ */
+  .timeline{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .timeline-item{
+    position: relative;
+  }
+
+  .job-card{
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .job-card:hover{
+    border-color: var(--border-hover);
+    background: rgba(94,234,212,0.035);
+  }
+
+  .job-meta{
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+
+  .job-role{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--teal);
+    margin: 0 0 10px;
+  }
+
+  .job-points{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .job-points li{
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+  }
+  .job-points li::before{
+    content: "·";
+    color: var(--teal);
+    font-weight: 700;
+  }
+
+  /* ============ SKILLS ============ */
+  .skill-group{ margin-bottom: 24px; }
+  .skill-group:last-child{ margin-bottom: 0; }
+
+  .skill-group-title{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+
+  .skill-list{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .skill-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+  .skill-row:hover{
+    border-color: var(--border-hover);
+    background: rgba(94,234,212,0.04);
+    transform: translateY(-1px);
+  }
+
+  .skill-name{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+  }
+  .skill-dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .skill-level{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--teal-dim);
+    white-space: nowrap;
+  }
+
+  /* ============ PROJECTS ============ */
+  .project-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .project-card{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+  .project-card:hover{
+    border-color: var(--border-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -14px rgba(45,212,191,0.3);
+  }
+
+  .project-name{
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--teal);
+    margin: 0 0 8px;
+  }
+
+  .project-desc{
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    flex: 1;
+    margin: 0;
+  }
+
+  .project-stack{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .stack-chip{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: rgba(94,234,212,0.06);
+    border: 1px solid rgba(94,234,212,0.18);
+    color: var(--teal);
+    white-space: nowrap;
+  }
+
+  /* ============ CONTACT ============ */
+  .contact{
+    text-align: center;
+    padding: 40px 18px;
+  }
+  .contact h2{
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 14px;
+  }
+  .contact p{
+    max-width: 480px;
+    margin: 0 auto 22px;
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .contact-link{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ============ FOOTER ============ */
+  footer{
+    text-align: center;
+    padding: 26px 18px 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  footer span{ color: var(--teal); }
+
+  /* ============ SCROLL REVEAL ============ */
+  .fade-up{
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.in-view{ opacity: 1; transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    .fade-up{ transition: none; opacity: 1; transform: none; }
+    html{ scroll-behavior: auto; }
+  }
+
+  /* ================================================================
+     BREAKPOINTS (mobile-first)
+     sm  -> 640px   tablets / large phones
+     md  -> 768px   small laptops / tablet landscape
+     lg  -> 1024px  desktop
+  ================================================================ */
+
+  /* --- sm: 640px --- */
+  @media (min-width: 640px){
+    .wrap{ padding: 0 28px; }
+
+    .hero{ padding: 84px 28px 46px; }
+
+    .panel{ padding: 32px 34px; }
+
+    .about-body{
+      flex-direction: row;
+      align-items: flex-start;
+      text-align: left;
+      gap: 30px;
+    }
+    .avatar{ width: 108px; height: 108px; font-size: 24px; }
+
+    .job-card{ padding: 20px 22px; }
+    .timeline{ position: relative; }
+    .timeline::before{
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 4px;
+      bottom: 4px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(94,234,212,0.4), rgba(94,234,212,0.04));
+    }
+    .timeline-item{ padding-left: 46px; }
+    .timeline-marker{
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a1322;
+      border: 1px solid rgba(94,234,212,0.4);
+      color: var(--teal);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 0 0 4px rgba(94,234,212,0.08);
+    }
+
+    .skill-list{ grid-template-columns: repeat(2, 1fr); }
+    .project-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* --- md: 768px --- */
+  @media (min-width: 768px){
+    .skill-list{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* --- lg: 1024px --- */
+  @media (min-width: 1024px){
+    .project-grid{ grid-template-columns: repeat(3, 1fr); }
+    .hero h1{ font-size: 3.6rem; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <p class="eyebrow mono fade-up in-view">&lt;/&gt; Hey, I'm &lt;/&gt;</p>
+    <h1 class="fade-up in-view">Bhaswanth Chiruthanuru</h1>
+    <p class="subtitle fade-up in-view">I build things for the web</p>
+    <a href="#about" class="btn mono fade-up in-view">
+      Explore My Work <span aria-hidden="true">↓</span>
+    </a>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ===================== ABOUT ===================== -->
+    <section id="about" class="panel fade-up">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span class="mono num">01.</span> About Me
+      </h2>
+      <div class="about-body">
+        <div class="avatar">BC</div>
+        <div class="about-text">
+          <p>A full-stack developer with a love for fantasy and technology. To me, coding is magic, every program I write is a spell and every system is an incantation that brings ideas to life. I enjoy crafting intuitive user interfaces and solid backends that work together seamlessly, turning complex problems into elegant solutions.</p>
+          <p>After completing my B.Tech at <a href="#" class="link-accent">N. B. K. R. Institute of Science &amp; Technology</a>, I stepped into the world beyond theory, joining freelance and full-time teams where I honed my craft. Each project became a new spell to master, strengthening my skills through real challenges and real creations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== EXPERIENCE ===================== -->
+    <section id="experience" class="panel fade-up">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-4V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2H4a1 1 0 00-1 1v10a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1zM10 5h4v2h-4V5z"/></svg>
+        <span class="mono num">02.</span> Experience
+      </h2>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <!-- ===================== SKILLS ===================== -->
+    <section id="skills" class="panel fade-up">
+      <h2 class="section-heading">
+        <span class="mono">&lt;/&gt;</span> <span class="mono num">03.</span> My Skillset
+      </h2>
+      <div id="skills-container"></div>
+    </section>
+
+    <!-- ===================== PROJECTS ===================== -->
+    <section id="projects" class="panel fade-up">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+        <span class="mono num">04.</span> Projects that I've worked on
+      </h2>
+      <div class="project-grid" id="projects-grid"></div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section id="contact" class="panel contact fade-up">
+      <p class="eyebrow mono">&lt;/&gt; What's Next? &lt;/&gt;</p>
+      <h2>Get In Touch</h2>
+      <p>Although I'm not currently looking for any new opportunities, my inbox is always open. Whether you have a question or just want to say hi, I'll try my best to get back to you! Say Hello</p>
+      <a href="mailto:bhaswanth@gmail.com" class="link-accent contact-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        mailto: bhaswanth@gmail.com
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    Designed &amp; Developed by <span>Bhaswanth Chiruthanuru</span>
+  </footer>
+
+<script>
+  // ---------- data ----------
+  const experience = [
+    {
+      period: "2024 - Present",
+      role: "Mobile Programming",
+      tag: "Software Engineering",
+      points: [
+        "Build modern, high-performance, and maintainable applications for both client and internal projects.",
+        "Work across a diverse set of technologies and frameworks including Javascript, Node.js, and React."
+      ]
+    },
+    {
+      period: "2022 - 2024",
+      role: "CloudPhone System",
+      tag: "Software Developer",
+      points: [
+        "Write modern, performant, maintainable code for a diverse array of client and internal projects.",
+        "Work with a variety of technologies such as Laravel, Node JS, React & PostgreSQL.",
+        "Maintain development and deployment of project codes regularly.",
+        "Monitor regular code checks and bug fixes."
+      ]
+    },
+    {
+      period: "2021 - 2022",
+      role: "Foodfront",
+      tag: "Full Stack Developer",
+      points: [
+        "Craft modern, high-performance code, spells designed to be clean, maintainable and resilient.",
+        "Work across multiple technologies such as PHP, Laravel, Javascript, Vue & MySQL.",
+        "Maintain and deploy projects regularly, watching over systems through careful checks, refinements, and timely bug fixes."
+      ]
+    },
+    {
+      period: "2021 - 2022",
+      role: "Projekino Solutions",
+      tag: "Full Stack Developer",
+      points: [
+        "Craft clean, high-performance code for a variety of client and internal applications.",
+        "Work comfortably across multiple technologies and frameworks such as PHP, Laravel, Javascript, React & Vue."
+      ]
+    }
+  ];
+
+  const timelineEl = document.getElementById('timeline');
+  experience.forEach((job, i) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item fade-up';
+    item.innerHTML = `
+      <div class="timeline-marker mono">${i + 1}</div>
+      <div class="job-card">
+        <div class="job-meta mono">
+          <span>${job.period}</span>
+          <span>${job.tag}</span>
+        </div>
+        <h3 class="job-role">${job.role}</h3>
+        <ul class="job-points">
+          ${job.points.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+    timelineEl.appendChild(item);
+  });
+
+  const skillGroups = [
+    {
+      title: "Core Skills",
+      items: [
+        { name: "HTML", level: "Expert", color: "#e34f26" },
+        { name: "CSS", level: "Expert", color: "#2965f1" },
+        { name: "Javascript", level: "Expert", color: "#f0db4f" },
+        { name: "Typescript", level: "Intermediate", color: "#3178c6" },
+        { name: "PHP", level: "Expert", color: "#8892bf" },
+        { name: "SQL", level: "Intermediate", color: "#7cb7e2" }
+      ]
+    },
+    {
+      title: "Frameworks & Runtimes",
+      items: [
+        { name: "Laravel", level: "Expert", color: "#ff2d20" },
+        { name: "Node JS", level: "Intermediate", color: "#8cc84b" },
+        { name: "React JS", level: "Expert", color: "#61dafb" },
+        { name: "Vue JS", level: "Intermediate", color: "#41b883" }
+      ]
+    },
+    {
+      title: "Database",
+      items: [
+        { name: "MySQL", level: "Intermediate", color: "#4479a1" },
+        { name: "PostgreSQL", level: "Intermediate", color: "#336791" },
+        { name: "Redis", level: "Intermediate", color: "#dc382d" }
+      ]
+    },
+    {
+      title: "Currently Learning",
+      items: [
+        { name: "C", level: "Beginner", color: "#5c6bc0" },
+        { name: "Arduino", level: "Beginner", color: "#00979d" }
+      ]
+    }
+  ];
+
+  const skillsContainer = document.getElementById('skills-container');
+  skillGroups.forEach(group => {
+    const wrap = document.createElement('div');
+    wrap.className = 'skill-group';
+    wrap.innerHTML = `
+      <p class="skill-group-title">${group.title}</p>
+      <div class="skill-list">
+        ${group.items.map(s => `
+          <div class="skill-row">
+            <span class="skill-name">
+              <span class="skill-dot" style="background:${s.color}"></span>
+              ${s.name}
+            </span>
+            <span class="skill-level mono">${s.level}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    skillsContainer.appendChild(wrap);
+  });
+
+  const projects = [
+    {
+      name: "Recruitment AI",
+      desc: "An AI-assisted recruitment portal designed to streamline the technical interview process. It automates candidate evaluation by analyzing resumes and intelligently assessing answers, reducing manual workload for HR teams and technical panels.",
+      stack: ["Next JS", "MySQL"]
+    },
+    {
+      name: "Gamma Telecom",
+      desc: "A UK-based B2B network service provider offering communication and connectivity solutions to businesses.",
+      stack: ["Node JS", "Express JS", "SSR", "Tailwindcss"]
+    },
+    {
+      name: "Cygnus",
+      desc: "An AI-powered e-learning platform designed to assist trainees in preparing for careers, through assessments and interactive learning modules built on intelligent automation.",
+      stack: ["Node JS", "React JS", "PostgreSQL", "Tailwindcss"]
+    },
+    {
+      name: "V Cinema",
+      desc: "An IMDb-style platform focused on Tollywood, providing movie details, cast lists, news, ratings, and more.",
+      stack: ["Laravel", "PostgreSQL", "Inertia JS", "Bootstrap"]
+    },
+    {
+      name: "SentiSprint Feedback Analysis",
+      desc: "An AI-powered feedback analysis platform designed for businesses to extract customer feedback, surface sentiment in real time, and take action, helping organizations make informed decisions based on real user opinions.",
+      stack: ["Laravel", "Python", "Bootstrap", "SaaS", "Tailwindcss", "AI Integration", "Gemma 2B IT"]
+    },
+    {
+      name: "SentiSprint Call Assistant",
+      desc: "A voice-based support platform that enables businesses to manage incoming and outgoing calls from customers. It captures complaints, issues, and feedback, later analyzed to improve customer service and operational efficiency.",
+      stack: ["Laravel", "PHP", "Vue JS", "TwilioFlex"]
+    },
+    {
+      name: "SentiSprint Master Control",
+      desc: "An internal admin platform designed to centralize the management of authentication, permissions, and tenant data across the system, with streamlined control over user roles, access, and configurations.",
+      stack: ["Laravel", "MySQL", "Vue JS", "Bootstrap"]
+    },
+    {
+      name: "Universal Summits",
+      desc: "A global platform designed for hosting and managing community events. It helps organizers create, manage, and promote events, making it seamless for participants to join, all from one centralized platform.",
+      stack: ["Laravel", "MySQL", "jQuery"]
+    }
+  ];
+
+  const projectsGrid = document.getElementById('projects-grid');
+  projects.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'project-card fade-up';
+    card.innerHTML = `
+      <h3 class="project-name">${p.name}</h3>
+      <p class="project-desc">${p.desc}</p>
+      <div class="project-stack">
+        ${p.stack.map(s => `<span class="stack-chip mono">${s}</span>`).join('')}
+      </div>
+    `;
+    projectsGrid.appendChild(card);
+  });
+
+  // ---------- scroll reveal ----------
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up:not(.in-view)').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

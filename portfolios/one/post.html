@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How I optimized PHP project in 3 days — Bhaswanth Chiruthanuru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ RESET ============ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  button { font: inherit; cursor: pointer; }
+
+  /* ============ TOKENS ============ */
+  :root{
+    --bg: #060b16;
+    --panel: #0a1322;
+    --border: #16283c;
+    --border-hover: rgba(94,234,212,0.38);
+    --teal: #5eead4;
+    --teal-dim: #2dd4bf;
+    --blue: #5b9bf5;
+    --purple: #a78bfa;
+    --ink: #e7edf5;
+    --ink-dim: #9fb0c3;
+    --ink-faint: #64748b;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --maxw: 1180px;
+  }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 10% -5%, rgba(45,212,191,0.07), transparent 36%),
+      radial-gradient(circle at 92% 6%, rgba(94,234,212,0.05), transparent 30%);
+    background-attachment: fixed;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono{ font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
+  ::selection{ background: rgba(94,234,212,0.25); color: #fff; }
+  :focus-visible{ outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap{ max-width: var(--maxw); margin: 0 auto; padding: 0 18px; }
+
+  /* ============ NAV ============ */
+  .site-nav{
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(6,11,22,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 20;
+  }
+  .site-nav .wrap{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .brand{ font-weight: 700; font-size: 15px; color: #fff; letter-spacing: -0.01em; }
+  .nav-links{ display: flex; align-items: center; gap: 26px; }
+  .nav-links a{
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .nav-links a:hover{ color: var(--ink); }
+  .nav-links a.active{ color: var(--teal); border-bottom-color: var(--teal); }
+
+  /* ============ PAGE LAYOUT ============ */
+  .page{
+    padding: 26px 18px 60px;
+  }
+  .back-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--teal);
+    margin-bottom: 22px;
+    transition: gap .2s ease;
+  }
+  .back-link:hover{ gap: 9px; }
+  .back-link svg{ width: 14px; height: 14px; }
+
+  .layout{
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ============ ARTICLE HEADER ============ */
+  .tag-chip{
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: rgba(94,234,212,0.07);
+    border: 1px solid rgba(94,234,212,0.22);
+    color: var(--teal);
+    margin-bottom: 16px;
+  }
+  .article-title{
+    font-size: clamp(1.5rem, 5vw, 2.3rem);
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 14px;
+  }
+  .article-lede{
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    line-height: 1.7;
+    max-width: 68ch;
+    margin: 0 0 18px;
+  }
+  .article-meta{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    padding-bottom: 26px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 26px;
+  }
+  .article-meta span{ display: inline-flex; align-items: center; gap: 6px; }
+  .article-meta svg{ width: 14px; height: 14px; color: var(--teal); }
+
+  .cover-img{
+    width: 100%;
+    aspect-ratio: 16/8.6;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: radial-gradient(circle at 30% 30%, #2a1b4d, #0a0f22 65%);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover-img svg{ width: 60px; height: 60px; color: rgba(255,255,255,0.15); }
+
+  /* ============ ARTICLE BODY ============ */
+  .article-body h2{
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    margin: 34px 0 12px;
+    scroll-margin-top: 90px;
+  }
+  .article-body h2:first-child{ margin-top: 0; }
+  .article-body p{
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.75;
+    margin: 0 0 14px;
+  }
+  .article-body ul{
+    margin: 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .article-body ul li{
+    position: relative;
+    padding-left: 20px;
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .article-body ul li::before{
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  .article-body hr{
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 34px 0;
+  }
+
+  /* code blocks */
+  .code-block{
+    position: relative;
+    background: #070d19;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin: 4px 0 18px;
+    overflow-x: auto;
+  }
+  .code-block pre{
+    margin: 0;
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: #cbd5e1;
+  }
+  .code-block code{ display: block; }
+  .code-line{ display: flex; gap: 16px; }
+  .code-line .ln{
+    color: var(--ink-faint);
+    user-select: none;
+    min-width: 16px;
+    text-align: right;
+    opacity: 0.6;
+  }
+  .tok-kw{ color: var(--purple); }
+  .tok-str{ color: var(--teal); }
+  .tok-fn{ color: var(--blue); }
+  .tok-cm{ color: var(--ink-faint); font-style: italic; }
+  .copy-btn{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .copy-btn:hover{ color: var(--teal); border-color: var(--border-hover); }
+  .copy-btn svg{ width: 14px; height: 14px; }
+
+  /* ============ SHARE / AUTHOR ============ */
+  .share-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 34px;
+  }
+  .share-row .label{ font-size: 13.5px; color: var(--ink-dim); }
+  .share-icons{ display: flex; gap: 10px; }
+  .icon-btn{
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-dim);
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .icon-btn:hover{ color: var(--teal); border-color: var(--border-hover); }
+  .icon-btn svg{ width: 15px; height: 15px; }
+
+  .author-card{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-top: 18px;
+  }
+  .author-avatar{
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(94,234,212,0.3), rgba(45,212,191,0.04));
+    border: 1px solid rgba(94,234,212,0.32);
+  }
+  .author-card h4{ font-size: 14.5px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+  .author-card p{ font-size: 12.5px; color: var(--ink-faint); margin: 0 0 6px; }
+  .author-card a{
+    font-size: 12.5px;
+    color: var(--teal);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .author-card a svg{ width: 12px; height: 12px; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{ display: flex; flex-direction: column; gap: 18px; }
+  .side-card{
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .side-card h5{
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 14px;
+  }
+
+  .toc-list{ display: flex; flex-direction: column; gap: 10px; }
+  .toc-list a{
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.5;
+    transition: color .2s ease;
+  }
+  .toc-list a:hover{ color: var(--teal); }
+  .toc-list a::before{
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .toc-list a.active{ color: var(--teal); }
+
+  .cat-list{ display: flex; flex-direction: column; gap: 8px; }
+  .cat-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    transition: background .2s ease, color .2s ease;
+  }
+  .cat-row:hover{ background: rgba(94,234,212,0.05); color: var(--ink); }
+  .cat-row.active{
+    background: rgba(94,234,212,0.14);
+    color: var(--teal);
+    font-weight: 600;
+  }
+  .cat-row .count{ font-family: 'JetBrains Mono', monospace; font-size: 11px; opacity: 0.75; }
+
+  .recent-list{ display: flex; flex-direction: column; gap: 16px; }
+  .recent-item{ display: flex; gap: 12px; }
+  .recent-thumb{
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    background: rgba(167,139,250,0.08);
+    color: var(--purple);
+  }
+  .recent-thumb svg{ width: 18px; height: 18px; }
+  .recent-item h6{
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    margin: 0 0 4px;
+  }
+  .recent-item p{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .about-card p{
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.65;
+    margin: 0 0 14px;
+  }
+  .about-card a{
+    font-size: 12.5px;
+    color: var(--teal);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .about-card a svg{ width: 12px; height: 12px; }
+
+  /* ============ FOOTER ============ */
+  footer{ border-top: 1px solid var(--border); padding: 40px 18px 26px; }
+  .footer-grid{
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-bottom: 26px;
+  }
+  .footer-brand h4{ font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 6px; }
+  .footer-brand p{ font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+  .footer-col h6{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+  }
+  .footer-col ul{ display: flex; flex-direction: column; gap: 8px; }
+  .footer-col a{ font-size: 13px; color: var(--ink-dim); transition: color .2s ease; }
+  .footer-col a:hover{ color: var(--teal); }
+  .footer-social{ display: flex; gap: 10px; }
+  .footer-bottom{
+    text-align: center;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .footer-bottom span{ color: var(--teal); }
+
+  /* ============ SCROLL REVEAL ============ */
+  .fade-up{
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .fade-up.in-view{ opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .fade-up{ transition: none; opacity: 1; transform: none; }
+    html{ scroll-behavior: auto; }
+  }
+
+  /* ================================================================
+     BREAKPOINTS (mobile-first)
+     sm  -> 640px
+     md  -> 768px
+     lg  -> 1024px
+  ================================================================ */
+  @media (min-width: 640px){
+    .wrap{ padding: 0 28px; }
+    .page{ padding: 30px 28px 70px; }
+    .share-row{ flex-wrap: nowrap; }
+  }
+
+  @media (min-width: 768px){
+    .footer-grid{ flex-direction: row; justify-content: space-between; }
+  }
+
+  @media (min-width: 1024px){
+    .layout{
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 44px;
+    }
+    .article-col{ flex: 1; min-width: 0; }
+    .sidebar{
+      width: 300px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 86px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="wrap">
+      <span class="brand">Bhaswanth Chiruthanuru</span>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#" class="active">Blog</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page">
+    <a href="#" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to all posts
+    </a>
+
+    <div class="layout">
+      <!-- ===================== ARTICLE ===================== -->
+      <article class="article-col fade-up">
+        <span class="tag-chip">PROGRAMMING</span>
+        <h1 class="article-title">How I optimized PHP project in 3 days</h1>
+        <p class="article-lede">This happened nearly 6 years ago, around the year 2019. I was working on my first job at the time as a junior web developer. At that time I was working on an e-learning platform. My work mainly revolved around maintaining and optimizing the application.</p>
+
+        <div class="article-meta">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
+            February 21, 2024
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.59 13.41L11 3.83V3H3v8h.83l9.58 9.59a2 2 0 002.83 0l4.35-4.35a2 2 0 000-2.83z"/><circle cx="6.5" cy="6.5" r="1"/></svg>
+            Featured
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>
+            8 min read
+          </span>
+        </div>
+
+        <div class="cover-img">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+        </div>
+
+        <div class="article-body">
+          <h2 id="the-problem">The Problem</h2>
+          <p>The platform was growing fast. More users, more courses, more data. But the codebase wasn't. Pages were loading slow, especially the dashboard and course listing pages. The server was struggling and the user experience was not great.</p>
+
+          <h2 id="what-i-did">What I Did</h2>
+          <p>I had just 3 days to improve performance without breaking anything. Here's what I did:</p>
+          <ul>
+            <li>Identified slow queries and optimized database indexes.</li>
+            <li>Implemented caching for heavy queries.</li>
+            <li>Minified and optimized CSS, JS, and images.</li>
+            <li>Refactored some legacy PHP code.</li>
+            <li>Tested everything and deployed with confidence.</li>
+          </ul>
+
+          <h2 id="db-queries">1. Optimized Database Queries</h2>
+          <p>I started by enabling the slow query log and analyzed the queries taking most time.</p>
+
+          <div class="code-block">
+            <button class="copy-btn" data-code="code-1" aria-label="Copy code">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <pre><code id="code-1"><span class="code-line"><span class="ln">1</span><span><span class="tok-kw">SELECT</span> * <span class="tok-kw">FROM</span> courses</span></span><span class="code-line"><span class="ln">2</span><span><span class="tok-kw">WHERE</span> status = <span class="tok-str">'published'</span></span></span><span class="code-line"><span class="ln">3</span><span><span class="tok-kw">ORDER BY</span> created_at <span class="tok-kw">DESC</span></span></span><span class="code-line"><span class="ln">4</span><span><span class="tok-kw">LIMIT</span> 12 <span class="tok-kw">OFFSET</span> 0;</span></span></code></pre>
+          </div>
+
+          <p>Added proper indexes and reduced the query time by 80%.</p>
+
+          <h2 id="caching">2. Caching Everything That Makes Sense</h2>
+          <p>I used Redis to cache course listings, user progress and counts.</p>
+
+          <div class="code-block">
+            <button class="copy-btn" data-code="code-2" aria-label="Copy code">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <pre><code id="code-2"><span class="code-line"><span class="ln">1</span><span>$key = <span class="tok-str">'course_list_page_1'</span>;</span></span><span class="code-line"><span class="ln">2</span><span>$courses = <span class="tok-fn">Redis::get</span>($key);</span></span><span class="code-line"><span class="ln">3</span><span><span class="tok-kw">if</span> (!$courses) {</span></span><span class="code-line"><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;$courses = <span class="tok-fn">Course::where</span>(<span class="tok-str">'status'</span>, <span class="tok-str">'published'</span>)</span></span><span class="code-line"><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->latest()->paginate(12);</span></span><span class="code-line"><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-fn">Redis::setex</span>($key, 3600, $courses); <span class="tok-cm">// cache for 1 hour</span></span></span><span class="code-line"><span class="ln">7</span><span>}</span></span></code></pre>
+          </div>
+
+          <h2 id="frontend">3. Frontend Optimization</h2>
+          <p>Minified assets, enabled Gzip compression and optimized images. The result was instant.</p>
+
+          <h2 id="results">Results</h2>
+          <p>Page load time reduced by 60%+, server load dropped significantly and users were happier. All this in just 3 days!</p>
+
+          <h2 id="lessons">Lessons Learned</h2>
+          <ul>
+            <li>Small optimizations can have a big impact.</li>
+            <li>Measure before you optimize.</li>
+            <li>Clean code is fast code.</li>
+            <li>Always test before deploying.</li>
+          </ul>
+
+          <p>That was my first real optimization challenge and it taught me a lot. Still one of my favorite memories from my early days.</p>
+
+          <hr>
+        </div>
+
+        <div class="share-row">
+          <span class="label">Share this post</span>
+          <div class="share-icons">
+            <a href="#" class="icon-btn" aria-label="Share on Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 4.5c-.8.36-1.66.6-2.56.71a4.48 4.48 0 001.96-2.48c-.86.5-1.82.87-2.83 1.07A4.47 4.47 0 0016.2 2c-2.47 0-4.47 2-4.47 4.47 0 .35.04.7.11 1.02C8.09 7.3 4.5 5.4 2.1 2.5c-.39.66-.61 1.43-.61 2.25 0 1.55.79 2.92 1.98 3.72-.73-.02-1.42-.22-2.02-.56v.06c0 2.17 1.54 3.98 3.58 4.39-.37.1-.77.15-1.18.15-.29 0-.57-.03-.84-.08.57 1.78 2.23 3.08 4.2 3.11A8.98 8.98 0 011 19.54 12.68 12.68 0 007.29 21.5c8.14 0 12.6-6.74 12.6-12.6l-.01-.57c.87-.62 1.62-1.4 2.22-2.29z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="Share on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14zM8.34 18.34V10.1H5.67v8.24h2.67zM7 8.9a1.55 1.55 0 100-3.1 1.55 1.55 0 000 3.1zm11.34 9.44v-4.53c0-2.42-1.29-3.55-3.02-3.55-1.39 0-2.01.77-2.36 1.3V10.1H10.3s.04.85 0 8.24h2.67v-4.6c0-.25.02-.5.09-.68.2-.5.66-1.03 1.42-1.03.99 0 1.4.76 1.4 1.87v4.44h2.66z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="Copy link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07l-1.5 1.5M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07l1.49-1.49"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="author-card">
+          <div class="author-avatar">BC</div>
+          <div>
+            <h4>Written by Bhaswanth Chiruthanuru</h4>
+            <p>Developer. Creator. Lifelong Learner.</p>
+            <a href="#">View all posts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <aside class="sidebar fade-up">
+        <div class="side-card">
+          <h5>On this page</h5>
+          <nav class="toc-list" id="toc"></nav>
+        </div>
+
+        <div class="side-card">
+          <h5>Categories</h5>
+          <div class="cat-list">
+            <div class="cat-row active"><span>All</span><span class="count">13</span></div>
+            <div class="cat-row"><span>Nim</span><span class="count">3</span></div>
+            <div class="cat-row"><span>PHP</span><span class="count">4</span></div>
+            <div class="cat-row"><span>Web Development</span><span class="count">2</span></div>
+            <div class="cat-row"><span>Open Source</span><span class="count">2</span></div>
+            <div class="cat-row"><span>Tools</span><span class="count">2</span></div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h5>Recent Posts</h5>
+          <div class="recent-list" id="recent-posts"></div>
+        </div>
+
+        <div class="side-card about-card">
+          <h5>About this blog</h5>
+          <p>I write about the things I build, learn and explore. From programming tutorials to open source projects and random thoughts.</p>
+          <a href="#">Learn more about me <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>Bhaswanth Chiruthanuru</h4>
+          <p>Developer. Creator. Lifelong Learner.</p>
+        </div>
+        <div class="footer-col">
+          <h6>Quick Links</h6>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h6>Let's connect</h6>
+          <div class="footer-social">
+            <a href="#" class="icon-btn" aria-label="GitHub">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.04-.01-1.88-2.78.51-3.5-.7-3.72-1.34-.13-.33-.68-1.34-1.16-1.61-.4-.22-.97-.76-.01-.78.9-.02 1.55.85 1.76 1.2 1.03 1.76 2.68 1.26 3.34.96.1-.76.4-1.26.72-1.55-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.27 2.75 1.05a9.24 9.24 0 015 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.62 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .28.18.6.69.5A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14zM8.34 18.34V10.1H5.67v8.24h2.67zM7 8.9a1.55 1.55 0 100-3.1 1.55 1.55 0 000 3.1zm11.34 9.44v-4.53c0-2.42-1.29-3.55-3.02-3.55-1.39 0-2.01.77-2.36 1.3V10.1H10.3s.04.85 0 8.24h2.67v-4.6c0-.25.02-.5.09-.68.2-.5.66-1.03 1.42-1.03.99 0 1.4.76 1.4 1.87v4.44h2.66z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.4" cy="6.6" r="1"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        Designed &amp; Developed by <span>Bhaswanth Chiruthanuru</span>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  // ---------- recent posts data ----------
+  const recentPosts = [
+    { icon: "J", color: "#a78bfa", title: "Jot — A Minimal CLI Tool to Store Your Thoughts and Notes", date: "Apr 28, 2024" },
+    { icon: "sun", color: "#5eead4", title: "Lunaris — A Modern PHP Framework for the Real World", date: "Apr 10, 2024" },
+    { icon: "shield", color: "#5b9bf5", title: "Helios SSO — Simple and Secure Authentication", date: "Mar 25, 2024" },
+    { icon: "code", color: "#a78bfa", title: "Building Reusable PHP Components with Lunaris", date: "Mar 05, 2024" },
+    { icon: "github", color: "#e7edf5", title: "Why I Love Open Source", date: "Feb 18, 2024" }
+  ];
+
+  const iconSvg = {
+    sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
+    shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>`,
+    code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6L2 12l6 6M16 6l6 6-6 6"/></svg>`,
+    github: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.04-.01-1.88-2.78.51-3.5-.7-3.72-1.34-.13-.33-.68-1.34-1.16-1.61-.4-.22-.97-.76-.01-.78.9-.02 1.55.85 1.76 1.2 1.03 1.76 2.68 1.26 3.34.96.1-.76.4-1.26.72-1.55-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.27 2.75 1.05a9.24 9.24 0 015 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.62 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .28.18.6.69.5A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg>`
+  };
+
+  const recentEl = document.getElementById('recent-posts');
+  recentPosts.forEach(p => {
+    const iconHtml = iconSvg[p.icon] ? iconSvg[p.icon] : p.icon;
+    const el = document.createElement('div');
+    el.className = 'recent-item';
+    el.innerHTML = `
+      <div class="recent-thumb" style="color:${p.color}; background:${p.color}1a;">${iconHtml}</div>
+      <div>
+        <h6>${p.title}</h6>
+        <p>${p.date}</p>
+      </div>
+    `;
+    recentEl.appendChild(el);
+  });
+
+  // ---------- build TOC from headings ----------
+  const headings = Array.from(document.querySelectorAll('.article-body h2'));
+  const tocEl = document.getElementById('toc');
+  headings.forEach(h => {
+    const a = document.createElement('a');
+    a.href = `#${h.id}`;
+    a.textContent = h.textContent;
+    tocEl.appendChild(a);
+  });
+
+  const tocLinks = Array.from(tocEl.querySelectorAll('a'));
+  const tocObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.getAttribute('id');
+      const link = tocLinks.find(l => l.getAttribute('href') === `#${id}`);
+      if (!link) return;
+      if (entry.isIntersecting){
+        tocLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  headings.forEach(h => tocObserver.observe(h));
+
+  // ---------- copy code buttons ----------
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.code);
+      const text = target.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></svg>`;
+        setTimeout(() => { btn.innerHTML = original; }, 1500);
+      });
+    });
+  });
+
+  // ---------- scroll reveal ----------
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

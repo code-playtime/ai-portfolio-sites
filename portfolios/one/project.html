@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jot — Projects — Bhaswanth Chiruthanuru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ RESET ============ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  button { font: inherit; cursor: pointer; }
+
+  /* ============ TOKENS ============ */
+  :root{
+    --bg: #060b16;
+    --panel: #0a1322;
+    --border: #16283c;
+    --border-hover: rgba(94,234,212,0.38);
+    --teal: #5eead4;
+    --teal-dim: #2dd4bf;
+    --blue: #5b9bf5;
+    --purple: #a78bfa;
+    --ink: #e7edf5;
+    --ink-dim: #9fb0c3;
+    --ink-faint: #64748b;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --maxw: 1180px;
+  }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 10% -5%, rgba(45,212,191,0.07), transparent 36%),
+      radial-gradient(circle at 92% 6%, rgba(94,234,212,0.05), transparent 30%);
+    background-attachment: fixed;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono{ font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
+  ::selection{ background: rgba(94,234,212,0.25); color: #fff; }
+  :focus-visible{ outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+
+  .wrap{ max-width: var(--maxw); margin: 0 auto; padding: 0 18px; }
+
+  /* ============ NAV ============ */
+  .site-nav{
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(6,11,22,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 20;
+  }
+  .site-nav .wrap{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .brand{ font-weight: 700; font-size: 15px; color: #fff; letter-spacing: -0.01em; }
+  .nav-links{ display: flex; align-items: center; gap: 26px; }
+  .nav-links a{
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .nav-links a:hover{ color: var(--ink); }
+  .nav-links a.active{ color: var(--teal); border-bottom-color: var(--teal); }
+
+  /* ============ PAGE LAYOUT ============ */
+  .page{ padding: 26px 18px 60px; }
+  .back-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--teal);
+    margin-bottom: 22px;
+    transition: gap .2s ease;
+  }
+  .back-link:hover{ gap: 9px; }
+  .back-link svg{ width: 14px; height: 14px; }
+
+  .layout{ display: flex; flex-direction: column; gap: 32px; }
+
+  /* ============ PROJECT HEADER ============ */
+  .project-header{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 30px;
+  }
+  .project-logo{
+    width: 130px;
+    height: 130px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: radial-gradient(circle at 30% 20%, rgba(167,139,250,0.22), #0a0f22 70%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .project-logo .glyph{
+    font-size: 46px;
+    font-weight: 700;
+    color: var(--purple);
+    line-height: 1;
+  }
+  .project-logo .glyph-label{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--purple);
+  }
+
+  .project-title h1{
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .project-tagline{
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    margin: 0 0 12px;
+  }
+  .project-desc{
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.7;
+    max-width: 62ch;
+    margin: 0 0 16px;
+  }
+  .meta-row{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+  }
+  .meta-row span{ display: inline-flex; align-items: center; gap: 6px; }
+  .meta-row svg{ width: 14px; height: 14px; color: var(--teal); }
+  .status-dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 0 3px rgba(94,234,212,0.18);
+  }
+
+  /* ============ ARTICLE-STYLE BODY ============ */
+  .article-col h2{
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 12px;
+  }
+  .section-block{ margin-bottom: 34px; }
+  .section-block p{
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.75;
+    margin: 0 0 14px;
+  }
+
+  .check-list{ display: flex; flex-direction: column; gap: 9px; }
+  .check-list li{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.5;
+  }
+  .check-list svg{ width: 16px; height: 16px; color: var(--teal); flex-shrink: 0; margin-top: 1px; }
+
+  .stack-row{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .stack-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    font-size: 13px;
+    color: var(--ink-dim);
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .stack-pill:hover{ border-color: var(--border-hover); color: var(--ink); }
+  .stack-pill .swatch{
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .stack-pill svg{ width: 12px; height: 12px; }
+
+  .field-label{
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin: 0 0 10px;
+  }
+  .field-label code{
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(94,234,212,0.08);
+    color: var(--teal);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  /* code blocks */
+  .code-block{
+    position: relative;
+    background: #070d19;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin: 0 0 14px;
+    overflow-x: auto;
+  }
+  .code-block pre{
+    margin: 0;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #cbd5e1;
+    white-space: pre;
+  }
+  .code-line{ display: flex; gap: 16px; }
+  .code-line .ln{
+    color: var(--ink-faint);
+    user-select: none;
+    min-width: 14px;
+    text-align: right;
+    opacity: 0.6;
+  }
+  .tok-fn{ color: var(--blue); }
+  .tok-str{ color: var(--teal); }
+  .copy-btn{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .copy-btn:hover{ color: var(--teal); border-color: var(--border-hover); }
+  .copy-btn svg{ width: 14px; height: 14px; }
+
+  /* usage tabs */
+  .usage-tabs{
+    display: flex;
+    gap: 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .usage-tab{
+    background: none;
+    border: none;
+    padding: 4px 0 10px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .usage-tab:hover{ color: var(--ink); }
+  .usage-tab.active{ color: #fff; font-weight: 600; border-bottom-color: var(--teal); }
+
+  .usage-hint{
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+  .usage-hint code{
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(94,234,212,0.08);
+    color: var(--teal);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ============ ARTICLES ROW ============ */
+  .section-header-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .section-header-row h2{ margin: 18px 0 0; }
+  .view-all-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--teal);
+    margin-top: 18px;
+    transition: gap .2s ease;
+  }
+  .view-all-link:hover{ gap: 9px; }
+  .view-all-link svg{ width: 13px; height: 13px; }
+
+  .article-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .article-card{
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color .25s ease, transform .25s ease;
+  }
+  .article-card:hover{ border-color: var(--border-hover); transform: translateY(-3px); }
+  .article-cover{
+    width: 100%;
+    aspect-ratio: 16/11;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .article-cover svg{ width: 30px; height: 30px; color: rgba(255,255,255,0.85); }
+  .article-cover .glyph{ font-size: 30px; font-weight: 700; color: var(--purple); }
+  .article-tag{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(94,234,212,0.1);
+    border: 1px solid rgba(94,234,212,0.28);
+    color: var(--teal);
+  }
+  .article-body-sm{ padding: 12px 14px 14px; }
+  .article-body-sm h4{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    margin: 0 0 10px;
+  }
+  .article-meta-sm{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{ display: flex; flex-direction: column; gap: 18px; }
+  .side-card{
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .side-card h5{ font-size: 13.5px; font-weight: 700; color: #fff; margin: 0 0 14px; }
+
+  .link-list{ display: flex; flex-direction: column; gap: 16px; }
+  .link-row{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .link-icon{
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+  .link-icon svg{ width: 15px; height: 15px; }
+  .link-row-content{ flex: 1; min-width: 0; }
+  .link-row-content a.title{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    transition: color .2s ease;
+  }
+  .link-row-content a.title:hover{ color: var(--teal); }
+  .link-row-content a.title svg{ width: 12px; height: 12px; color: var(--ink-faint); flex-shrink: 0; }
+  .link-row-content p{
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin: 3px 0 0;
+    word-break: break-word;
+  }
+
+  .detail-list{ display: flex; flex-direction: column; gap: 13px; }
+  .detail-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12.5px;
+  }
+  .detail-row .key{
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink-faint);
+  }
+  .detail-row .key svg{ width: 15px; height: 15px; color: var(--teal); flex-shrink: 0; }
+  .detail-row .val{ color: var(--ink); font-weight: 500; }
+  .detail-row .val.status-active{ color: var(--teal); }
+
+  .about-card p{
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.65;
+    margin: 0 0 14px;
+  }
+  .about-card a{
+    font-size: 12.5px;
+    color: var(--teal);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .about-card a svg{ width: 12px; height: 12px; }
+
+  /* ============ FOOTER ============ */
+  footer{ border-top: 1px solid var(--border); padding: 40px 18px 26px; }
+  .footer-grid{ display: flex; flex-direction: column; gap: 28px; margin-bottom: 26px; }
+  .footer-brand h4{ font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 6px; }
+  .footer-brand p{ font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+  .footer-col h6{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+    text-transform: uppercase;
+  }
+  .footer-col ul{ display: flex; flex-direction: column; gap: 8px; }
+  .footer-col a{ font-size: 13px; color: var(--ink-dim); transition: color .2s ease; }
+  .footer-col a:hover{ color: var(--teal); }
+  .footer-social{ display: flex; gap: 10px; }
+  .icon-btn{
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-dim);
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .icon-btn:hover{ color: var(--teal); border-color: var(--border-hover); }
+  .icon-btn svg{ width: 15px; height: 15px; }
+  .footer-bottom{
+    text-align: center;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .footer-bottom span{ color: var(--teal); }
+
+  /* ============ SCROLL REVEAL ============ */
+  .fade-up{
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .fade-up.in-view{ opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .fade-up{ transition: none; opacity: 1; transform: none; }
+    html{ scroll-behavior: auto; }
+  }
+
+  /* ================================================================
+     BREAKPOINTS (mobile-first)
+     sm  -> 640px
+     md  -> 768px
+     lg  -> 1024px
+  ================================================================ */
+  @media (min-width: 640px){
+    .wrap{ padding: 0 28px; }
+    .page{ padding: 30px 28px 70px; }
+    .project-header{ flex-direction: row; gap: 26px; }
+    .article-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 768px){
+    .footer-grid{ flex-direction: row; justify-content: space-between; }
+  }
+
+  @media (min-width: 1024px){
+    .layout{ flex-direction: row; align-items: flex-start; gap: 44px; }
+    .article-col{ flex: 1; min-width: 0; }
+    .sidebar{ width: 300px; flex-shrink: 0; position: sticky; top: 86px; }
+    .article-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 1180px){
+    .article-grid{ grid-template-columns: repeat(5, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="wrap">
+      <span class="brand">Bhaswanth Chiruthanuru</span>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#" class="active">Blog</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap page">
+    <a href="#" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to all projects
+    </a>
+
+    <div class="layout">
+      <!-- ===================== MAIN ===================== -->
+      <div class="article-col fade-up">
+
+        <div class="project-header">
+          <div class="project-logo">
+            <span class="glyph">J</span>
+            <span class="glyph-label">Jot</span>
+          </div>
+          <div class="project-title">
+            <h1>Jot</h1>
+            <p class="project-tagline">A minimal CLI tool to store your thoughts and notes.</p>
+            <p class="project-desc">Jot is a fast, simple and reliable command line tool written in Nim to help you capture, organize and retrieve your notes effortlessly from the terminal. Your notes are stored locally in a SQLite database. No cloud. No tracking. Just your notes, completely private.</p>
+            <div class="meta-row">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 17V7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2z"/></svg>
+                CLI Tool
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                Personal Project
+              </span>
+              <span>
+                <span class="status-dot"></span>
+                Active
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <h2>About Jot</h2>
+          <p>Jot is built for those moments when ideas strike or when you just need a place to dump your thoughts. It stays out of your way and lets you focus on what matters — your thoughts.</p>
+          <ul class="check-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              Add, list, view, search and delete notes
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              Automatically organized by date
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              Search notes by keyword
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              Mark important notes with a star
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              SQLite for speed and reliability
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12l2.5 2.5L16 9"/></svg>
+              Works everywhere the terminal works
+            </li>
+          </ul>
+        </div>
+
+        <div class="section-block">
+          <h2>Tech Stack</h2>
+          <div class="stack-row">
+            <span class="stack-pill">
+              <span class="swatch" style="background:rgba(255,215,0,0.14); color:#ffd700;">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14 2 9.5h7.5z"/></svg>
+              </span>
+              Nim
+            </span>
+            <span class="stack-pill">
+              <span class="swatch" style="background:rgba(91,155,245,0.14); color:#5b9bf5;">
+                <svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/></svg>
+              </span>
+              SQLite
+            </span>
+            <span class="stack-pill">
+              <span class="swatch" style="background:rgba(167,139,250,0.14); color:#a78bfa;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </span>
+              Nimble
+            </span>
+            <span class="stack-pill">
+              <span class="swatch" style="background:rgba(94,234,212,0.14); color:var(--teal);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6L2 12l6 6M16 6l6 6-6 6"/></svg>
+              </span>
+              Terminal
+            </span>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <h2>Installation</h2>
+          <p class="field-label">Install Jot using nimble:</p>
+          <div class="code-block">
+            <button class="copy-btn" data-code="code-install" aria-label="Copy code">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <pre><code id="code-install"><span class="code-line"><span class="ln">1</span><span>nimble install jot</span></span></code></pre>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <h2>Usage</h2>
+          <p class="field-label">Quick examples to get you started.</p>
+
+          <div class="usage-tabs" id="usage-tabs">
+            <button class="usage-tab active" data-tab="add">Add Note</button>
+            <button class="usage-tab" data-tab="list">List Notes</button>
+            <button class="usage-tab" data-tab="search">Search Note</button>
+            <button class="usage-tab" data-tab="delete">Delete Note</button>
+          </div>
+
+          <div id="usage-content"></div>
+
+          <p class="usage-hint">Run <code>jot --help</code> to see all available commands.</p>
+        </div>
+
+        <!-- ===================== ARTICLES ===================== -->
+        <div class="section-header-row">
+          <h2>Articles about Jot</h2>
+          <a href="#" class="view-all-link" style="margin-top:18px;">
+            View all articles
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="article-grid" id="article-grid"></div>
+
+      </div>
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <aside class="sidebar fade-up">
+        <div class="side-card">
+          <h5>Project Links</h5>
+          <div class="link-list">
+            <div class="link-row">
+              <div class="link-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.04-.01-1.88-2.78.51-3.5-.7-3.72-1.34-.13-.33-.68-1.34-1.16-1.61-.4-.22-.97-.76-.01-.78.9-.02 1.55.85 1.76 1.2 1.03 1.76 2.68 1.26 3.34.96.1-.76.4-1.26.72-1.55-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.27 2.75 1.05a9.24 9.24 0 015 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.62 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .28.18.6.69.5A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg>
+              </div>
+              <div class="link-row-content">
+                <a href="#" class="title">GitHub Repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+                <p>github.com/bhaswanthchiru/jot</p>
+              </div>
+            </div>
+            <div class="link-row">
+              <div class="link-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M14 2v6h6"/><path stroke-linecap="round" d="M8 13h8M8 17h5"/></svg>
+              </div>
+              <div class="link-row-content">
+                <a href="#" class="title">Documentation <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+                <p>View Docs</p>
+              </div>
+            </div>
+            <div class="link-row">
+              <div class="link-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>
+              </div>
+              <div class="link-row-content">
+                <a href="#" class="title">Releases <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+                <p>Latest Release</p>
+              </div>
+            </div>
+            <div class="link-row">
+              <div class="link-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4l3 1.5"/></svg>
+              </div>
+              <div class="link-row-content">
+                <a href="#" class="title">Report an Issue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>
+                <p>Open Issues</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h5>Project Details</h5>
+          <div class="detail-list">
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6L2 12l6 6M16 6l6 6-6 6"/></svg>Type</span>
+              <span class="val">CLI Tool</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Category</span>
+              <span class="val">Productivity</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14 2 9.5h7.5z"/></svg>Language</span>
+              <span class="val">Nim</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2M4 6v12c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 6c0 1.1 3.6 2 8 2s8-.9 8-2M4 12c0 1.1 3.6 2 8 2s8-.9 8-2"/></svg>Database</span>
+              <span class="val">SQLite</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg>License</span>
+              <span class="val">MIT</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>Started</span>
+              <span class="val">2024</span>
+            </div>
+            <div class="detail-row">
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4l3 1.5"/></svg>Status</span>
+              <span class="val status-active">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card about-card">
+          <h5>About this project</h5>
+          <p>Jot was born out of my need for a minimal and distraction-free way to store notes in the terminal. It's a tool I use every day and continues to evolve.</p>
+          <a href="#">View on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>Bhaswanth Chiruthanuru</h4>
+          <p>Developer. Creator. Lifelong Learner.</p>
+        </div>
+        <div class="footer-col">
+          <h6>Quick Links</h6>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h6>Let's connect</h6>
+          <div class="footer-social">
+            <a href="#" class="icon-btn" aria-label="GitHub">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.04-.01-1.88-2.78.51-3.5-.7-3.72-1.34-.13-.33-.68-1.34-1.16-1.61-.4-.22-.97-.76-.01-.78.9-.02 1.55.85 1.76 1.2 1.03 1.76 2.68 1.26 3.34.96.1-.76.4-1.26.72-1.55-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.27 2.75 1.05a9.24 9.24 0 015 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.62 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .28.18.6.69.5A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14zM8.34 18.34V10.1H5.67v8.24h2.67zM7 8.9a1.55 1.55 0 100-3.1 1.55 1.55 0 000 3.1zm11.34 9.44v-4.53c0-2.42-1.29-3.55-3.02-3.55-1.39 0-2.01.77-2.36 1.3V10.1H10.3s.04.85 0 8.24h2.67v-4.6c0-.25.02-.5.09-.68.2-.5.66-1.03 1.42-1.03.99 0 1.4.76 1.4 1.87v4.44h2.66z"/></svg>
+            </a>
+            <a href="#" class="icon-btn" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.4" cy="6.6" r="1"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        Designed &amp; Developed by <span>Bhaswanth Chiruthanuru</span>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  // ---------- usage tabs ----------
+  const usageExamples = {
+    add: { code: `jot add "Just shipped a new feature!"`, label: `jot add "note text"` },
+    list: { code: `jot list`, label: `jot list` },
+    search: { code: `jot search "feature"`, label: `jot search "keyword"` },
+    delete: { code: `jot delete 12`, label: `jot delete <id>` }
+  };
+
+  function renderUsage(tab){
+    const ex = usageExamples[tab];
+    const content = document.getElementById('usage-content');
+    content.innerHTML = `
+      <div class="code-block">
+        <button class="copy-btn" data-code="code-usage" aria-label="Copy code">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+        <pre><code id="code-usage"><span class="code-line"><span class="ln">1</span><span>${ex.code.replace('jot', '<span class="tok-fn">jot</span>').replace(/"([^"]*)"/, '<span class="tok-str">"$1"</span>')}</span></span></code></pre>
+      </div>
+    `;
+    bindCopyButtons();
+  }
+
+  document.querySelectorAll('.usage-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.usage-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderUsage(tab.dataset.tab);
+    });
+  });
+  renderUsage('add');
+
+  // ---------- copy buttons (delegated, works for dynamic content too) ----------
+  function bindCopyButtons(){
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.onclick = () => {
+        const target = document.getElementById(btn.dataset.code);
+        if (!target) return;
+        navigator.clipboard.writeText(target.innerText).then(() => {
+          const original = btn.innerHTML;
+          btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5"/></svg>`;
+          setTimeout(() => { btn.innerHTML = original; }, 1500);
+        });
+      };
+    });
+  }
+  bindCopyButtons();
+
+  // ---------- articles data ----------
+  const articles = [
+    { tag: "JOT", type: "logo", title: "Jot — A Minimal CLI Tool to Store Your Thoughts and Notes", date: "Apr 28, 2024", read: "6 min read", cover: "radial-gradient(circle at 30% 20%, rgba(167,139,250,0.22), #0a0f22 70%)" },
+    { tag: "JOT", type: "code", title: "Building Jot with Nim and SQLite", date: "May 12, 2024", read: "8 min read", cover: "linear-gradient(135deg, #10231c, #0a1322 70%)" },
+    { tag: "JOT", type: "gauge", title: "Making Jot Faster: Optimizations and Lessons", date: "May 28, 2024", read: "7 min read", cover: "linear-gradient(135deg, #1a1424, #0a0f1c 70%)" },
+    { tag: "JOT", type: "terminal", title: "Adding Search to Jot with FTS5", date: "Jun 14, 2024", read: "5 min read", cover: "linear-gradient(135deg, #241a10, #0a1322 70%)" },
+    { tag: "JOT", type: "cloud", title: "Why Jot Will Always Stay Local & Offline", date: "Jun 30, 2024", read: "4 min read", cover: "linear-gradient(135deg, #10182a, #0a1322 70%)" }
+  ];
+
+  const articleIcons = {
+    logo: `<span class="glyph">J</span>`,
+    code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6L2 12l6 6M16 6l6 6-6 6"/></svg>`,
+    gauge: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path stroke-linecap="round" d="M12 13l3-3M12 5V3M4 13H2M22 13h-2"/></svg>`,
+    terminal: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 9l3 3-3 3M13 15h4"/></svg>`,
+    cloud: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 18a4 4 0 01-1-7.87A5 5 0 0116 8a4.5 4.5 0 011 8.9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 12v7M9.5 16.5L12 14l2.5 2.5"/></svg>`
+  };
+
+  const grid = document.getElementById('article-grid');
+  articles.forEach(a => {
+    const card = document.createElement('a');
+    card.href = '#';
+    card.className = 'article-card';
+    card.innerHTML = `
+      <div class="article-cover" style="background:${a.cover}">
+        <span class="article-tag">${a.tag}</span>
+        ${articleIcons[a.type]}
+      </div>
+      <div class="article-body-sm">
+        <h4>${a.title}</h4>
+        <div class="article-meta-sm">
+          <span>${a.date}</span>
+          <span>${a.read}</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // ---------- scroll reveal ----------
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
