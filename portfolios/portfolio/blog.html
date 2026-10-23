@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blog — Naruto Uzumaki</title>
+<meta name="description" content="Articles on fullstack development, React, Node.js, TypeScript, DevOps and career growth by Naruto Uzumaki." />
+<meta name="author" content="Naruto Uzumaki" />
+<meta name="theme-color" content="#191919" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23191919'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='16' font-weight='800' fill='white' text-anchor='middle'%3ENU%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Naruto Uzumaki — home">
+      <span class="brand-mark" aria-hidden="true">NU</span>
+      <span>Naruto Uzumaki<small>Fullstack Developer</small></span>
+    </a>
+
+    <nav class="nav-desktop" data-nav aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#projects">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+
+    <a class="btn btn-primary btn-sm nav-cta" href="index.html#contact">Hire me</a>
+
+    <button class="nav-toggle" type="button" data-nav-toggle aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span class="bar" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<!-- ================= OFFCANVAS NAV ================= -->
+<div class="backdrop" data-backdrop></div>
+<aside class="offcanvas" id="mobile-nav" data-offcanvas aria-hidden="true" aria-label="Mobile navigation">
+  <div class="offcanvas-head">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">NU</span>
+      <span>Naruto Uzumaki</span>
+    </a>
+    <button class="offcanvas-close" type="button" data-nav-close aria-label="Close menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <nav class="offcanvas-nav" data-nav aria-label="Mobile">
+      <a href="index.html">Home <span>01</span></a>
+      <a href="index.html#about">About <span>02</span></a>
+      <a href="index.html#skills">Technologies <span>03</span></a>
+      <a href="index.html#experience">Experience <span>04</span></a>
+      <a href="index.html#projects">Projects <span>05</span></a>
+      <a href="blog.html">Blog <span>06</span></a>
+      <a href="index.html#contact">Contact <span>07</span></a>
+    </nav>
+    <div class="offcanvas-foot">
+      <a class="btn btn-primary btn-block" href="index.html#contact">Hire me</a>
+      <a class="btn btn-outline btn-block" href="mailto:naruto.uzumaki@dev.io">naruto.uzumaki@dev.io</a>
+    </div>
+  </div>
+</aside>
+
+<main id="main">
+
+  <!-- ================= BANNER ================= -->
+  <section class="page-banner">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span aria-current="page">Blog</span>
+      </nav>
+      <h1 class="display">Notes from the terminal.</h1>
+      <p class="sub">
+        Long-form write-ups on building software that lasts: architecture decisions,
+        frontend craft, backend trenches and the occasional career detour.
+      </p>
+      <div class="banner-stats">
+        <span class="badge badge-soft">24 articles</span>
+        <span class="badge badge-soft">10 per page</span>
+        <span class="badge badge-soft">Updated weekly</span>
+        <span class="badge badge-solid">RSS available</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TOOLBAR ================= -->
+  <div class="blog-toolbar" data-list-anchor>
+    <div class="container">
+      <div class="blog-toolbar-inner">
+        <div class="search-box">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" data-search placeholder="Search articles, topics, tags…" aria-label="Search articles" />
+          <button class="search-clear" type="button" data-search-clear aria-label="Clear search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="filter-chips" role="group" aria-label="Filter by tag">
+          <button class="chip is-active" type="button" data-tag-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-tag-filter="react" aria-pressed="false">React</button>
+          <button class="chip" type="button" data-tag-filter="node" aria-pressed="false">Node.js</button>
+          <button class="chip" type="button" data-tag-filter="typescript" aria-pressed="false">TypeScript</button>
+          <button class="chip" type="button" data-tag-filter="devops" aria-pressed="false">DevOps</button>
+          <button class="chip" type="button" data-tag-filter="design" aria-pressed="false">Design</button>
+          <button class="chip" type="button" data-tag-filter="career" aria-pressed="false">Career</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ARTICLE LIST ================= -->
+  <section class="section">
+    <div class="container">
+      <div class="blog-meta-line">
+        <span data-list-label>All stories</span>
+        <span data-result-count>24 stories</span>
+      </div>
+
+      <div class="article-list" data-article-list>
+
+        <!-- 01 -->
+        <article class="article-row" data-title="The Architecture I Wish I Knew Five Years Ago" data-tags="architecture, career, react" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-10-02">Oct 2, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>11 min read</span>
+            </div>
+            <h2><a href="article.html">The Architecture I Wish I Knew Five Years Ago</a></h2>
+            <p class="excerpt">
+              Layered folders, domain boundaries, and the one rule that saved me from a
+              90,000-line "utils" file. A practical tour of structuring real-world apps so
+              that adding a feature costs an afternoon instead of a fortnight.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Architecture</span><span class="tag">Career</span><span class="tag">React</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.2k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 48</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">ARCH<small>System design</small></div>
+        </article>
+
+        <!-- 02 -->
+        <article class="article-row" data-title="Stop Using useEffect for Everything" data-tags="react, typescript" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-09-24">Sep 24, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>8 min read</span>
+            </div>
+            <h2><a href="article.html">Stop Using useEffect for Everything</a></h2>
+            <p class="excerpt">
+              Most effects I review are really state derivation, event handling or data
+              fetching misfiled as an effect. Here's the decision tree I teach juniors —
+              with five before/after refactors and the tests that prove they behave the same.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">React</span><span class="tag">TypeScript</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 3.4k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 132</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">USE<small>React hooks</small></div>
+        </article>
+
+        <!-- 03 -->
+        <article class="article-row" data-title="Designing Idempotent APIs with Stripe Webhooks" data-tags="node, architecture, api" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-09-15">Sep 15, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>13 min read</span>
+            </div>
+            <h2><a href="article.html">Designing Idempotent APIs: Lessons from $4.2M in Billing</a></h2>
+            <p class="excerpt">
+              Payment webhooks arrive late, twice, and occasionally out of order. This is the
+              exact outbox pattern, key strategy and retry policy we run in production — plus
+              the Postgres constraint that ended our double-charge incident forever.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Node.js</span><span class="tag">PostgreSQL</span><span class="tag">API</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 960</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 37</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">IDEM<small>Billing systems</small></div>
+        </article>
+
+        <!-- 04 -->
+        <article class="article-row" data-title="TypeScript Patterns That Pay for Themselves" data-tags="typescript, career" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-09-06">Sep 6, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>9 min read</span>
+            </div>
+            <h2><a href="article.html">Five TypeScript Patterns That Pay for Themselves</a></h2>
+            <p class="excerpt">
+              Discriminated unions, branded IDs, exhaustive switches, `satisfies`, and the
+              type-safe event emitter. Each one replaced a runtime bug we had already shipped —
+              measured in saved incidents, not lines of code.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">TypeScript</span><span class="tag">Career</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 2.1k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 64</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">TS<small>Language craft</small></div>
+        </article>
+
+        <!-- 05 -->
+        <article class="article-row" data-title="Docker Images 40% Smaller Without Changing Your App" data-tags="devops, docker, performance" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-08-28">Aug 28, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>7 min read</span>
+            </div>
+            <h2><a href="article.html">Docker Images 40% Smaller Without Changing Your App</a></h2>
+            <p class="excerpt">
+              Multi-stage builds, lockfile-aware layer caching, distroless bases and a
+              BuildKit trick most teams never enable. Real before/after numbers from three
+              production Node services.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">DevOps</span><span class="tag">Docker</span><span class="tag">Performance</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.5k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 41</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">40%<small>Smaller images</small></div>
+        </article>
+
+        <!-- 06 -->
+        <article class="article-row" data-title="A Design System for Teams That Hate Meetings" data-tags="design, react, career" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-08-19">Aug 19, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>10 min read</span>
+            </div>
+            <h2><a href="article.html">A Design System for Teams That Hate Meetings</a></h2>
+            <p class="excerpt">
+              Tokens, Storybook docs and a contribution model that lets designers ship code
+              without a stand-up. How we scaled one component library across four product
+              squads with a single maintainer.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Design</span><span class="tag">React</span><span class="tag">Career</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 780</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 29</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">DS<small>Design systems</small></div>
+        </article>
+
+        <!-- 07 -->
+        <article class="article-row" data-title="Postgres Indexes Are Not Magic" data-tags="postgres, database, performance" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-08-10">Aug 10, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>12 min read</span>
+            </div>
+            <h2><a href="article.html">Postgres Indexes Are Not Magic (Here's How to Read EXPLAIN)</a></h2>
+            <p class="excerpt">
+              Seq scans on 8-row tables are fine; index scans on skewed columns are not.
+              A guided reading of six real EXPLAIN ANALYZE outputs from a table with 40M rows.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">PostgreSQL</span><span class="tag">Performance</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 2.6k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 77</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">EXPLAIN<small>Database</small></div>
+        </article>
+
+        <!-- 08 -->
+        <article class="article-row" data-title="The Interview Loop I'd Run as a Candidate" data-tags="career, hiring" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-08-01">Aug 1, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>6 min read</span>
+            </div>
+            <h2><a href="article.html">The Interview Loop I'd Run If I Were the Candidate</a></h2>
+            <p class="excerpt">
+              Take-home budgets, paid trial days, and scorecards that measure craft instead of
+              trivia. A counter-proposal for teams still asking people to invert binary trees
+              under a 45-minute timer.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Career</span><span class="tag">Hiring</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 4.1k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 210</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">HIRING<small>Career</small></div>
+        </article>
+
+        <!-- 09 -->
+        <article class="article-row" data-title="Server Components Changed How I Think About Data" data-tags="react, nextjs, architecture" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-07-22">Jul 22, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>9 min read</span>
+            </div>
+            <h2><a href="article.html">Server Components Changed How I Think About Data</a></h2>
+            <p class="excerpt">
+              Fetching moved to the tree, and with it the ownership of loading states,
+              cache invalidation and error boundaries. Where the mental model clicks — and
+              where it still catches me out.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">React</span><span class="tag">Next.js</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.8k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 55</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">RSC<small>Next.js</small></div>
+        </article>
+
+        <!-- 10 -->
+        <article class="article-row" data-title="Observability on a Budget" data-tags="devops, monitoring, career" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-07-14">Jul 14, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>8 min read</span>
+            </div>
+            <h2><a href="article.html">Observability on a Budget: Logs, Traces and One Dashboard</a></h2>
+            <p class="excerpt">
+              You don't need three vendors and a platform team. Structured JSON logs, a
+              correlation ID middleware and four golden signals got us to root cause in under
+              five minutes on a Friday night.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">DevOps</span><span class="tag">Monitoring</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.1k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 33</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">SLO<small>Observability</small></div>
+        </article>
+
+        <!-- 11 -->
+        <article class="article-row" data-title="Accessible Modals Without a Library" data-tags="react, design, accessibility" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-07-03">Jul 3, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>7 min read</span>
+            </div>
+            <h2><a href="article.html">Accessible Modals Without a Library</a></h2>
+            <p class="excerpt">
+              Focus trapping, `inert`, scroll locking and the `Esc` contract in about 60 lines.
+              Includes a screen-reader test script you can run in five minutes.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">React</span><span class="tag">Accessibility</span><span class="tag">Design</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 890</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 24</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">A11Y<small>Accessibility</small></div>
+        </article>
+
+        <!-- 12 -->
+        <article class="article-row" data-title="Feature Flags Without the Footguns" data-tags="node, devops, architecture" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-06-24">Jun 24, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>10 min read</span>
+            </div>
+            <h2><a href="article.html">Feature Flags Without the Footguns</a></h2>
+            <p class="excerpt">
+              Typed flag evaluation, default-off discipline, and an expiry process so flags
+              don't rot into permanent branches. How we deleted 214 flags in one quarter.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Node.js</span><span class="tag">DevOps</span><span class="tag">Architecture</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 640</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 18</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">FLAG<small>Delivery</small></div>
+        </article>
+
+        <!-- 13 -->
+        <article class="article-row" data-title="Why Our Page Load Dropped 1.4s" data-tags="performance, react, design" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-06-15">Jun 15, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>9 min read</span>
+            </div>
+            <h2><a href="article.html">How We Dropped Largest Contentful Paint by 1.4s</a></h2>
+            <p class="excerpt">
+              A forensic tour through hero images, font loading, hydration cost and one
+              surprisingly expensive third-party tag. Every fix ranked by effort-to-impact.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Performance</span><span class="tag">React</span><span class="tag">Design</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 2.9k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 96</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">LCP<small>Web performance</small></div>
+        </article>
+
+        <!-- 14 -->
+        <article class="article-row" data-title="Testing React Components the Way Users Behave" data-tags="react, testing, typescript" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-06-05">Jun 5, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>11 min read</span>
+            </div>
+            <h2><a href="article.html">Testing React Components the Way Users Behave</a></h2>
+            <p class="excerpt">
+              Role-first queries, user-event over fireEvent, and why I deleted 80% of our
+              snapshot tests. A testing pyramid that stays cheap as the suite grows.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">React</span><span class="tag">Testing</span><span class="tag">TypeScript</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.3k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 44</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">TEST<small>Quality</small></div>
+        </article>
+
+        <!-- 15 -->
+        <article class="article-row" data-title="Rate Limiting That Actually Works Behind a Proxy" data-tags="node, api, security" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-05-27">May 27, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>8 min read</span>
+            </div>
+            <h2><a href="article.html">Rate Limiting That Works Behind a Load Balancer</a></h2>
+            <p class="excerpt">
+              Sliding windows in Redis, per-token buckets, and the X-Forwarded-For parsing bug
+              that let one client consume the whole pool. Includes a load-test checklist.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Node.js</span><span class="tag">API</span><span class="tag">Security</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 720</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 21</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">429<small>API security</small></div>
+        </article>
+
+        <!-- 16 -->
+        <article class="article-row" data-title="CSS Grid Still Beats Most JS Layouts" data-tags="css, design" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-05-18">May 18, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>6 min read</span>
+            </div>
+            <h2><a href="article.html">CSS Grid Still Beats Most JS Layouts</a></h2>
+            <p class="excerpt">
+              Subgrid, `auto-fit` and container queries solved three problems we had wired
+              through ResizeObserver. A tour of layouts that shrank to zero JavaScript.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">CSS</span><span class="tag">Design</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 3.0k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 108</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">GRID<small>CSS craft</small></div>
+        </article>
+
+        <!-- 17 -->
+        <article class="article-row" data-title="From Ticket to Production in 40 Minutes" data-tags="devops, career, testing" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-05-09">May 9, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>7 min read</span>
+            </div>
+            <h2><a href="article.html">From Ticket to Production in 40 Minutes</a></h2>
+            <p class="excerpt">
+              Trunk-based development, preview environments and a two-person review rule.
+              The workflow that made Friday deploys boring — in the best possible way.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">DevOps</span><span class="tag">Career</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.0k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 39</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">CI/CD<small>Workflow</small></div>
+        </article>
+
+        <!-- 18 -->
+        <article class="article-row" data-title="Mentoring Without Becoming a Bottleneck" data-tags="career, leadership" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-04-30">Apr 30, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>5 min read</span>
+            </div>
+            <h2><a href="article.html">Mentoring Without Becoming a Bottleneck</a></h2>
+            <p class="excerpt">
+              Office hours, decision records and the "two-minute rule" for code review
+              comments. How to multiply a team instead of serializing it through one senior.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Career</span><span class="tag">Leadership</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.7k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 72</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">LEAD<small>Team craft</small></div>
+        </article>
+
+        <!-- 19 -->
+        <article class="article-row" data-title="JWTs, Sessions and the Middle Ground" data-tags="node, security, architecture" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-04-21">Apr 21, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>12 min read</span>
+            </div>
+            <h2><a href="article.html">JWTs, Sessions, and the Middle Ground That Fits Most Apps</a></h2>
+            <p class="excerpt">
+              Rotate refresh tokens in an HttpOnly cookie, keep access tokens short and
+              stateful-ish. A pragmatic auth setup with revocation that doesn't need a
+              database hit per request.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Node.js</span><span class="tag">Security</span><span class="tag">Architecture</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 2.2k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 88</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">AUTH<small>Security</small></div>
+        </article>
+
+        <!-- 20 -->
+        <article class="article-row" data-title="Typography for Developers Who Aren't Designers" data-tags="design, css" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-04-12">Apr 12, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>6 min read</span>
+            </div>
+            <h2><a href="article.html">Typography for Developers Who Aren't Designers</a></h2>
+            <p class="excerpt">
+              A modular scale, two line-height rules and one measure limit will fix 90% of
+              "this looks off" moments. With a copy-paste CSS block you can drop into any project.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Design</span><span class="tag">CSS</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 1.4k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 51</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">TYPE<small>Visual design</small></div>
+        </article>
+
+        <!-- 21 -->
+        <article class="article-row" data-title="Migrating 40M Rows with Almost No Downtime" data-tags="postgres, devops, architecture" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-04-02">Apr 2, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>14 min read</span>
+            </div>
+            <h2><a href="article.html">Migrating 40M Rows with Almost Zero Downtime</a></h2>
+            <p class="excerpt">
+              Expand/contract migrations, dual writes, backfill batching and the rollback
+              plan we thankfully never used. A step-by-step field guide for schema surgery.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">PostgreSQL</span><span class="tag">DevOps</span><span class="tag">Architecture</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 980</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 30</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">40M<small>Data migration</small></div>
+        </article>
+
+        <!-- 22 -->
+        <article class="article-row" data-title="The Case for Boring Technology" data-tags="architecture, career" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-03-24">Mar 24, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>7 min read</span>
+            </div>
+            <h2><a href="article.html">The Case for Boring Technology</a></h2>
+            <p class="excerpt">
+              Every novel dependency is a loan against future debugging time. A framework for
+              deciding when a shiny tool is genuinely worth it — and when it's just a résumé project.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Architecture</span><span class="tag">Career</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 5.2k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 264</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-mono" aria-hidden="true">BORING<small>Engineering culture</small></div>
+        </article>
+
+        <!-- 23 -->
+        <article class="article-row" data-title="WebSockets or Server-Sent Events?" data-tags="node, api, architecture" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-03-13">Mar 13, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>9 min read</span>
+            </div>
+            <h2><a href="article.html">WebSockets or Server-Sent Events? A Decision Table</a></h2>
+            <p class="excerpt">
+              Bidirectionality, proxy behaviour, reconnection and backpressure compared on one
+              page — plus the live-dashboard implementation we shipped after choosing SSE.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Node.js</span><span class="tag">API</span><span class="tag">Architecture</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 830</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 26</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb t-alt" aria-hidden="true">SSE<small>Realtime</small></div>
+        </article>
+
+        <!-- 24 -->
+        <article class="article-row" data-title="What Eight Years Taught Me About Shipping" data-tags="career, leadership" data-author="Naruto Uzumaki">
+          <div>
+            <div class="author-line">
+              <span class="avatar" aria-hidden="true">NU</span>
+              <b>Naruto Uzumaki</b>
+              <span aria-hidden="true">·</span>
+              <time datetime="2026-03-04">Mar 4, 2026</time>
+              <span aria-hidden="true">·</span>
+              <span>5 min read</span>
+            </div>
+            <h2><a href="article.html">What Eight Years of Shipping Taught Me</a></h2>
+            <p class="excerpt">
+              Scope is the only estimate that matters, docs are a feature, and the best
+              architecture decision is often a conversation you have a week earlier than planned.
+            </p>
+            <div class="row-foot">
+              <div class="tags">
+                <span class="tag">Career</span><span class="tag">Leadership</span>
+              </div>
+              <div class="stats">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> 6.4k</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 312</span>
+              </div>
+            </div>
+          </div>
+          <div class="thumb" aria-hidden="true">8 YRS<small>Reflection</small></div>
+        </article>
+
+      </div>
+
+      <!-- empty state -->
+      <div class="empty-state" data-empty role="status">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <h3>No articles found</h3>
+        <p>Try a different keyword, or clear the filter to browse everything.</p>
+        <button class="btn btn-outline btn-sm mt-3" type="button" data-search-clear>Show all articles</button>
+      </div>
+
+      <!-- pagination (JS-rendered) -->
+      <nav class="pagination" data-pagination aria-label="Pagination"></nav>
+    </div>
+  </section>
+
+  <!-- ================= NEWSLETTER ================= -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="cta reveal">
+        <h2>Get new posts in your inbox.</h2>
+        <p>One thoughtful article every other week. No course funnels, no spam — unsubscribe in a click.</p>
+        <div class="row center">
+          <a class="btn btn-light btn-lg" href="index.html#contact">Subscribe</a>
+          <a class="btn btn-outline-light btn-lg" href="index.html#projects">Browse projects</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">NU</span>
+          <span>Naruto Uzumaki</span>
+        </a>
+        <p>Fullstack web developer building fast, accessible and scalable products. Currently open for freelance work.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="index.html#skills">Technologies</a></li>
+          <li><a href="index.html#experience">Experience</a></li>
+          <li><a href="index.html#projects">Projects</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Writing</h4>
+        <ul>
+          <li><a href="blog.html">All articles</a></li>
+          <li><a href="article.html">Latest article</a></li>
+          <li><a href="project.html">Featured project</a></li>
+          <li><a href="blog.html#tag=React">React notes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Elsewhere</h4>
+        <div class="socials">
+          <a href="#" aria-label="GitHub">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" aria-label="X">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4 4 20"/></svg>
+          </a>
+          <a href="#" aria-label="Dev.to">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15V9h3a2.5 2.5 0 0 1 0 5H7Zm10-6v6M14 9h6"/></svg>
+          </a>
+        </div>
+        <ul class="mt-2">
+          <li><a href="mailto:naruto.uzumaki@dev.io">naruto.uzumaki@dev.io</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> Naruto Uzumaki. All rights reserved.</span>
+      <span>Built with plain HTML, CSS &amp; JS — no frameworks.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/blog.js"></script>
+</body>
+</html>

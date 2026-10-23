@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Naruto Uzumaki — Fullstack Web Developer</title>
+<meta name="description" content="Portfolio of Naruto Uzumaki, a fullstack web developer building fast, accessible and scalable products with React, Node.js and TypeScript." />
+<meta name="author" content="Naruto Uzumaki" />
+<meta name="theme-color" content="#191919" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23191919'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='16' font-weight='800' fill='white' text-anchor='middle'%3ENU%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Naruto Uzumaki — home">
+      <span class="brand-mark" aria-hidden="true">NU</span>
+      <span>Naruto Uzumaki<small>Fullstack Developer</small></span>
+    </a>
+
+    <nav class="nav-desktop" data-nav aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#projects">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+
+    <a class="btn btn-primary btn-sm nav-cta" href="index.html#contact">Hire me</a>
+
+    <button class="nav-toggle" type="button" data-nav-toggle aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span class="bar" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<!-- ================= OFFCANVAS NAV ================= -->
+<div class="backdrop" data-backdrop></div>
+<aside class="offcanvas" id="mobile-nav" data-offcanvas aria-hidden="true" aria-label="Mobile navigation">
+  <div class="offcanvas-head">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">NU</span>
+      <span>Naruto Uzumaki</span>
+    </a>
+    <button class="offcanvas-close" type="button" data-nav-close aria-label="Close menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <nav class="offcanvas-nav" data-nav aria-label="Mobile">
+      <a href="index.html">Home <span>01</span></a>
+      <a href="index.html#about">About <span>02</span></a>
+      <a href="index.html#skills">Technologies <span>03</span></a>
+      <a href="index.html#experience">Experience <span>04</span></a>
+      <a href="index.html#projects">Projects <span>05</span></a>
+      <a href="blog.html">Blog <span>06</span></a>
+      <a href="index.html#contact">Contact <span>07</span></a>
+    </nav>
+    <div class="offcanvas-foot">
+      <a class="btn btn-primary btn-block" href="index.html#contact">Hire me</a>
+      <a class="btn btn-outline btn-block" href="mailto:naruto.uzumaki@dev.io">naruto.uzumaki@dev.io</a>
+    </div>
+  </div>
+</aside>
+
+<main id="main">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <span class="hero-badge"><span class="dot" aria-hidden="true"></span> Available for freelance work</span>
+        <h1 class="display-xl">
+          Naruto Uzumaki
+          <span class="accent-line">Fullstack Web Developer.</span>
+        </h1>
+        <p>
+          I design and build fast, accessible products end&#8209;to&#8209;end — from pixel&#8209;perfect
+          React interfaces to resilient Node.js APIs and the infrastructure that keeps them alive.
+          Eight years of shipping, five years of mentoring, one obsession: <b>code that people enjoy using</b>.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg" href="#projects">
+            View my work
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a class="btn btn-outline btn-lg" href="blog.html">Read the blog</a>
+        </div>
+
+        <div class="hero-meta">
+          <div><strong>8+</strong><span>Years experience</span></div>
+          <div><strong>60+</strong><span>Projects shipped</span></div>
+          <div><strong>24</strong><span>Open source repos</span></div>
+          <div><strong>99.9%</strong><span>Uptime delivered</span></div>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-avatar">
+          <span class="initials">NU</span>
+          <span class="hero-float f1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+            TypeScript
+          </span>
+          <span class="hero-float f2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+            PostgreSQL
+          </span>
+          <span class="hero-float f3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+            AWS · Docker
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-portrait reveal" aria-hidden="true">
+          <span class="initials">NU</span>
+          <span class="code-strip">$ git push origin main &nbsp;→&nbsp; deployed in 42s ✓</span>
+        </div>
+
+        <div class="about-body reveal">
+          <span class="eyebrow">About me</span>
+          <h2 class="display">Developer, system thinker, calm under pressure.</h2>
+          <p>
+            I started writing HTML on a borrowed laptop and never stopped. Today I lead fullstack
+            teams that ship multi-tenant SaaS platforms used by hundreds of thousands of people —
+            and I still review every pull request that touches the design system.
+          </p>
+          <p>
+            My sweet spot is the messy middle: turning a fuzzy product idea into a typed,
+            tested, observable codebase. I care about performance budgets, accessible markup,
+            honest documentation and interfaces that feel instant. When something breaks at
+            2&nbsp;a.m., I'd rather fix the root cause than patch the symptom.
+          </p>
+
+          <ul class="facts">
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span><b>Based in Konoha</b> — working remote across EST / CET / IST time zones.</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              <span><b>Mentor</b> — ran 30+ code reviews and 12 workshops for junior developers.</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span><b>Response time</b> — replies to every message within one business day.</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+              <span><b>Also</b> — API archaeology, typography, and an unreasonable love of shortcuts.</span>
+            </li>
+          </ul>
+
+          <div class="row gap-sm mt-4">
+            <a class="btn btn-outline btn-sm" href="#contact">Download CV</a>
+            <a class="btn btn-ghost btn-sm" href="#experience">See experience →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TECHNOLOGIES & SKILLS ================= -->
+  <section class="section section-soft" id="skills">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Technologies &amp; skills</span>
+        <h2 class="display">The stack I reach for.</h2>
+        <p>Battle-tested tools, chosen for team velocity and long-term maintainability — not hype.</p>
+      </div>
+
+      <div class="skill-groups">
+        <!-- Frontend -->
+        <article class="skill-group">
+          <div class="skill-group-head">
+            <span class="skill-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </span>
+            <div>
+              <h3>Frontend</h3>
+              <span>Interfaces &amp; design systems</span>
+            </div>
+          </div>
+          <ul class="skill-list">
+            <li>React 18</li><li>Next.js</li><li>TypeScript</li><li>Tailwind CSS</li>
+            <li>Vue 3</li><li>Redux Toolkit</li><li>Vite</li><li>Storybook</li>
+          </ul>
+          <div class="skill-bars">
+            <div class="skill-bar-row">
+              <div class="skill-bar-label"><b>UI engineering</b><span>95%</span></div>
+              <div class="skill-track"><i class="skill-fill" style="--w:95%"></i></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Backend -->
+        <article class="skill-group">
+          <div class="skill-group-head">
+            <span class="skill-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01"/></svg>
+            </span>
+            <div>
+              <h3>Backend</h3>
+              <span>APIs, services &amp; auth</span>
+            </div>
+          </div>
+          <ul class="skill-list">
+            <li>Node.js</li><li>NestJS</li><li>Express</li><li>GraphQL</li>
+            <li>Python</li><li>Django</li><li>tRPC</li><li>WebSockets</li>
+          </ul>
+          <div class="skill-bars">
+            <div class="skill-bar-row">
+              <div class="skill-bar-label"><b>API design</b><span>92%</span></div>
+              <div class="skill-track"><i class="skill-fill" style="--w:92%"></i></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Data -->
+        <article class="skill-group">
+          <div class="skill-group-head">
+            <span class="skill-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+            </span>
+            <div>
+              <h3>Data</h3>
+              <span>Storage &amp; modelling</span>
+            </div>
+          </div>
+          <ul class="skill-list">
+            <li>PostgreSQL</li><li>MongoDB</li><li>Redis</li><li>Prisma</li>
+            <li>MySQL</li><li>Elasticsearch</li><li>Supabase</li><li>ClickHouse</li>
+          </ul>
+          <div class="skill-bars">
+            <div class="skill-bar-row">
+              <div class="skill-bar-label"><b>Data modelling</b><span>88%</span></div>
+              <div class="skill-track"><i class="skill-fill" style="--w:88%"></i></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- DevOps -->
+        <article class="skill-group">
+          <div class="skill-group-head">
+            <span class="skill-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M2 12h4M18 12h4M4.9 19.1l2.9-2.9M16.2 7.8l2.9-2.9"/><circle cx="12" cy="12" r="4"/></svg>
+            </span>
+            <div>
+              <h3>DevOps</h3>
+              <span>Ship, observe, repeat</span>
+            </div>
+          </div>
+          <ul class="skill-list">
+            <li>Docker</li><li>Kubernetes</li><li>AWS</li><li>GitHub Actions</li>
+            <li>Terraform</li><li>Nginx</li><li>Grafana</li><li>Playwright</li>
+          </ul>
+          <div class="skill-bars">
+            <div class="skill-bar-row">
+              <div class="skill-bar-label"><b>Delivery &amp; CI</b><span>85%</span></div>
+              <div class="skill-track"><i class="skill-fill" style="--w:85%"></i></div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <ul class="tool-cloud reveal" aria-label="Other tools">
+        <li>Git</li><li>Figma</li><li>Storybook</li><li>Vitest</li><li>Jest</li>
+        <li>Cypress</li><li>Linux</li><li>Cloudflare</li><li>Sentry</li><li>Stripe</li>
+        <li>WebSockets</li><li>REST</li><li>OAuth 2.0</li><li>JWT</li><li> accessibility (WCAG 2.2)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= EXPERIENCE ================= -->
+  <section class="section" id="experience">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Experience</span>
+        <h2 class="display">Eight years, four teams.</h2>
+        <p>A timeline of the roles, systems and teams that shaped how I build software.</p>
+      </div>
+
+      <div class="timeline">
+        <article class="timeline-item reveal">
+          <span class="period">2022 — Present</span>
+          <h3>Senior Fullstack Engineer</h3>
+          <p class="org">Leaf Technologies <span>· Remote · Full-time</span></p>
+          <ul>
+            <li>Led the rewrite of a multi-tenant analytics platform serving 180k MAU, cutting p75 TTFB from 940ms to 180ms.</li>
+            <li>Introduced a typed contract layer (tRPC + Zod) shared by web, mobile and public API — eliminated an entire class of integration bugs.</li>
+            <li>Mentor of 5 engineers; owner of the design system and the release process.</li>
+          </ul>
+          <div class="timeline-tags">
+            <span class="tag">Next.js</span><span class="tag">NestJS</span>
+            <span class="tag">PostgreSQL</span><span class="tag">AWS</span>
+          </div>
+        </article>
+
+        <article class="timeline-item reveal">
+          <span class="period">2019 — 2022</span>
+          <h3>Fullstack Developer</h3>
+          <p class="org">Hidden Cloud Labs <span>· Hybrid · Full-time</span></p>
+          <ul>
+            <li>Built the billing and subscription engine (Stripe) handling $4.2M ARR with idempotent webhooks and zero data-loss incidents.</li>
+            <li>Migrated a legacy jQuery dashboard to React + TypeScript over six months with no feature freeze.</li>
+            <li>Set up CI/CD with preview environments, reducing QA cycle time by 60%.</li>
+          </ul>
+          <div class="timeline-tags">
+            <span class="tag">React</span><span class="tag">Node.js</span>
+            <span class="tag">MongoDB</span><span class="tag">Docker</span>
+          </div>
+        </article>
+
+        <article class="timeline-item reveal">
+          <span class="period">2017 — 2019</span>
+          <h3>Frontend Developer</h3>
+          <p class="org">Ramen Studios <span>· On-site · Full-time</span></p>
+          <ul>
+            <li>Delivered 20+ client marketing sites and storefronts with a 96 average Lighthouse performance score.</li>
+            <li>Built an accessibility checklist adopted studio-wide; brought every new build to WCAG 2.1 AA.</li>
+            <li>Created a reusable static-site starter that halved project setup time.</li>
+          </ul>
+          <div class="timeline-tags">
+            <span class="tag">Vue</span><span class="tag">SCSS</span>
+            <span class="tag">Webpack</span><span class="tag">A11y</span>
+          </div>
+        </article>
+
+        <article class="timeline-item reveal">
+          <span class="period">2015 — 2017</span>
+          <h3>Junior Web Developer</h3>
+          <p class="org">Ichiraku Digital <span>· On-site · Full-time</span></p>
+          <ul>
+            <li>Maintained 40+ WordPress and Laravel sites; shipped my first production Rails feature in month two.</li>
+            <li>Wrote internal tooling for content migrations that saved roughly 15 hours per client handoff.</li>
+          </ul>
+          <div class="timeline-tags">
+            <span class="tag">PHP</span><span class="tag">Laravel</span>
+            <span class="tag">jQuery</span><span class="tag">MySQL</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROJECTS ================= -->
+  <section class="section section-soft" id="projects">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Selected projects</span>
+        <h2 class="display">Things I've built.</h2>
+        <p>Products, libraries and tools — each one open to inspection.</p>
+      </div>
+
+      <div class="projects-grid">
+        <!-- 1 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l1" aria-hidden="true">R</span>
+            <span class="badge badge-accent"><span class="dot"></span> Active</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">Component Library</span>
+            <h3><a href="project.html">Rasengan UI</a></h3>
+          </div>
+          <p>A headless, accessible React component library with 60+ primitives, theming and first-class TypeScript support.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              4.8k stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+              TypeScript
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">React</span><span class="tag">TypeScript</span>
+            <span class="tag">Rollup</span><span class="tag">Vitest</span>
+          </div>
+        </article>
+
+        <!-- 2 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l2" aria-hidden="true">S</span>
+            <span class="badge badge-accent"><span class="dot"></span> Active</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">Developer Tooling</span>
+            <h3><a href="project.html">Shadow Clone CI</a></h3>
+          </div>
+          <p>Self-hosted CI runner that spins up ephemeral Docker jobs in under 400ms and caches layers across branches.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              2.1k stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12l-6-6M8 6 2 12l6 6"/></svg>
+              Go · Shell
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">Go</span><span class="tag">Docker</span>
+            <span class="tag">gRPC</span><span class="tag">Redis</span>
+          </div>
+        </article>
+
+        <!-- 3 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l3" aria-hidden="true">C</span>
+            <span class="badge badge-info"><span class="dot"></span> Maintained</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">Content Platform</span>
+            <h3><a href="project.html">Chakra CMS</a></h3>
+          </div>
+          <p>Headless CMS with a block-based editor, granular roles and GraphQL/REST delivery used by 40+ content teams.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              1.6k stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12l-6-6M8 6 2 12l6 6"/></svg>
+              Node · React
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">Node.js</span><span class="tag">GraphQL</span>
+            <span class="tag">Postgres</span><span class="tag">Redis</span>
+          </div>
+        </article>
+
+        <!-- 4 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l4" aria-hidden="true">SA</span>
+            <span class="badge badge-warn"><span class="dot"></span> Beta</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">SaaS Dashboard</span>
+            <h3><a href="project.html">Sage Analytics</a></h3>
+          </div>
+          <p>Privacy-first product analytics: event pipelines, funnels and retention cohorts without cookie banners.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              940 stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12l-6-6M8 6 2 12l6 6"/></svg>
+              TS · ClickHouse
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">Next.js</span><span class="tag">ClickHouse</span>
+            <span class="tag">tRPC</span><span class="tag">AWS</span>
+          </div>
+        </article>
+
+        <!-- 5 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l5" aria-hidden="true">K</span>
+            <span class="badge badge-accent"><span class="dot"></span> Active</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">CLI</span>
+            <h3><a href="project.html">Kunai CLI</a></h3>
+          </div>
+          <p>Zero-config scaffolding for fullstack monorepos — one command from empty folder to deployed preview.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              3.3k stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12l-6-6M8 6 2 12l6 6"/></svg>
+              Node · Bun
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">Node.js</span><span class="tag">Bun</span>
+            <span class="tag">TypeScript</span><span class="tag">esbuild</span>
+          </div>
+        </article>
+
+        <!-- 6 -->
+        <article class="project-card reveal">
+          <div class="project-card-top">
+            <span class="project-logo l6" aria-hidden="true">TN</span>
+            <span class="badge badge-danger"><span class="dot"></span> Archived</span>
+          </div>
+          <div>
+            <span class="badge badge-soft">Web App</span>
+            <h3><a href="project.html">Toad Notes</a></h3>
+          </div>
+          <p>Offline-first note taking with CRDT sync and a keyboard-driven editor. My deep dive into local-first software.</p>
+          <div class="meta-line">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></svg>
+              720 stars
+            </span>
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12l-6-6M8 6 2 12l6 6"/></svg>
+              Vue · Rust
+            </span>
+          </div>
+          <div class="tech">
+            <span class="tag">Vue 3</span><span class="tag">Rust</span>
+            <span class="tag">WASM</span><span class="tag">IndexedDB</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="row center mt-4 reveal">
+        <a class="btn btn-outline" href="project.html">
+          Open a project page
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section class="section">
+    <div class="container">
+      <div class="cta reveal">
+        <h2>Have a product that needs shipping?</h2>
+        <p>
+          I take on a small number of freelance engagements each quarter —
+          greenfield builds, rescues, and performance work included.
+        </p>
+        <div class="row center">
+          <a class="btn btn-light btn-lg" href="#contact">Start a conversation</a>
+          <a class="btn btn-outline-light btn-lg" href="blog.html">Read my writing</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section class="section section-soft" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-info reveal">
+          <span class="eyebrow">Contact</span>
+          <h2 class="display">Let's build something together.</h2>
+          <p>
+            Tell me about your product, timeline and team. I'll reply within one business day
+            with honest thoughts — even if that means pointing you somewhere better.
+          </p>
+
+          <ul class="contact-list">
+            <li>
+              <span class="ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+              </span>
+              <div><b>naruto.uzumaki@dev.io</b><span>Email — best for briefs &amp; proposals</span></div>
+            </li>
+            <li>
+              <span class="ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <div><b>Konoha Village · Remote</b><span>Working across EST / CET / IST</span></div>
+            </li>
+            <li>
+              <span class="ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </span>
+              <div><b>Booking from January</b><span>2 slots left for Q1 freelance</span></div>
+            </li>
+          </ul>
+
+          <div class="socials mt-4">
+            <a href="#" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </a>
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+            <a href="#" aria-label="X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4 4 20"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <form class="contact-form reveal" data-contact-form novalidate>
+          <div class="form-success" data-form-success role="status">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            Message sent — talk soon!
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="name">Name <span>*</span></label>
+              <input id="name" name="name" type="text" placeholder="Jiraiya" required />
+              <small class="error-msg">Please tell me your name.</small>
+            </div>
+            <div class="form-field">
+              <label for="email">Email <span>*</span></label>
+              <input id="email" name="email" type="email" placeholder="you@company.com" required />
+              <small class="error-msg">Please enter a valid email address.</small>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="subject">Project type</label>
+            <select id="subject" name="subject">
+              <option>New product build</option>
+              <option>Existing product / rescue</option>
+              <option>Design system &amp; frontend</option>
+              <option>Performance &amp; audit</option>
+              <option>Consulting / mentorship</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="message">Message <span>*</span></label>
+            <textarea id="message" name="message" placeholder="What are you building, and when does it need to ship?" required></textarea>
+            <small class="error-msg">A few sentences would help.</small>
+          </div>
+
+          <button class="btn btn-primary btn-block btn-lg" type="submit">Send message</button>
+          <p class="form-note">This demo form validates in the browser — no data leaves your machine.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">NU</span>
+          <span>Naruto Uzumaki</span>
+        </a>
+        <p>Fullstack web developer building fast, accessible and scalable products. Currently open for freelance work.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="index.html#skills">Technologies</a></li>
+          <li><a href="index.html#experience">Experience</a></li>
+          <li><a href="index.html#projects">Projects</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Writing</h4>
+        <ul>
+          <li><a href="blog.html">All articles</a></li>
+          <li><a href="article.html">Latest article</a></li>
+          <li><a href="project.html">Featured project</a></li>
+          <li><a href="blog.html#tag=React">React notes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Elsewhere</h4>
+        <div class="socials">
+          <a href="#" aria-label="GitHub">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" aria-label="X">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4 4 20"/></svg>
+          </a>
+          <a href="#" aria-label="Dev.to">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15V9h3a2.5 2.5 0 0 1 0 5H7Zm10-6v6M14 9h6"/></svg>
+          </a>
+        </div>
+        <ul class="mt-2">
+          <li><a href="mailto:naruto.uzumaki@dev.io">naruto.uzumaki@dev.io</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> Naruto Uzumaki. All rights reserved.</span>
+      <span>Built with plain HTML, CSS &amp; JS — no frameworks.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
