@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Northwind Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ============ DESIGN TOKENS (5 colors total) ============ */
+:root {
+  --c-primary: #1F4FD8;   /* deep cobalt: actions, active states, data */
+  --c-ink:     #14213D;   /* navy ink: headings, body text */
+  --c-muted:   #66728A;   /* slate: secondary text, icons */
+  --c-canvas:  #F4F6FA;   /* app background */
+  --c-surface: #FFFFFF;   /* cards, sidebar, topbar */
+
+  /* derived tints (no new hues) */
+  --line:      color-mix(in srgb, var(--c-ink) 10%, transparent);
+  --tint:      color-mix(in srgb, var(--c-primary) 9%, var(--c-surface));
+  --tint-ink:  color-mix(in srgb, var(--c-ink) 6%, var(--c-surface));
+
+  --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-xs: .75rem; --fs-sm: .8125rem; --fs-md: .9375rem; --fs-lg: 1.25rem; --fs-xl: 1.625rem;
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 2px color-mix(in srgb, var(--c-ink) 6%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, var(--c-ink) 14%, transparent);
+  --sidebar-w: 268px; --topbar-h: 64px; --gap: 1.25rem;
+  --ease: .2s cubic-bezier(.4,0,.2,1);
+}
+
+/* ============ BASE ============ */
+*,*::before,*::after { box-sizing: border-box; margin: 0; }
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
+body { font: 400 var(--fs-md)/1.5 var(--font); color: var(--c-ink); background: var(--c-canvas); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+.icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ============ SIDEBAR (offcanvas < lg) ============ */
+.sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-w); z-index: 50; display: flex; flex-direction: column;
+  background: var(--c-surface); border-right: 1px solid var(--line); transform: translateX(-100%); transition: transform var(--ease); }
+.nav-open .sidebar { transform: none; box-shadow: var(--shadow-lg); }
+.scrim { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--c-ink) 45%, transparent); opacity: 0; visibility: hidden; transition: opacity var(--ease), visibility var(--ease); }
+.nav-open .scrim { opacity: 1; visibility: visible; }
+.brand { display: flex; align-items: center; gap: .65rem; height: var(--topbar-h); padding: 0 1.25rem; border-bottom: 1px solid var(--line); font-weight: 600; letter-spacing: -.01em; }
+.brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--c-primary); color: var(--c-surface); }
+.brand small { display: block; font-size: var(--fs-xs); font-weight: 400; color: var(--c-muted); line-height: 1; margin-top: 2px; }
+.sidebar-close { margin-left: auto; padding: .35rem; border-radius: var(--radius-sm); color: var(--c-muted); }
+.nav { flex: 1; overflow-y: auto; padding: .75rem; }
+.nav-group { padding: 1rem .75rem .4rem; font-size: var(--fs-xs); font-weight: 500; color: var(--c-muted); }
+.nav-item { display: flex; align-items: center; gap: .7rem; width: 100%; padding: .55rem .75rem; border-radius: var(--radius-sm); color: var(--c-muted); font-size: var(--fs-md); text-align: left; transition: background var(--ease), color var(--ease); }
+.nav-item:hover { background: var(--tint-ink); color: var(--c-ink); }
+.nav-item.active { background: var(--tint); color: var(--c-primary); font-weight: 500; }
+.nav-item .chev { margin-left: auto; transition: transform var(--ease); }
+.nav-item[aria-expanded="true"] { color: var(--c-ink); }
+.nav-item[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.badge { margin-left: auto; padding: 0 .45rem; border-radius: 99px; background: var(--c-primary); color: var(--c-surface); font-size: var(--fs-xs); font-weight: 500; }
+.submenu { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--ease); }
+.submenu.open { grid-template-rows: 1fr; }
+.submenu > ul { overflow: hidden; list-style: none; padding: 0; margin: 0 0 0 1.4rem; border-left: 1px solid var(--line); }
+.submenu a { display: block; margin: 2px 0 2px .5rem; padding: .42rem .75rem; border-radius: var(--radius-sm); color: var(--c-muted); font-size: var(--fs-sm); }
+.submenu a:hover { color: var(--c-ink); background: var(--tint-ink); }
+.submenu a.active { color: var(--c-primary); font-weight: 500; }
+.sidebar-foot { padding: .75rem; border-top: 1px solid var(--line); }
+.org { display: flex; align-items: center; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-sm); background: var(--tint-ink); font-size: var(--fs-sm); }
+.org small { display: block; color: var(--c-muted); font-size: var(--fs-xs); }
+
+/* ============ TOPBAR ============ */
+.main { min-height: 100vh; }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; display: flex; align-items: center; gap: .75rem; height: var(--topbar-h); padding: 0 1rem; background: var(--c-surface); border-bottom: 1px solid var(--line); }
+.icon-btn { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius-sm); color: var(--c-muted); transition: background var(--ease), color var(--ease); }
+.icon-btn:hover { background: var(--tint-ink); color: var(--c-ink); }
+.dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-primary); border: 2px solid var(--c-surface); }
+.search { position: relative; flex: 1; max-width: 420px; display: none; }
+.search .icon { position: absolute; left: .75rem; top: 50%; translate: 0 -50%; color: var(--c-muted); }
+.search input { width: 100%; height: 38px; padding: 0 .75rem 0 2.35rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--c-canvas); transition: border-color var(--ease), background var(--ease); }
+.search input:focus { outline: none; border-color: var(--c-primary); background: var(--c-surface); }
+.spacer { flex: 1; }
+.menu-wrap { position: relative; }
+.user-btn { display: flex; align-items: center; gap: .6rem; padding: .25rem .4rem .25rem .25rem; border-radius: var(--radius-sm); }
+.user-btn:hover { background: var(--tint-ink); }
+.user-meta { display: none; text-align: left; line-height: 1.2; font-size: var(--fs-sm); font-weight: 500; }
+.user-meta small { display: block; font-weight: 400; color: var(--c-muted); font-size: var(--fs-xs); }
+.avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tint); color: var(--c-primary); font-size: var(--fs-xs); font-weight: 600; flex: none; }
+.dropdown { position: absolute; right: 0; top: calc(100% + 8px); min-width: 210px; padding: .35rem; background: var(--c-surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-lg); opacity: 0; visibility: hidden; translate: 0 -4px; transition: var(--ease); }
+.dropdown.open { opacity: 1; visibility: visible; translate: 0; }
+.dropdown a { display: flex; align-items: center; gap: .6rem; padding: .5rem .65rem; border-radius: var(--radius-sm); font-size: var(--fs-sm); color: var(--c-muted); }
+.dropdown a:hover { background: var(--tint-ink); color: var(--c-ink); }
+.dropdown hr { border: 0; border-top: 1px solid var(--line); margin: .3rem 0; }
+
+/* ============ CONTENT ============ */
+.content { padding: 1.25rem 1rem 2.5rem; max-width: 1480px; margin: 0 auto; }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: var(--gap); }
+.crumbs { font-size: var(--fs-xs); color: var(--c-muted); margin-bottom: .25rem; }
+h1 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
+h2 { font-size: var(--fs-md); font-weight: 600; }
+.sub { color: var(--c-muted); font-size: var(--fs-sm); }
+.btn { display: inline-flex; align-items: center; gap: .5rem; height: 38px; padding: 0 .95rem; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--c-surface); font-size: var(--fs-sm); font-weight: 500; transition: var(--ease); }
+.btn:hover { background: var(--tint-ink); }
+.btn.primary { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-surface); }
+.btn.primary:hover { background: color-mix(in srgb, var(--c-primary) 88%, var(--c-ink)); }
+.actions { display: flex; gap: .6rem; }
+.grid { display: grid; gap: var(--gap); }
+.kpis { grid-template-columns: 1fr; margin-bottom: var(--gap); }
+.card { background: var(--c-surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); }
+.card-body { padding: 1.25rem; }
+.kpi { padding: 1.1rem 1.25rem; }
+.kpi-top { display: flex; align-items: center; justify-content: space-between; color: var(--c-muted); font-size: var(--fs-sm); }
+.kpi-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: var(--tint); color: var(--c-primary); }
+.kpi-val { margin-top: .6rem; font-size: 1.75rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.delta { margin-top: .4rem; font-size: var(--fs-xs); color: var(--c-muted); }
+.delta b { color: var(--c-primary); font-weight: 600; }
+.split { grid-template-columns: 1fr; }
+.legend { display: flex; gap: 1rem; font-size: var(--fs-xs); color: var(--c-muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: .35rem; background: var(--c-primary); }
+.legend i.prev { background: color-mix(in srgb, var(--c-primary) 28%, var(--c-surface)); }
+#chart { width: 100%; height: auto; display: block; }
+.feed { list-style: none; padding: 0; }
+.feed li { display: flex; gap: .8rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--line); font-size: var(--fs-sm); }
+.feed li:last-child { border: 0; }
+.feed small { display: block; color: var(--c-muted); font-size: var(--fs-xs); }
+.tools { display: flex; align-items: center; gap: .6rem; }
+.field { position: relative; }
+.field .icon { position: absolute; left: .65rem; top: 50%; translate: 0 -50%; color: var(--c-muted); width: 16px; height: 16px; }
+.field input { height: 36px; width: 170px; padding: 0 .7rem 0 2rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--c-canvas); font-size: var(--fs-sm); }
+.field input:focus { outline: none; border-color: var(--c-primary); background: var(--c-surface); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+th { text-align: left; padding: .7rem 1.25rem; font-weight: 500; color: var(--c-muted); background: var(--c-canvas); white-space: nowrap; }
+td { padding: .8rem 1.25rem; border-top: 1px solid var(--line); white-space: nowrap; }
+tbody tr:hover { background: var(--c-canvas); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.who { display: flex; align-items: center; gap: .75rem; }
+.who small { display: block; color: var(--c-muted); font-size: var(--fs-xs); }
+.col-md, .col-lg { display: none; }
+.pill { display: inline-flex; align-items: center; gap: .4rem; padding: .12rem .6rem; border-radius: 99px; font-size: var(--fs-xs); font-weight: 500; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.paid { background: var(--tint); color: var(--c-primary); }
+.pill.pending { background: transparent; color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--line); }
+.pill.failed { background: var(--c-ink); color: var(--c-surface); }
+.table-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.25rem; border-top: 1px solid var(--line); color: var(--c-muted); font-size: var(--fs-sm); }
+.pager { display: flex; gap: .4rem; }
+.pager button { height: 32px; padding: 0 .7rem; border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: var(--fs-sm); }
+.pager button:hover:not(:disabled) { background: var(--tint-ink); }
+.pager button:disabled { opacity: .45; cursor: default; }
+.empty { padding: 2rem; text-align: center; color: var(--c-muted); }
+
+/* ============ BREAKPOINTS (Tailwind defaults: sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536) ============ */
+@media (min-width: 640px) {            /* sm */
+  .content { padding: 1.5rem 1.5rem 3rem; }
+  .topbar { padding: 0 1.5rem; }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .user-meta { display: block; }
+  .search { display: block; }
+  .col-md { display: table-cell; }
+}
+@media (min-width: 768px) {            /* md */
+  .col-lg.md-show { display: table-cell; }
+}
+@media (min-width: 1024px) {           /* lg: sidebar becomes persistent */
+  .sidebar { transform: none; }
+  .main { margin-left: var(--sidebar-w); }
+  .menu-toggle, .sidebar-close, .scrim { display: none; }
+  .col-lg { display: table-cell; }
+}
+@media (min-width: 1280px) {           /* xl */
+  .kpis { grid-template-columns: repeat(4, 1fr); }
+  .split { grid-template-columns: 2fr 1fr; }
+}
+@media (min-width: 1536px) {           /* 2xl */
+  .content { padding-inline: 2.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20"/><circle cx="10" cy="8" r="3.5"/><path d="M20 20v-1.5a3.5 3.5 0 0 0-2.5-3.3M15.5 4.7a3.5 3.5 0 0 1 0 6.6"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-5M13 16V8M18 16v-8"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8ZM3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9ZM10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+</svg>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="sidebar" id="sidebar" aria-label="Primary">
+  <div class="brand">
+    <span class="brand-mark"><svg class="icon"><use href="#i-grid"/></svg></span>
+    <span>Northwind<small>Operations Console</small></span>
+    <button class="sidebar-close" id="closeNav" aria-label="Close menu"><svg class="icon"><use href="#i-x"/></svg></button>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-group">Overview</div>
+    <a class="nav-item active" href="#"><svg class="icon"><use href="#i-grid"/></svg>Dashboard</a>
+    <a class="nav-item" href="#"><svg class="icon"><use href="#i-chart"/></svg>Analytics</a>
+
+    <div class="nav-group">Management</div>
+    <button class="nav-item" aria-expanded="false" aria-controls="m-users"><svg class="icon"><use href="#i-users"/></svg>Users &amp; teams<svg class="icon chev"><use href="#i-chev"/></svg></button>
+    <div class="submenu" id="m-users"><ul>
+      <li><a href="#">All users</a></li><li><a href="#">Roles &amp; permissions</a></li><li><a href="#">Pending invitations</a></li>
+    </ul></div>
+
+    <button class="nav-item" aria-expanded="true" aria-controls="m-bill"><svg class="icon"><use href="#i-card"/></svg>Billing<svg class="icon chev"><use href="#i-chev"/></svg></button>
+    <div class="submenu open" id="m-bill"><ul>
+      <li><a class="active" href="#">Invoices</a></li><li><a href="#">Subscriptions</a></li><li><a href="#">Payment methods</a></li>
+    </ul></div>
+
+    <a class="nav-item" href="#"><svg class="icon"><use href="#i-box"/></svg>Products<span class="badge">12</span></a>
+
+    <div class="nav-group">Administration</div>
+    <a class="nav-item" href="#"><svg class="icon"><use href="#i-shield"/></svg>Audit log</a>
+    <button class="nav-item" aria-expanded="false" aria-controls="m-set"><svg class="icon"><use href="#i-gear"/></svg>Settings<svg class="icon chev"><use href="#i-chev"/></svg></button>
+    <div class="submenu" id="m-set"><ul>
+      <li><a href="#">General</a></li><li><a href="#">Security &amp; SSO</a></li><li><a href="#">Integrations</a></li><li><a href="#">API keys</a></li>
+    </ul></div>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="org"><span class="avatar">NW</span><span>Northwind Ltd.<small>Enterprise plan</small></span></div>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" id="openNav" aria-label="Open menu" aria-controls="sidebar"><svg class="icon"><use href="#i-menu"/></svg></button>
+    <label class="search"><span class="sr">Search</span><svg class="icon"><use href="#i-search"/></svg><input type="search" placeholder="Search customers, invoices, settings"></label>
+    <div class="spacer"></div>
+    <button class="icon-btn" aria-label="Notifications"><svg class="icon"><use href="#i-bell"/></svg><span class="dot"></span></button>
+    <div class="menu-wrap">
+      <button class="user-btn" id="userBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="avatar">AR</span>
+        <span class="user-meta">Aisha Rahman<small>Administrator</small></span>
+        <svg class="icon" style="color:var(--c-muted)"><use href="#i-chev"/></svg>
+      </button>
+      <div class="dropdown" id="userMenu" role="menu">
+        <a href="#" role="menuitem"><svg class="icon"><use href="#i-user"/></svg>Your profile</a>
+        <a href="#" role="menuitem"><svg class="icon"><use href="#i-gear"/></svg>Preferences</a>
+        <hr>
+        <a href="#" role="menuitem"><svg class="icon"><use href="#i-out"/></svg>Sign out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-head">
+      <div>
+        <div class="crumbs">Billing / Invoices</div>
+        <h1>Revenue overview</h1>
+        <p class="sub">Performance across all workspaces for the last 12 months.</p>
+      </div>
+      <div class="actions">
+        <button class="btn"><svg class="icon"><use href="#i-down"/></svg>Export</button>
+        <button class="btn primary"><svg class="icon"><use href="#i-plus"/></svg>New invoice</button>
+      </div>
+    </div>
+
+    <section class="grid kpis" aria-label="Key metrics">
+      <article class="card kpi"><div class="kpi-top">Total revenue<span class="kpi-ico"><svg class="icon"><use href="#i-card"/></svg></span></div><div class="kpi-val">$482,910</div><div class="delta"><b>+12.4%</b> vs previous period</div></article>
+      <article class="card kpi"><div class="kpi-top">Active customers<span class="kpi-ico"><svg class="icon"><use href="#i-users"/></svg></span></div><div class="kpi-val">8,246</div><div class="delta"><b>+3.1%</b> vs previous period</div></article>
+      <article class="card kpi"><div class="kpi-top">Open invoices<span class="kpi-ico"><svg class="icon"><use href="#i-box"/></svg></span></div><div class="kpi-val">341</div><div class="delta"><b>28</b> overdue over 30 days</div></article>
+      <article class="card kpi"><div class="kpi-top">Collection rate<span class="kpi-ico"><svg class="icon"><use href="#i-shield"/></svg></span></div><div class="kpi-val">96.8%</div><div class="delta"><b>+0.6 pts</b> vs previous period</div></article>
+    </section>
+
+    <section class="grid split" style="margin-bottom:var(--gap)">
+      <article class="card">
+        <div class="card-head"><h2>Monthly revenue</h2>
+          <div class="legend"><span><i></i>This year</span><span><i class="prev"></i>Last year</span></div></div>
+        <div class="card-body"><svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Monthly revenue, this year versus last year"></svg></div>
+      </article>
+      <article class="card">
+        <div class="card-head"><h2>Recent activity</h2></div>
+        <ul class="feed">
+          <li><span class="avatar">MK</span><div>Marcus Klein approved invoice <b>INV-2048</b><small>12 minutes ago</small></div></li>
+          <li><span class="avatar">SO</span><div>Sofia Ortega added 4 users to <b>Finance</b><small>1 hour ago</small></div></li>
+          <li><span class="avatar">DP</span><div>Dev Patel rotated the production API key<small>3 hours ago</small></div></li>
+          <li><span class="avatar">LN</span><div>Lena Nowak changed the SSO policy<small>Yesterday</small></div></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card" aria-label="Invoices">
+      <div class="card-head"><h2>Recent invoices</h2>
+        <div class="tools"><label class="field"><span class="sr">Filter invoices</span><svg class="icon"><use href="#i-search"/></svg><input id="filter" type="search" placeholder="Filter invoices"></label></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Customer</th><th class="col-md">Invoice</th><th class="col-lg">Plan</th><th>Status</th><th class="num">Amount</th><th class="col-lg">Issued</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="table-foot"><span id="count"></span>
+        <div class="pager"><button id="prev">Previous</button><button id="next">Next</button></div></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const invoices = [
+  ["Helios Logistics","ops@helios.io","INV-2051","Enterprise","paid",18400,"Oct 21, 2026"],
+  ["Fernhill Capital","ap@fernhill.com","INV-2050","Business","pending",6200,"Oct 20, 2026"],
+  ["Orbit Health","finance@orbit.health","INV-2049","Enterprise","paid",24750,"Oct 19, 2026"],
+  ["Kestrel Labs","billing@kestrel.dev","INV-2048","Team","paid",1480,"Oct 18, 2026"],
+  ["Barlow &amp; Finch","accounts@barlowfinch.co","INV-2047","Business","failed",5900,"Oct 17, 2026"],
+  ["Meridian Foods","pay@meridianfoods.com","INV-2046","Enterprise","paid",31200,"Oct 15, 2026"],
+  ["Lumen Studio","hello@lumen.studio","INV-2045","Team","pending",980,"Oct 14, 2026"],
+  ["Atlas Freight","ar@atlasfreight.com","INV-2044","Business","paid",7350,"Oct 12, 2026"],
+  ["Pinecrest Schools","bursar@pinecrest.edu","INV-2043","Enterprise","paid",15600,"Oct 10, 2026"],
+  ["Vantage Realty","admin@vantage.re","INV-2042","Team","failed",1220,"Oct 9, 2026"],
+  ["Nimbus Cloud","ap@nimbus.cloud","INV-2041","Business","paid",8800,"Oct 7, 2026"],
+  ["Quarry &amp; Stone","office@quarrystone.com","INV-2040","Team","pending",1640,"Oct 5, 2026"]
+];
+const initials = n => n.replace(/&amp;/g,"").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const money = v => "$" + v.toLocaleString("en-US");
+const label = {paid:"Paid", pending:"Pending", failed:"Failed"};
+
+/* ---------- Table: filter + pagination ---------- */
+const PAGE = 5; let page = 0, query = "";
+const rows = document.getElementById("rows"), count = document.getElementById("count");
+const prev = document.getElementById("prev"), next = document.getElementById("next");
+function renderTable() {
+  const list = invoices.filter(r => (r[0]+r[1]+r[2]+r[3]+label[r[4]]).toLowerCase().includes(query));
+  const pages = Math.max(1, Math.ceil(list.length / PAGE)); page = Math.min(page, pages - 1);
+  const slice = list.slice(page * PAGE, page * PAGE + PAGE);
+  rows.innerHTML = slice.length ? slice.map(r => `
+    <tr>
+      <td><div class="who"><span class="avatar">${initials(r[0])}</span><div>${r[0]}<small>${r[1]}</small></div></div></td>
+      <td class="col-md">${r[2]}</td><td class="col-lg">${r[3]}</td>
+      <td><span class="pill ${r[4]}">${label[r[4]]}</span></td>
+      <td class="num">${money(r[5])}</td><td class="col-lg">${r[6]}</td>
+    </tr>`).join("") : `<tr><td colspan="6" class="empty">No invoices match this filter. Try a different name or status.</td></tr>`;
+  const from = list.length ? page * PAGE + 1 : 0;
+  count.textContent = `Showing ${from}–${page * PAGE + slice.length} of ${list.length}`;
+  prev.disabled = page === 0; next.disabled = page >= pages - 1;
+}
+prev.onclick = () => { page--; renderTable(); };
+next.onclick = () => { page++; renderTable(); };
+document.getElementById("filter").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); page = 0; renderTable(); });
+renderTable();
+
+/* ---------- Chart (inline SVG) ---------- */
+(function chart() {
+  const cur  = [32,36,34,41,45,43,48,52,50,57,61,66];
+  const last = [28,30,31,33,37,38,40,42,44,46,49,52];
+  const mon  = ["Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"];
+  const W = 640, H = 260, L = 38, B = 28, T = 10, max = 70, ph = H - B - T, step = (W - L) / 12;
+  let s = "";
+  for (let v = 0; v <= max; v += 10) {
+    const y = T + ph - (v / max) * ph;
+    s += `<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--c-muted)">${v ? "$" + v + "k" : "0"}</text>`;
+  }
+  mon.forEach((m, i) => {
+    const x = L + i * step + step / 2, bw = step * .26;
+    const h1 = cur[i] / max * ph, h0 = last[i] / max * ph;
+    s += `<rect x="${x - bw - 1.5}" y="${T + ph - h0}" width="${bw}" height="${h0}" rx="3" fill="var(--c-primary)" fill-opacity=".28"/>`;
+    s += `<rect x="${x + 1.5}" y="${T + ph - h1}" width="${bw}" height="${h1}" rx="3" fill="var(--c-primary)"><title>${m}: $${cur[i]}k</title></rect>`;
+    s += `<text x="${x}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--c-muted)">${m}</text>`;
+  });
+  document.getElementById("chart").innerHTML = s;
+})();
+
+/* ---------- Offcanvas sidebar ---------- */
+const body = document.body, openBtn = document.getElementById("openNav");
+const setNav = open => { body.classList.toggle("nav-open", open); openBtn.setAttribute("aria-expanded", open); };
+openBtn.onclick = () => setNav(true);
+document.getElementById("closeNav").onclick = () => setNav(false);
+document.getElementById("scrim").onclick = () => setNav(false);
+
+/* ---------- Sidebar dropdowns (accordion) ---------- */
+document.querySelectorAll(".nav button.nav-item").forEach(btn => btn.addEventListener("click", () => {
+  const open = btn.getAttribute("aria-expanded") !== "true";
+  btn.setAttribute("aria-expanded", open);
+  document.getElementById(btn.getAttribute("aria-controls")).classList.toggle("open", open);
+}));
+
+/* ---------- User menu ---------- */
+const userBtn = document.getElementById("userBtn"), userMenu = document.getElementById("userMenu");
+const setUser = open => { userMenu.classList.toggle("open", open); userBtn.setAttribute("aria-expanded", open); };
+userBtn.onclick = e => { e.stopPropagation(); setUser(!userMenu.classList.contains("open")); };
+document.addEventListener("click", e => { if (!userMenu.contains(e.target)) setUser(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { setUser(false); setNav(false); } });
+</script>
+</body>
+</html>
